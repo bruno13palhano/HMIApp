@@ -13,8 +13,6 @@ nav3Material = "1.0.0-SNAPSHOT"
 nav3Lifecycle = "1.0.0-alpha01"
 hiltAndroidCompiler = "2.56"
 hiltCompiler = "1.2.0"
-orgEclipsePahoAndroidService = "1.1.1"
-orgEclipsePahoClientMqttv3 = "1.2.5"
 roomVersion = "2.7.1"
 kspVersion = "2.2.0-2.0.2"
 kotlinSerialization = "2.1.21"
@@ -48,8 +46,6 @@ hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hiltA
 hilt-android-compiler = { module = "com.google.dagger:hilt-android-compiler", version.ref = "hiltAndroidCompiler" }
 hilt-android-testing = { module = "com.google.dagger:hilt-android-testing", version.ref = "hiltAndroidCompiler" }
 androidx-hilt-compiler = { module = "androidx.hilt:hilt-compiler", version.ref = "hiltCompiler" }
-org-eclipse-paho-android-service = { module = "org.eclipse.paho:org.eclipse.paho.android.service", version.ref = "orgEclipsePahoAndroidService" }
-org-eclipse-paho-client-mqttv3 = { module = "org.eclipse.paho:org.eclipse.paho.client.mqttv3", version.ref = "orgEclipsePahoClientMqttv3" }
 room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomVersion" }
 room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomVersion" }
 room-coroutines = { module = "androidx.room:room-ktx", version.ref = "roomVersion" }
