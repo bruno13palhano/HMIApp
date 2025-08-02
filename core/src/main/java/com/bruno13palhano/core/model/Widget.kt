@@ -10,7 +10,8 @@ data class Widget(
     val x: Float = 0f,
     val y: Float = 0f,
     val width: Float = 120f,
-    val  height: Float = 120f
+    val height: Float = 120f,
+    val value: String = ""
 )
 
 enum class WidgetType { TEXT, BUTTON, SWITCH }
