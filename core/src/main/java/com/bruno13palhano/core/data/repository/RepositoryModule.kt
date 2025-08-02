@@ -10,4 +10,7 @@ import dagger.hilt.components.SingletonComponent
 internal abstract class RepositoryModule {
     @Binds
     abstract fun bindWidgetRepository(repository: WidgetRepositoryImpl): WidgetRepository
+
+    @Binds
+    abstract fun bindMqttClientRepository(repository: MqttClientRepositoryImpl): MqttClientRepository
 }
