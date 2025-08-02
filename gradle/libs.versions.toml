@@ -1,5 +1,6 @@
 [versions]
 agp = "8.11.1"
+hivemqMqttClient = "1.3.0"
 kotlin = "2.2.0"
 coreKtx = "1.16.0"
 junit = "4.13.2"
@@ -19,9 +20,11 @@ kotlinSerialization = "2.1.21"
 kotlinxSerializationCore = "1.8.1"
 appcompat = "1.7.1"
 material = "1.12.0"
+slf4jNop = "2.0.9"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+hivemq-mqtt-client = { module = "com.hivemq:hivemq-mqtt-client", version.ref = "hivemqMqttClient" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
@@ -51,6 +54,7 @@ room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomVer
 room-coroutines = { module = "androidx.room:room-ktx", version.ref = "roomVersion" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
+slf4j-nop = { module = "org.slf4j:slf4j-nop", version.ref = "slf4jNop" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

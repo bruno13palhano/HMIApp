@@ -40,6 +40,14 @@ android {
     buildFeatures {
         compose = true
     }
+    packaging {
+        resources {
+            merges += listOf(
+                "META-INF/io.netty.versions.properties",
+                "META-INF/INDEX.LIST"
+            )
+        }
+    }
 }
 
 dependencies {
@@ -66,7 +74,6 @@ dependencies {
     implementation(libs.androidx.material3.navigation3)
     implementation(libs.kotlinx.serialization.core)
     implementation(libs.kotlinx.serialization.json)
-    ksp(libs.hilt.android.compiler)
     ksp(libs.androidx.hilt.compiler)
     implementation(libs.hilt.android)
     ksp(libs.hilt.android.compiler)

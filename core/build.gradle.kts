@@ -45,10 +45,10 @@ dependencies {
     ksp(libs.hilt.android.compiler)
     ksp(libs.androidx.hilt.compiler)
     implementation(libs.hilt.android)
-    ksp(libs.room.runtime)
+    implementation(libs.room.runtime)
     ksp(libs.room.compiler)
     implementation(libs.room.coroutines)
     // MQTT
-    implementation(libs.org.eclipse.paho.client.mqttv3)
-    implementation(libs.org.eclipse.paho.android.service)
+    implementation(libs.hivemq.mqtt.client)
+    implementation(libs.slf4j.nop) // Para Java 11+
 }
