@@ -7,7 +7,8 @@ import com.bruno13palhano.core.data.database.entity.WidgetEntity
 
 @Database(
     entities = [WidgetEntity::class],
-    version = 1
+    version = 1,
+    exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun widgetDao(): WidgetDao
