@@ -17,9 +17,9 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.navigation3.runtime.rememberNavBackStack
+import com.bruno13palhano.hmiapp.ui.components.DrawerMenu
 import com.bruno13palhano.hmiapp.ui.navigation.AppNavigation
 import com.bruno13palhano.hmiapp.ui.navigation.Dashboard
-import com.bruno13palhano.hmiapp.ui.navigation.DrawerMenu
 import com.bruno13palhano.hmiapp.ui.theme.HMIAppTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
