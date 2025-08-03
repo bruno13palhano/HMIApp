@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">HMIApp</string>
+    <string name="dashboard">Dashboard</string>
+    <string name="settings">Settings</string>
+    <string name="menu_button">Menu button</string>
+    <string name="navigate_back_button">Navigate back button</string>
 </resources>
