@@ -14,9 +14,10 @@ sealed interface DashboardEvent {
     data class AddWidget(val widget: Widget) : DashboardEvent
     data class RemoveWidget(val id: String) : DashboardEvent
     data class MoveWidget(val id: String, val x: Float, val y: Float) : DashboardEvent
+    data object ToggleMenu : DashboardEvent
 }
 
 @Immutable
 sealed interface DashboardSideEffect {
-
+    data object ToggleMenu : DashboardSideEffect
 }
