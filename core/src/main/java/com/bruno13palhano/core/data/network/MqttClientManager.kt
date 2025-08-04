@@ -4,11 +4,13 @@ import com.hivemq.client.mqtt.MqttClient
 import com.hivemq.client.mqtt.mqtt5.Mqtt5AsyncClient
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.withContext
 import java.util.concurrent.CompletableFuture
 import javax.inject.Inject
@@ -83,11 +85,16 @@ internal class MqttClientManager @Inject constructor() {
     }
 
     fun isConnected(): Flow<Boolean> {
-        return try {
-            flowOf(client.state.isConnected)
-        } catch (e: Exception) {
-            flowOf(false)
-        }
+        return flow {
+            while (true) {
+                try {
+                    emit(client.state.isConnected)
+                } catch (_: Exception) {
+                    emit(false)
+                }
+                delay(250)
+            }
+        }.distinctUntilChanged()
     }
 
     suspend fun disconnect(): Result<Unit> = withContext(Dispatchers.IO) {
