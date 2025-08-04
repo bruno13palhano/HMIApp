@@ -16,7 +16,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -37,8 +37,8 @@ fun WidgetBlock(
     onMove: (x: Float, y: Float) -> Unit,
     onRemove: () -> Unit
 ) {
-    var offsetX by remember { mutableStateOf(widget.x) }
-    var offsetY by remember { mutableStateOf(widget.y) }
+    var offsetX by remember { mutableFloatStateOf(widget.x) }
+    var offsetY by remember { mutableFloatStateOf(widget.y) }
 
     Box(
         modifier = Modifier
@@ -51,7 +51,7 @@ fun WidgetBlock(
                     onMove(offsetX, offsetY)
                 }
             }
-//            .padding(8.dp)
+            .padding(8.dp)
             .size(widget.width.dp, widget.height.dp)
             .background(Color.White, RoundedCornerShape(8.dp))
             .border(1.dp, Color.Black),
@@ -59,10 +59,18 @@ fun WidgetBlock(
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(text = widget.label, fontWeight = FontWeight.Bold)
+
             Text(text = when (val ds = widget.dataSource) {
                 is DataSource.MQTT -> "MQTT: ${ds.topic}"
                 is DataSource.HTTP -> "HTTP: ${ds.url}"
             }, fontSize = 12.sp)
+
+            Text(
+                text = "value: ${widget.value}",
+                fontSize = 12.sp,
+                color = Color.Blue
+            )
+
             IconButton(onClick = onRemove) {
                 Icon(
                     imageVector = Icons.Default.Delete,
