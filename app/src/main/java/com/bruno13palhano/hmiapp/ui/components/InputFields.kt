@@ -30,6 +30,7 @@ fun CustomTextField(
     icon: @Composable (() -> Unit)? = null,
     label: String,
     placeholder: String,
+    enabled: Boolean = true,
     isError: Boolean = false,
     singleLine: Boolean = true,
     readOnly: Boolean = false,
@@ -38,6 +39,7 @@ fun CustomTextField(
         modifier = modifier.clearFocusOnKeyboardDismiss(),
         value = value,
         onValueChange = onValueChange,
+        enabled = enabled,
         isError = isError,
         leadingIcon = icon,
         label = {
@@ -68,6 +70,7 @@ fun CustomPasswordTextField(
     leadingIcon: @Composable (() -> Unit)? = null,
     togglePasswordVisibility: () -> Unit,
     label: String,
+    enabled: Boolean = true,
     placeholder: String,
     isError: Boolean = false,
     singleLine: Boolean = true,
@@ -77,6 +80,7 @@ fun CustomPasswordTextField(
         modifier = modifier,
         value = value,
         onValueChange = onValueChange,
+        enabled = enabled,
         isError = isError,
         leadingIcon = leadingIcon,
         trailingIcon = {
@@ -129,6 +133,7 @@ fun CustomIntegerField(
     modifier: Modifier = Modifier,
     value: String,
     onValueChange: (String) -> Unit,
+    enabled: Boolean = true,
     leadingIcon: @Composable (() -> Unit)? = null,
     label: String,
     placeholder: String,
@@ -146,6 +151,7 @@ fun CustomIntegerField(
                 onValueChange(newValue)
             }
         },
+        enabled = enabled,
         isError = isError,
         leadingIcon = leadingIcon,
         label = {
@@ -175,6 +181,7 @@ fun CustomFloatField(
     modifier: Modifier = Modifier,
     value: String,
     onValueChange: (value: String) -> Unit,
+    enabled: Boolean = true,
     leadingIcon: @Composable (() -> Unit)? = null,
     label: String,
     placeholder: String,
@@ -194,6 +201,7 @@ fun CustomFloatField(
                 onValueChange(newValue)
             }
         },
+        enabled = enabled,
         isError = isError,
         leadingIcon = leadingIcon,
         label = {
@@ -223,6 +231,7 @@ fun CustomDoubleField(
     modifier: Modifier = Modifier,
     value: String,
     onValueChange: (value: String) -> Unit,
+    enabled: Boolean = true,
     leadingIcon: @Composable (() -> Unit)? = null,
     label: String,
     placeholder: String,
@@ -242,6 +251,7 @@ fun CustomDoubleField(
                 onValueChange(newValue)
             }
         },
+        enabled = enabled,
         isError = isError,
         leadingIcon = leadingIcon,
         label = {
@@ -271,6 +281,7 @@ fun CustomClickField(
     modifier: Modifier = Modifier,
     value: String,
     onClick: () -> Unit,
+    enabled: Boolean = true,
     leadingIcon: @Composable (() -> Unit)? = null,
     label: String,
     placeholder: String,
@@ -286,6 +297,7 @@ fun CustomClickField(
             },
         value = value,
         onValueChange = {},
+        enabled = enabled,
         leadingIcon = leadingIcon,
         label = {
             Text(
