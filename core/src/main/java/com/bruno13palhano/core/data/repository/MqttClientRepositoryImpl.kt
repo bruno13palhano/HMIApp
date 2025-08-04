@@ -1,6 +1,7 @@
 package com.bruno13palhano.core.data.repository
 
 import com.bruno13palhano.core.data.network.MqttClientManager
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharedFlow
 import javax.inject.Inject
 
@@ -30,6 +31,10 @@ internal class MqttClientRepositoryImpl @Inject constructor(
 
     override suspend fun publish(topic: String, message: String): Result<Unit> {
         return mqtt.publish(topic = topic, message = message)
+    }
+
+    override fun isConnected(): Flow<Boolean> {
+        return mqtt.isConnected()
     }
 
     override suspend fun disconnect(): Result<Unit> {
