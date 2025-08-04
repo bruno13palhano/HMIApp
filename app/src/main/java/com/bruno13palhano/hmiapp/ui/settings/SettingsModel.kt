@@ -4,11 +4,17 @@ import androidx.compose.runtime.Immutable
 
 @Immutable
 data class SettingsState(
-    val clientId: String = "AndroidClient_${System.currentTimeMillis()}",
+    val clientId: String = "",
     val host: String = "",
-    val port: Int = 1883,
+    val port: String = "",
     val username: String = "",
     val password: String = "",
+    val passwordVisibility: Boolean = false,
+    val isClientIdInvalid: Boolean = false,
+    val isHostInvalid: Boolean = false,
+    val isPortInvalid: Boolean = false,
+    val isUsernameInvalid: Boolean = false,
+    val isPasswordInvalid: Boolean = false,
     val isLoading: Boolean = false,
     val isConnected: Boolean = false
 )
@@ -17,9 +23,11 @@ data class SettingsState(
 sealed interface SettingsEvent {
     data class UpdateClientId(val clientId: String) : SettingsEvent
     data class UpdateHost(val host: String) : SettingsEvent
-    data class UpdatePort(val port: Int) : SettingsEvent
+    data class UpdatePort(val port: String) : SettingsEvent
     data class UpdateUsername(val username: String) : SettingsEvent
     data class UpdatePassword(val password: String) : SettingsEvent
+    data object TogglePasswordVisibility : SettingsEvent
+    data object CheckConnection : SettingsEvent
     data object ToggleMenu : SettingsEvent
     data object ConnectMqtt : SettingsEvent
     data object DisconnectMqtt : SettingsEvent
@@ -30,7 +38,7 @@ sealed interface SettingsEvent {
 sealed interface SettingsSideEffect {
     data object ToggleMenu : SettingsSideEffect
     data object HideKeyboardAndClearFocus : SettingsSideEffect
-    data class ShowSettingsInfo(val connectionInfo: SettingsInfo) : SettingsSideEffect
+    data class ShowSettingsInfo(val info: SettingsInfo) : SettingsSideEffect
 }
 
 enum class SettingsInfo {

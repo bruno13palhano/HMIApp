@@ -25,6 +25,8 @@ class SettingsViewModel @Inject constructor(
             is SettingsEvent.UpdatePort -> updatePort(port = event.port)
             is SettingsEvent.UpdateUsername -> updateUsername(username = event.username)
             is SettingsEvent.UpdatePassword -> updatePassword(password = event.password)
+            SettingsEvent.CheckConnection -> checkConnection()
+            SettingsEvent.TogglePasswordVisibility -> togglePasswordVisibility()
             SettingsEvent.ConnectMqtt -> connectMqtt()
             SettingsEvent.DisconnectMqtt -> disconnectMqtt()
         }
@@ -39,46 +41,68 @@ class SettingsViewModel @Inject constructor(
     }
 
     private fun updateClientId(clientId: String) = container.intent {
-        reduce { copy(clientId = clientId) }
+        val isInvalid = clientId.isBlank()
+        reduce { copy(clientId = clientId, isClientIdInvalid = isInvalid) }
     }
 
     private fun updateHost(host: String) = container.intent {
-        reduce { copy(host = host) }
+        val isInvalid = host.isBlank()
+        reduce { copy(host = host, isHostInvalid = isInvalid) }
     }
 
-    private fun updatePort(port: Int) = container.intent {
-        reduce { copy(port = port) }
+    private fun updatePort(port: String) = container.intent {
+        val isInvalid = port.isBlank()
+        reduce { copy(port = port, isPortInvalid = isInvalid) }
     }
 
     private fun updateUsername(username: String) = container.intent {
-        reduce { copy(username = username) }
+        val isInvalid = username.isBlank()
+        reduce { copy(username = username, isUsernameInvalid = isInvalid) }
     }
 
     private fun updatePassword(password: String) = container.intent {
-        reduce { copy(password = password) }
+        val isInvalid = password.isBlank()
+        reduce { copy(password = password, isPasswordInvalid = isInvalid) }
+    }
+
+    private fun togglePasswordVisibility() = container.intent {
+        reduce { copy(passwordVisibility = !passwordVisibility) }
+    }
+
+    private fun checkConnection() = container.intent {
+        mqttClientRepository.isConnected().collect {
+            reduce { copy(isConnected = it) }
+        }
     }
 
     private fun connectMqtt() = container.intent {
         val state = state.value
+        if (isMqttPropertiesEmpty(state = state) || state.isConnected) {
+            return@intent
+        }
+
+        reduce { copy(isLoading = true) }
 
         mqttClientRepository.connectMqtt(
             clientId = state.clientId,
             host = state.host,
-            port = state.port,
+            port = state.port.toInt(),
             username = state.username,
             password = state.password
         )
             .onSuccess {
+                reduce { copy(isLoading = false) }
                 postSideEffect(
                     effect = SettingsSideEffect.ShowSettingsInfo(
-                        connectionInfo = SettingsInfo.CONNECT_SUCCESS
+                        info = SettingsInfo.CONNECT_SUCCESS
                     )
                 )
             }
             .onFailure {
+                reduce { copy(isLoading = false) }
                 postSideEffect(
                     effect = SettingsSideEffect.ShowSettingsInfo(
-                        connectionInfo = SettingsInfo.CONNECT_FAILURE
+                        info = SettingsInfo.CONNECT_FAILURE
                     )
                 )
             }
@@ -89,16 +113,21 @@ class SettingsViewModel @Inject constructor(
             .onSuccess {
                 postSideEffect(
                     effect = SettingsSideEffect.ShowSettingsInfo(
-                        connectionInfo = SettingsInfo.DISCONNECT_SUCCESS
+                        info = SettingsInfo.DISCONNECT_SUCCESS
                     )
                 )
             }
             .onFailure {
                 postSideEffect(
                     effect = SettingsSideEffect.ShowSettingsInfo(
-                        connectionInfo = SettingsInfo.DISCONNECT_FAILURE
+                        info = SettingsInfo.DISCONNECT_FAILURE
                     )
                 )
             }
+    }
+
+    private fun isMqttPropertiesEmpty(state: SettingsState): Boolean {
+        return state.clientId.isBlank() || state.host.isBlank() || state.port.isBlank() ||
+                state.username.isBlank() || state.password.isBlank()
     }
 }

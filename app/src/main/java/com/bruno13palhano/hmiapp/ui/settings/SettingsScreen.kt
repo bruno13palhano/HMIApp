@@ -1,12 +1,18 @@
 package com.bruno13palhano.hmiapp.ui.settings
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Menu
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -24,11 +30,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bruno13palhano.hmiapp.R
+import com.bruno13palhano.hmiapp.ui.components.CircularProgress
+import com.bruno13palhano.hmiapp.ui.components.CustomIntegerField
+import com.bruno13palhano.hmiapp.ui.components.CustomPasswordTextField
+import com.bruno13palhano.hmiapp.ui.components.CustomTextField
 import com.bruno13palhano.hmiapp.ui.shared.clickableWithoutRipple
 import com.bruno13palhano.hmiapp.ui.shared.rememberFlowWithLifecycle
+import com.bruno13palhano.hmiapp.ui.theme.HMIAppTheme
+import kotlinx.coroutines.launch
 
 @Composable
 fun SettingsScreen(
@@ -43,6 +57,11 @@ fun SettingsScreen(
 
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
+    val messagesInfo = getSettingInfo()
+
+    LaunchedEffect(Unit) {
+        viewModel.onEvent(event = SettingsEvent.CheckConnection)
+    }
 
     LaunchedEffect(Unit) {
         sideEffect.collect { effect ->
@@ -53,16 +72,13 @@ fun SettingsScreen(
                     keyboardController?.hide()
                 }
                 is SettingsSideEffect.ShowSettingsInfo -> {
-                    when (effect.connectionInfo) {
-                        SettingsInfo.CLIENT_ID -> TODO()
-                        SettingsInfo.HOST -> TODO()
-                        SettingsInfo.PORT -> TODO()
-                        SettingsInfo.USERNAME -> TODO()
-                        SettingsInfo.PASSWORD -> TODO()
-                        SettingsInfo.CONNECT_SUCCESS -> TODO()
-                        SettingsInfo.CONNECT_FAILURE -> TODO()
-                        SettingsInfo.DISCONNECT_SUCCESS -> TODO()
-                        SettingsInfo.DISCONNECT_FAILURE -> TODO()
+                    val currentInfo = messagesInfo[effect.info] ?: ""
+
+                    scope.launch {
+                        snackbarHostState.showSnackbar(
+                            message = currentInfo,
+                            withDismissAction = true
+                        )
                     }
                 }
             }
@@ -102,8 +118,147 @@ private fun SettingsContent(
         },
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) {
-        Column(modifier = Modifier.padding(it)) {
+        if (state.isLoading) {
+            CircularProgress(
+                modifier = Modifier
+                .padding(it)
+                .fillMaxSize()
+            )
+        } else {
+            Column(
+                modifier = Modifier
+                    .padding(it)
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+            ) {
+                CustomTextField(
+                    modifier = Modifier
+                        .padding(horizontal = 8.dp)
+                        .fillMaxWidth(),
+                    value = state.clientId,
+                    onValueChange = { clientId ->
+                        onEvent(SettingsEvent.UpdateClientId(clientId = clientId))
+                    },
+                    enabled = !state.isConnected,
+                    label = stringResource(id = R.string.client_id),
+                    placeholder = stringResource(id = R.string.client_id_placeholder),
+                    isError = state.isClientIdInvalid
+                )
 
+                CustomTextField(
+                    modifier = Modifier
+                        .padding(horizontal = 8.dp)
+                        .fillMaxWidth(),
+                    value = state.host,
+                    onValueChange = { host ->
+                        onEvent(SettingsEvent.UpdateHost(host = host))
+                    },
+                    enabled = !state.isConnected,
+                    label = stringResource(id = R.string.host),
+                    placeholder = stringResource(id = R.string.host_placeholder),
+                    isError = state.isHostInvalid
+                )
+
+                CustomIntegerField(
+                    modifier = Modifier
+                        .padding(horizontal = 8.dp)
+                        .fillMaxWidth(),
+                    value = state.port,
+                    onValueChange = { port ->
+                        onEvent(SettingsEvent.UpdatePort(port = port))
+                    },
+                    enabled = !state.isConnected,
+                    label = stringResource(id = R.string.port),
+                    placeholder = stringResource(id = R.string.port_placeholder),
+                    isError = state.isPortInvalid
+                )
+
+                CustomTextField(
+                    modifier = Modifier
+                        .padding(horizontal = 8.dp)
+                        .fillMaxWidth(),
+                    value = state.username,
+                    onValueChange = { username ->
+                        onEvent(SettingsEvent.UpdateUsername(username = username))
+                    },
+                    enabled = !state.isConnected,
+                    label = stringResource(id = R.string.username),
+                    placeholder = stringResource(id = R.string.username_placeholder),
+                    isError = state.isUsernameInvalid
+                )
+
+                CustomPasswordTextField(
+                    modifier = Modifier
+                        .padding(horizontal = 8.dp)
+                        .fillMaxWidth(),
+                    value = state.password,
+                    visibility = state.passwordVisibility,
+                    onValueChange = { password ->
+                        onEvent(SettingsEvent.UpdatePassword(password = password))
+                    },
+                    togglePasswordVisibility = { onEvent(SettingsEvent.TogglePasswordVisibility) },
+                    enabled = !state.isConnected,
+                    label = stringResource(id = R.string.password),
+                    placeholder = stringResource(id = R.string.password_placeholder),
+                    isError = state.isPasswordInvalid
+                )
+
+                Column(
+                    modifier = Modifier
+                        .padding(vertical = 32.dp)
+                        .fillMaxWidth()
+                        .weight(1f),
+                    verticalArrangement = Arrangement.Bottom
+                ) {
+                    Button(
+                        modifier = Modifier
+                            .padding(horizontal = 8.dp)
+                            .fillMaxWidth(),
+                        onClick = { onEvent(SettingsEvent.ConnectMqtt) },
+                        enabled = !state.isConnected
+                    ) {
+                        Text(text = stringResource(id = R.string.connect))
+                    }
+
+                    Button(
+                        modifier = Modifier
+                            .padding(horizontal = 8.dp)
+                            .fillMaxWidth(),
+                        onClick = { onEvent(SettingsEvent.DisconnectMqtt) },
+                        enabled = state.isConnected
+                    ) {
+                        Text(text = stringResource(id = R.string.disconnect))
+                    }
+                }
+            }
         }
+    }
+}
+
+@Composable
+fun getSettingInfo(): Map<SettingsInfo, String> {
+    return mapOf(
+        SettingsInfo.CLIENT_ID to stringResource(R.string.client_id_error),
+        SettingsInfo.HOST to stringResource(R.string.host_error),
+        SettingsInfo.PORT to stringResource(R.string.port_error),
+        SettingsInfo.USERNAME to stringResource(R.string.username_error),
+        SettingsInfo.PASSWORD to stringResource(R.string.password_error),
+        SettingsInfo.CONNECT_SUCCESS to stringResource(R.string.connect_success),
+        SettingsInfo.CONNECT_FAILURE to stringResource(R.string.connect_error),
+        SettingsInfo.DISCONNECT_SUCCESS to stringResource(R.string.disconnect_success),
+        SettingsInfo.DISCONNECT_FAILURE to stringResource(R.string.disconnect_error),
+    )
+}
+
+
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+fun SettingsPreview() {
+    HMIAppTheme {
+        SettingsContent(
+            snackbarHostState = SnackbarHostState(),
+            state = SettingsState(),
+            onEvent = {}
+        )
     }
 }
