@@ -1,11 +1,11 @@
 package com.bruno13palhano.hmiapp.ui.dashboard
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bruno13palhano.core.data.repository.MqttClientRepository
 import com.bruno13palhano.core.data.repository.WidgetRepository
 import com.bruno13palhano.core.model.DataSource
+import com.bruno13palhano.core.model.Widget
 import com.bruno13palhano.hmiapp.ui.shared.Container
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.collectLatest
@@ -23,32 +23,49 @@ class DashboardViewModel @Inject constructor(
 
     private val widgetValues = mutableMapOf<String, String>()
 
-    init {
-        loadWidgets()
-        observeMessages()
-    }
-
     fun onEvent(event: DashboardEvent) {
         container.intent {
             when (event) {
-                is DashboardEvent.AddWidget -> {
-                    widgetRepository.insert(event.widget)
-                    if (event.widget.dataSource is DataSource.MQTT) {
-                        mqttClientRepository.subscribeToTopic((event.widget.dataSource as DataSource.MQTT).topic)
-                    }
-                }
-                is DashboardEvent.RemoveWidget -> {
-                    widgetValues.remove(event.id)
-                    widgetRepository.deleteById(id = event.id)
-                }
+                DashboardEvent.Init -> dashboardInit()
+                is DashboardEvent.AddWidget -> addWidget(widget = event.widget)
+                is DashboardEvent.RemoveWidget -> removeWidget(id = event.id)
+                is DashboardEvent.MoveWidget -> moveWidget(id = event.id, x = event.x, y = event.y)
+                DashboardEvent.ToggleMenu -> toggleMenu()
+            }
+        }
+    }
 
-                is DashboardEvent.MoveWidget -> {
-                    widgetRepository.updatePosition(id = event.id, x = event.x, y = event.y)
-                }
+    private fun addWidget(widget: Widget) = container.intent {
+        widgetRepository.insert(widget)
+        if (widget.dataSource is DataSource.MQTT) {
+            mqttClientRepository.subscribeToTopic(
+                topic = (widget.dataSource as DataSource.MQTT).topic
+            )
+        }
+    }
 
-                DashboardEvent.ToggleMenu -> container.intent {
-                    postSideEffect(effect = DashboardSideEffect.ToggleMenu)
-                }
+    private fun removeWidget(id: String) = container.intent {
+        widgetValues.remove(key = id)
+        widgetRepository.deleteById(id = id)
+    }
+
+    private fun moveWidget(id: String, x: Float, y: Float) = container.intent {
+        widgetRepository.updatePosition(id = id, x = x, y = y)
+    }
+
+    private fun toggleMenu() = container.intent {
+        postSideEffect(effect = DashboardSideEffect.ToggleMenu)
+    }
+
+    private fun dashboardInit() = container.intent {
+        mqttClientRepository.isConnected().collect { isConnected ->
+            if (!isConnected) {
+                postSideEffect(
+                    effect = DashboardSideEffect.ShowInfo(info = DashboardInfo.DISCONNECTED)
+                )
+            } else {
+                loadWidgets()
+                observeMessages()
             }
         }
     }
@@ -74,7 +91,6 @@ class DashboardViewModel @Inject constructor(
     private fun observeMessages() {
         container.intent {
             mqttClientRepository.incomingMessages().collect { (topic, message) ->
-                Log.i("MQTT", "$topic: $message")
                 val updatedWidgets = state.value.widgets.map { widget ->
                     if ((widget.dataSource as DataSource.MQTT).topic == topic) {
                         val updated = widget.copy(value = message)
