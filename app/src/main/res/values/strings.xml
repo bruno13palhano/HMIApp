@@ -26,4 +26,15 @@
     <string name="disconnect_success">Successfully disconnected</string>
     <string name="disconnect_error">Failed to disconnect</string>
     <string name="disconnect_info">The device is disconnected</string>
+    <string name="widget_configuration">Widget Configuration</string>
+    <string name="label">Label</string>
+    <string name="enter_label">Enter label</string>
+    <string name="endpoint">Endpoint</string>
+    <string name="enter_endpoint">Enter endpoint</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+    <string name="remove">Remove</string>
+    <string name="value">Value</string>
+    <string name="show_widget_toolbox">Show widget toolbox</string>
+    <string name="hide_widget_toolbox">Hide widget toolbox</string>
 </resources>
