@@ -6,6 +6,7 @@ import com.bruno13palhano.core.data.repository.MqttClientRepository
 import com.bruno13palhano.core.data.repository.WidgetRepository
 import com.bruno13palhano.core.model.DataSource
 import com.bruno13palhano.core.model.Widget
+import com.bruno13palhano.core.model.WidgetType
 import com.bruno13palhano.hmiapp.ui.shared.Container
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.collectLatest
@@ -24,18 +25,46 @@ class DashboardViewModel @Inject constructor(
     private val widgetValues = mutableMapOf<String, String>()
 
     fun onEvent(event: DashboardEvent) {
-        container.intent {
-            when (event) {
-                DashboardEvent.Init -> dashboardInit()
-                is DashboardEvent.AddWidget -> addWidget(widget = event.widget)
-                is DashboardEvent.RemoveWidget -> removeWidget(id = event.id)
-                is DashboardEvent.MoveWidget -> moveWidget(id = event.id, x = event.x, y = event.y)
-                DashboardEvent.ToggleMenu -> toggleMenu()
-            }
+        when (event) {
+            DashboardEvent.Init -> dashboardInit()
+            is DashboardEvent.AddWidget -> addWidget()
+            is DashboardEvent.RemoveWidget -> removeWidget(id = event.id)
+            is DashboardEvent.MoveWidget -> moveWidget(id = event.id, x = event.x, y = event.y)
+            DashboardEvent.ToggleIsToolboxExpanded -> toggleIsToolboxExpanded()
+            DashboardEvent.ToggleMenu -> toggleMenu()
+            DashboardEvent.HideWidgetConfig -> hideWidgetDialog()
+            is DashboardEvent.ShowWidgetDialog -> showWidgetDialog(type = event.type)
+            is DashboardEvent.UpdateEndpoint -> updateEndpoint(endpoint = event.endpoint)
+            is DashboardEvent.UpdateLabel -> updateLabel(label = event.label)
         }
     }
 
-    private fun addWidget(widget: Widget) = container.intent {
+    private fun showWidgetDialog(type: WidgetType) = container.intent {
+        reduce { copy(isWidgetInputDialogVisible = true, type = type) }
+    }
+
+    private fun hideWidgetDialog() = container.intent {
+        reduce { copy(isWidgetInputDialogVisible = false) }
+    }
+
+    private fun updateEndpoint(endpoint: String) = container.intent {
+        reduce { copy(endpoint = endpoint) }
+    }
+
+    private fun updateLabel(label: String) = container.intent {
+        reduce { copy(label = label) }
+    }
+
+    private fun addWidget() = container.intent {
+        hideWidgetDialog()
+
+        val state = state.value
+        val widget = Widget(
+            type = state.type,
+            label = state.label,
+            dataSource = DataSource.MQTT(topic = state.endpoint)
+        )
+
         widgetRepository.insert(widget)
         if (widget.dataSource is DataSource.MQTT) {
             mqttClientRepository.subscribeToTopic(
@@ -51,6 +80,10 @@ class DashboardViewModel @Inject constructor(
 
     private fun moveWidget(id: String, x: Float, y: Float) = container.intent {
         widgetRepository.updatePosition(id = id, x = x, y = y)
+    }
+
+    private fun toggleIsToolboxExpanded() = container.intent {
+        reduce { copy(isToolboxExpanded = !isToolboxExpanded) }
     }
 
     private fun toggleMenu() = container.intent {

@@ -1,5 +1,6 @@
 package com.bruno13palhano.hmiapp.ui.dashboard
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.consumeWindowInsets
@@ -27,10 +28,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.bruno13palhano.core.model.DataSource
-import com.bruno13palhano.core.model.Widget
 import com.bruno13palhano.hmiapp.R
 import com.bruno13palhano.hmiapp.ui.components.WidgetCanvas
+import com.bruno13palhano.hmiapp.ui.components.WidgetInputDialog
 import com.bruno13palhano.hmiapp.ui.components.WidgetToolbox
 import com.bruno13palhano.hmiapp.ui.shared.rememberFlowWithLifecycle
 import com.bruno13palhano.hmiapp.ui.theme.HMIAppTheme
@@ -114,14 +114,22 @@ fun DashboardContent(
                 contentAlignment = Alignment.BottomEnd
             ) {
                 WidgetToolbox(
-                    onAdd = { type ->
-                        val newWidget = Widget(
-                            type = type,
-                            label = type.name,
-                            dataSource = DataSource.MQTT(topic = "test/topic")
-                        )
-                        onEvent(DashboardEvent.AddWidget(widget = newWidget))
-                    }
+                    expanded = state.isToolboxExpanded,
+                    onExpandedClick = { onEvent(DashboardEvent.ToggleIsToolboxExpanded) },
+                    onAdd = { type -> onEvent(DashboardEvent.ShowWidgetDialog(type = type)) }
+                )
+            }
+
+            AnimatedVisibility(visible = state.isWidgetInputDialogVisible) {
+                WidgetInputDialog(
+                    label = state.label,
+                    endpoint = state.endpoint,
+                    onLabelChange = { label -> onEvent(DashboardEvent.UpdateLabel(label = label)) },
+                    onEndpointChange = {
+                        endpoint -> onEvent(DashboardEvent.UpdateEndpoint(endpoint = endpoint))
+                    },
+                    onConfirm = { onEvent(DashboardEvent.AddWidget) },
+                    onDismissRequest = { onEvent(DashboardEvent.HideWidgetConfig) }
                 )
             }
         }
