@@ -3,6 +3,7 @@ package com.bruno13palhano.hmiapp.ui.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -14,7 +15,11 @@ fun WidgetCanvas(
     onMove: (id: String, x: Float, y: Float) -> Unit,
     onRemove: (String) -> Unit,
 ) {
-    Box(modifier = Modifier.fillMaxSize().background(Color.LightGray)) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.onSecondaryContainer)
+    ) {
         widgets.forEach { widget ->
             WidgetBlock(
                 widget = widget,
