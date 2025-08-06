@@ -2,6 +2,7 @@ package com.bruno13palhano.hmiapp.ui.dashboard
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.navigation3.runtime.NavKey
 import com.bruno13palhano.core.data.repository.MqttClientRepository
 import com.bruno13palhano.core.data.repository.WidgetRepository
 import com.bruno13palhano.core.model.DataSource
@@ -36,7 +37,12 @@ class DashboardViewModel @Inject constructor(
             is DashboardEvent.ShowWidgetDialog -> showWidgetDialog(type = event.type)
             is DashboardEvent.UpdateEndpoint -> updateEndpoint(endpoint = event.endpoint)
             is DashboardEvent.UpdateLabel -> updateLabel(label = event.label)
+            is DashboardEvent.NavigateTo -> navigateTo(key = event.destination)
         }
+    }
+
+    private fun navigateTo(key: NavKey) = container.intent {
+        postSideEffect(effect = DashboardSideEffect.NavigateTo(destination = key))
     }
 
     private fun showWidgetDialog(type: WidgetType) = container.intent {

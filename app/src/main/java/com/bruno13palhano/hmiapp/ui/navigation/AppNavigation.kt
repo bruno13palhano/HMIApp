@@ -3,7 +3,6 @@ package com.bruno13palhano.hmiapp.ui.navigation
 import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Dashboard
-import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -12,6 +11,7 @@ import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDe
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavKey
+import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSavedStateNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import androidx.navigation3.ui.rememberSceneSetupNavEntryDecorator
@@ -23,9 +23,7 @@ import kotlinx.serialization.Serializable
 @Composable
 fun AppNavigation(
     modifier: Modifier = Modifier,
-    navBackStack: NavBackStack,
-    onGesturesEnable: (enable: Boolean) -> Unit,
-    onMenuIconClick: () -> Unit
+    navBackStack: NavBackStack = rememberNavBackStack(Dashboard)
 ) {
     NavDisplay(
         modifier = modifier,
@@ -39,10 +37,30 @@ fun AppNavigation(
     ) { key ->
         when (key) {
             Dashboard -> NavEntry(key) { entry ->
-                DashboardScreen(onMenuIconClick = onMenuIconClick)
+                DashboardScreen(
+                    navigateTo = { destination ->
+                        if (key != destination) {
+                            navBackStack.add(element = destination)
+                        }
+                    }
+                )
             }
+
             Settings -> NavEntry(key) { entry ->
-                SettingsScreen(onMenuIconClick = onMenuIconClick)
+                SettingsScreen(
+                    navigateTo = { destination ->
+                        if (key != destination) {
+                            if (destination == Dashboard) {
+                                // Necessary to keep only one Dashboard screen on the stack
+                                val size = navBackStack.size
+                                navBackStack.removeRange(1, size)
+                            } else {
+                                navBackStack.add(element = destination)
+                                navBackStack.remove(element = Settings)
+                            }
+                        }
+                    }
+                )
             }
             else -> {
                 error("Unknown route: $key")

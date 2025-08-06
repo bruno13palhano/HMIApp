@@ -2,6 +2,7 @@ package com.bruno13palhano.hmiapp.ui.settings
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.navigation3.runtime.NavKey
 import com.bruno13palhano.core.data.repository.MqttClientRepository
 import com.bruno13palhano.hmiapp.ui.shared.Container
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -29,7 +30,12 @@ class SettingsViewModel @Inject constructor(
             SettingsEvent.TogglePasswordVisibility -> togglePasswordVisibility()
             SettingsEvent.ConnectMqtt -> connectMqtt()
             SettingsEvent.DisconnectMqtt -> disconnectMqtt()
+            is SettingsEvent.NavigateTo -> navigateTo(destination = event.destination)
         }
+    }
+
+    private fun navigateTo(destination: NavKey) = container.intent {
+        postSideEffect(effect = SettingsSideEffect.NavigateTo(destination = destination))
     }
 
     private fun toggleMenu() = container.intent {

@@ -1,6 +1,8 @@
 package com.bruno13palhano.hmiapp.ui.settings
 
 import androidx.compose.runtime.Immutable
+import androidx.navigation3.runtime.NavKey
+import com.bruno13palhano.hmiapp.ui.navigation.Settings
 
 @Immutable
 data class SettingsState(
@@ -10,6 +12,8 @@ data class SettingsState(
     val username: String = "",
     val password: String = "",
     val passwordVisibility: Boolean = false,
+    val currentDestination: NavKey = Settings,
+    val isGestureEnabled: Boolean = true,
     val isClientIdInvalid: Boolean = false,
     val isHostInvalid: Boolean = false,
     val isPortInvalid: Boolean = false,
@@ -28,6 +32,7 @@ sealed interface SettingsEvent {
     data class UpdatePassword(val password: String) : SettingsEvent
     data object TogglePasswordVisibility : SettingsEvent
     data object CheckConnection : SettingsEvent
+    data class NavigateTo(val destination: NavKey) : SettingsEvent
     data object ToggleMenu : SettingsEvent
     data object ConnectMqtt : SettingsEvent
     data object DisconnectMqtt : SettingsEvent
@@ -39,6 +44,7 @@ sealed interface SettingsSideEffect {
     data object ToggleMenu : SettingsSideEffect
     data object HideKeyboardAndClearFocus : SettingsSideEffect
     data class ShowSettingsInfo(val info: SettingsInfo) : SettingsSideEffect
+    data class NavigateTo(val destination: NavKey) : SettingsSideEffect
 }
 
 enum class SettingsInfo {
