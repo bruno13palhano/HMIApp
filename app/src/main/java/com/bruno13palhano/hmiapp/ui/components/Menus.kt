@@ -14,10 +14,13 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Menu
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationDrawerItem
@@ -98,19 +101,25 @@ fun DrawerMenu(
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun DrawerPreview() {
-    DrawerMenu(
-        modifier = Modifier.consumeWindowInsets(WindowInsets.safeDrawing),
-        currentKey = Dashboard,
-        drawerState = DrawerState(DrawerValue.Open),
-        navigateTo = {},
-        gesturesEnabled = true
-    ) {
         Scaffold(
             modifier = Modifier.fillMaxSize(),
             topBar = {
-                TopAppBar(title = { Text(text = "Test") })
+                TopAppBar(
+                    title = { Text(text = "Test") },
+                    navigationIcon = {
+                        IconButton(onClick = {}) {
+                            Icon(imageVector = Icons.Outlined.Menu, contentDescription = null)
+                        }
+                    }
+                )
             }
-        ) { paddingValues -> paddingValues
+        ) {
+            DrawerMenu(
+                modifier = Modifier.padding(it),
+                currentKey = Dashboard,
+                drawerState = DrawerState(DrawerValue.Open),
+                navigateTo = {},
+                gesturesEnabled = true
+            ) {}
         }
-    }
 }
