@@ -124,7 +124,7 @@ Instrumented UI tests are coming soon.
 - [x] MQTT communication (HiveMQ)
 - [x] Dynamic widget layout system
 - [x] Room database for widget persistence
-- [ ] Drag-and-drop interface for widget positioning
+- [x] Drag-and-drop interface for widget positioning
 - [ ] HTTP and Modbus communication
 - [ ] Import/export configuration
 - [ ] Custom widget creation
