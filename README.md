@@ -125,8 +125,8 @@ Instrumented UI tests are coming soon.
 - [x] Dynamic widget layout system
 - [x] Room database for widget persistence
 - [x] Drag-and-drop interface for widget positioning
+- [x] Import/export configuration
 - [ ] HTTP and Modbus communication
-- [ ] Import/export configuration
 - [ ] Custom widget creation
 - [ ] Widget visibility rules / triggers
 - [ ] Authentication and user profiles
