@@ -48,7 +48,9 @@ dependencies {
     implementation(libs.room.runtime)
     ksp(libs.room.compiler)
     implementation(libs.room.coroutines)
+    implementation(libs.kotlinx.serialization.core)
+    implementation(libs.kotlinx.serialization.json)
     // MQTT
     implementation(libs.hivemq.mqtt.client)
-    implementation(libs.slf4j.nop) // Para Java 11+
+    implementation(libs.slf4j.nop)
 }
