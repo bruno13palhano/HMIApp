@@ -50,7 +50,9 @@ sealed interface DashboardSideEffect {
 }
 
 enum class DashboardInfo {
-    DISCONNECTED
+    DISCONNECTED,
+    EXPORT_FAILURE,
+    IMPORT_FAILURE
 }
 
 enum class ConfigurationOptions {

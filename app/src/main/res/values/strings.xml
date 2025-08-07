@@ -39,4 +39,6 @@
     <string name="hide_widget_toolbox">Hide widget toolbox</string>
     <string name="export_config">Export configuration</string>
     <string name="import_config">Import configuration</string>
+    <string name="export_config_error">Failed to export widgets configuration</string>
+    <string name="import_config_error">Failed to import widgets configuration</string>
 </resources>

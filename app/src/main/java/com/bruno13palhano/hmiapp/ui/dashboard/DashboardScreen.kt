@@ -54,7 +54,7 @@ fun DashboardScreen(
 
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
-    val disconnectedInfo = stringResource(id = R.string.disconnect_info)
+    val messagesInfo = getDashboardInfo()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val context = LocalContext.current
 
@@ -93,15 +93,13 @@ fun DashboardScreen(
                 }
 
                 is DashboardSideEffect.ShowInfo -> {
-                    when (effect.info) {
-                        DashboardInfo.DISCONNECTED -> {
-                            scope.launch {
-                                snackbarHostState.showSnackbar(
-                                    message = disconnectedInfo,
-                                    withDismissAction = true
-                                )
-                            }
-                        }
+                    val currentInfo = messagesInfo[effect.info] ?: ""
+
+                    scope.launch {
+                        snackbarHostState.showSnackbar(
+                            message = currentInfo,
+                            withDismissAction = true
+                        )
                     }
                 }
 
@@ -219,6 +217,15 @@ fun DashboardContent(
             }
         }
     }
+}
+
+@Composable
+private fun getDashboardInfo(): Map<DashboardInfo, String> {
+    return mapOf(
+        DashboardInfo.DISCONNECTED to stringResource(id = R.string.disconnect_info),
+        DashboardInfo.EXPORT_FAILURE to stringResource(id = R.string.export_config_error),
+        DashboardInfo.IMPORT_FAILURE to stringResource(id = R.string.import_config_error)
+    )
 }
 
 @Preview(showBackground = true, showSystemUi = true)

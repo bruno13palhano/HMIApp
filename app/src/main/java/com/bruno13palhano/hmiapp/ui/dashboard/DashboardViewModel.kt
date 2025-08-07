@@ -1,6 +1,5 @@
 package com.bruno13palhano.hmiapp.ui.dashboard
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation3.runtime.NavKey
@@ -160,8 +159,10 @@ class DashboardViewModel @Inject constructor(
         try {
             val json = Json.encodeToString(value = layout)
             stream.bufferedWriter().use { it.write(json) }
-        } catch (e: Exception) {
-            Log.e("EXPORT", e.message.toString())
+        } catch (_: Exception) {
+            postSideEffect(
+                effect = DashboardSideEffect.ShowInfo(info = DashboardInfo.EXPORT_FAILURE)
+            )
         }
     }
 
@@ -173,8 +174,10 @@ class DashboardViewModel @Inject constructor(
             layout.widgets.map { it.toWidget() }.forEach { widget ->
                 widgetRepository.insert(widget = widget)
             }
-        } catch (e: Exception) {
-            Log.e("IMPORT", e.message.toString())
+        } catch (_: Exception) {
+            postSideEffect(
+                effect = DashboardSideEffect.ShowInfo(info = DashboardInfo.IMPORT_FAILURE)
+            )
         }
     }
 
