@@ -1,8 +1,12 @@
 package com.bruno13palhano.hmiapp.ui.dashboard
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation3.runtime.NavKey
+import com.bruno13palhano.core.data.configuration.LayoutConfig
+import com.bruno13palhano.core.data.configuration.toWidget
+import com.bruno13palhano.core.data.configuration.toWidgetConfig
 import com.bruno13palhano.core.data.repository.MqttClientRepository
 import com.bruno13palhano.core.data.repository.WidgetRepository
 import com.bruno13palhano.core.model.DataSource
@@ -11,6 +15,9 @@ import com.bruno13palhano.core.model.WidgetType
 import com.bruno13palhano.hmiapp.ui.shared.Container
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.serialization.json.Json
+import java.io.InputStream
+import java.io.OutputStream
 import javax.inject.Inject
 
 @HiltViewModel
@@ -38,6 +45,10 @@ class DashboardViewModel @Inject constructor(
             is DashboardEvent.UpdateEndpoint -> updateEndpoint(endpoint = event.endpoint)
             is DashboardEvent.UpdateLabel -> updateLabel(label = event.label)
             is DashboardEvent.NavigateTo -> navigateTo(key = event.destination)
+            is DashboardEvent.ExportWidgetsConfig -> exportWidgets(stream = event.stream)
+            is DashboardEvent.ImportWidgetsConfig -> importWidgets(stream = event.stream)
+            is DashboardEvent.OnVertMenuItemClick -> onVertMenuItemClick(item = event.item)
+            DashboardEvent.ToggleVertMenu -> toggleVertMenu()
         }
     }
 
@@ -140,5 +151,49 @@ class DashboardViewModel @Inject constructor(
                 reduce { copy(widgets = updatedWidgets) }
             }
         }
+    }
+
+    private fun exportWidgets(stream: OutputStream) = container.intent {
+        val widgets = state.value.widgets.map { it.toWidgetConfig() }
+        val layout = LayoutConfig(widgets)
+
+        try {
+            val json = Json.encodeToString(value = layout)
+            stream.bufferedWriter().use { it.write(json) }
+        } catch (e: Exception) {
+            Log.e("EXPORT", e.message.toString())
+        }
+    }
+
+    private fun importWidgets(stream: InputStream) = container.intent {
+        try {
+            val json = stream.bufferedReader().use { it.readText() }
+            val layout = Json.decodeFromString<LayoutConfig>(string = json)
+
+            layout.widgets.map { it.toWidget() }.forEach { widget ->
+                widgetRepository.insert(widget = widget)
+            }
+        } catch (e: Exception) {
+            Log.e("IMPORT", e.message.toString())
+        }
+    }
+
+    private fun onExportWidgetsConfig() = container.intent {
+        postSideEffect(effect = DashboardSideEffect.LaunchExportWidgetsConfig)
+    }
+
+    private fun onImportWidgetsConfig() = container.intent {
+        postSideEffect(effect = DashboardSideEffect.LaunchImportWidgetsConfig)
+    }
+
+    private fun onVertMenuItemClick(item: ConfigurationOptions) {
+        when (item) {
+            ConfigurationOptions.EXPORT -> onExportWidgetsConfig()
+            ConfigurationOptions.IMPORT -> onImportWidgetsConfig()
+        }
+    }
+
+    private fun toggleVertMenu() = container.intent {
+        reduce { copy(isVertMenuVisible = !isVertMenuVisible) }
     }
 }

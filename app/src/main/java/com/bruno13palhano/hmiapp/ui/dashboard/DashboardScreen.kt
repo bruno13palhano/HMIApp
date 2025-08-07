@@ -1,11 +1,15 @@
 package com.bruno13palhano.hmiapp.ui.dashboard
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Menu
+import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -24,6 +28,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -31,6 +36,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.NavKey
 import com.bruno13palhano.hmiapp.R
 import com.bruno13palhano.hmiapp.ui.components.DrawerMenu
+import com.bruno13palhano.hmiapp.ui.components.VertMenu
 import com.bruno13palhano.hmiapp.ui.components.WidgetCanvas
 import com.bruno13palhano.hmiapp.ui.components.WidgetInputDialog
 import com.bruno13palhano.hmiapp.ui.components.WidgetToolbox
@@ -50,6 +56,27 @@ fun DashboardScreen(
     val scope = rememberCoroutineScope()
     val disconnectedInfo = stringResource(id = R.string.disconnect_info)
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    val context = LocalContext.current
+
+    val exportLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.CreateDocument("application/json")
+    ) { uri: Uri? ->
+        uri?.let {
+            context.contentResolver.openOutputStream(it)?.use { stream ->
+                viewModel.onEvent(event = DashboardEvent.ExportWidgetsConfig(stream = stream))
+            }
+        }
+    }
+
+    val importLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument()
+    ) { uri: Uri? ->
+        uri?.let {
+            context.contentResolver.openInputStream(it)?.use { stream ->
+                viewModel.onEvent(event = DashboardEvent.ImportWidgetsConfig(stream = stream))
+            }
+        }
+    }
 
     LaunchedEffect(Unit) {
         viewModel.onEvent(event = DashboardEvent.Init)
@@ -79,6 +106,14 @@ fun DashboardScreen(
                 }
 
                 is DashboardSideEffect.NavigateTo -> navigateTo(effect.destination)
+
+                DashboardSideEffect.LaunchExportWidgetsConfig -> {
+                    exportLauncher.launch("layout_config.json")
+                }
+
+                DashboardSideEffect.LaunchImportWidgetsConfig -> {
+                    importLauncher.launch(arrayOf("application/json"))
+                }
             }
         }
     }
@@ -99,6 +134,11 @@ fun DashboardContent(
     state: DashboardState,
     onEvent: (event: DashboardEvent) -> Unit
 ) {
+    val items = mapOf(
+        ConfigurationOptions.EXPORT to stringResource(id = R.string.export_config),
+        ConfigurationOptions.IMPORT to stringResource(id = R.string.import_config)
+    )
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -108,6 +148,21 @@ fun DashboardContent(
                         Icon(
                             imageVector = Icons.Outlined.Menu,
                             contentDescription = stringResource(id = R.string.menu_button)
+                        )
+                    }
+                },
+                actions = {
+                    IconButton(onClick = { onEvent(DashboardEvent.ToggleVertMenu)}) {
+                        Icon(
+                            imageVector = Icons.Outlined.MoreVert,
+                            contentDescription = null
+                        )
+
+                        VertMenu(
+                            items = items,
+                            expanded = state.isVertMenuVisible,
+                            onDismissRequest = { onEvent(DashboardEvent.ToggleVertMenu) },
+                            onItemClick = { onEvent(DashboardEvent.OnVertMenuItemClick(item = it)) }
                         )
                     }
                 }
@@ -122,7 +177,9 @@ fun DashboardContent(
             navigateTo = { key -> onEvent(DashboardEvent.NavigateTo(destination = key)) },
             gesturesEnabled = state.isGestureEnabled,
         ) {
-            Box(modifier = Modifier.padding(it).fillMaxSize()) {
+            Box(modifier = Modifier
+                .padding(it)
+                .fillMaxSize()) {
                 WidgetCanvas(
                     widgets = state.widgets,
                     onMove = { id, x, y ->

@@ -5,6 +5,8 @@ import androidx.navigation3.runtime.NavKey
 import com.bruno13palhano.core.model.Widget
 import com.bruno13palhano.core.model.WidgetType
 import com.bruno13palhano.hmiapp.ui.navigation.Dashboard
+import java.io.InputStream
+import java.io.OutputStream
 
 @Immutable
 data class DashboardState(
@@ -15,6 +17,7 @@ data class DashboardState(
     val currentDestination: NavKey = Dashboard,
     val isGestureEnabled: Boolean = true,
     val isToolboxExpanded: Boolean = false,
+    val isVertMenuVisible: Boolean = false,
     val isWidgetInputDialogVisible: Boolean = false,
 )
 
@@ -27,7 +30,11 @@ sealed interface DashboardEvent {
     data class UpdateEndpoint(val endpoint: String) : DashboardEvent
     data class ShowWidgetDialog(val type: WidgetType) : DashboardEvent
     data class NavigateTo(val destination: NavKey) : DashboardEvent
+    data class ExportWidgetsConfig(val stream: OutputStream) : DashboardEvent
+    data class ImportWidgetsConfig(val stream: InputStream) : DashboardEvent
     data object HideWidgetConfig : DashboardEvent
+    data object ToggleVertMenu : DashboardEvent
+    data class OnVertMenuItemClick(val item: ConfigurationOptions) : DashboardEvent
     data object ToggleIsToolboxExpanded : DashboardEvent
     data object ToggleMenu : DashboardEvent
     data object Init : DashboardEvent
@@ -38,8 +45,15 @@ sealed interface DashboardSideEffect {
     data object ToggleMenu : DashboardSideEffect
     data class ShowInfo(val info: DashboardInfo) : DashboardSideEffect
     data class NavigateTo(val destination: NavKey) : DashboardSideEffect
+    data object LaunchExportWidgetsConfig : DashboardSideEffect
+    data object LaunchImportWidgetsConfig : DashboardSideEffect
 }
 
 enum class DashboardInfo {
     DISCONNECTED
+}
+
+enum class ConfigurationOptions {
+    EXPORT,
+    IMPORT
 }
