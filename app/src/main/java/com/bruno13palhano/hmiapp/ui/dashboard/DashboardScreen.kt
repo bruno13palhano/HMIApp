@@ -31,7 +31,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.NavKey
 import com.bruno13palhano.hmiapp.R
@@ -40,6 +39,8 @@ import com.bruno13palhano.hmiapp.ui.components.VertMenu
 import com.bruno13palhano.hmiapp.ui.components.WidgetCanvas
 import com.bruno13palhano.hmiapp.ui.components.WidgetInputDialog
 import com.bruno13palhano.hmiapp.ui.components.WidgetToolbox
+import com.bruno13palhano.hmiapp.ui.factory.ViewModelFactoryEntryPoint
+import com.bruno13palhano.hmiapp.ui.factory.assistedViewModel
 import com.bruno13palhano.hmiapp.ui.shared.rememberFlowWithLifecycle
 import com.bruno13palhano.hmiapp.ui.theme.HMIAppTheme
 import kotlinx.coroutines.launch
@@ -47,7 +48,13 @@ import kotlinx.coroutines.launch
 @Composable
 fun DashboardScreen(
     navigateTo: (destination: NavKey) -> Unit,
-    viewModel: DashboardViewModel = hiltViewModel()
+    viewModel: DashboardViewModel = assistedViewModel(
+        state = DashboardState(),
+        entryPoint = ViewModelFactoryEntryPoint::class.java,
+        factorySelector = { entryPoint, state ->
+            entryPoint.dashboardViewModelFactory().create(state = state)
+        }
+    )
 ) {
     val state by viewModel.container.state.collectAsStateWithLifecycle()
     val sideEffect = rememberFlowWithLifecycle(flow = viewModel.container.sideEffect)

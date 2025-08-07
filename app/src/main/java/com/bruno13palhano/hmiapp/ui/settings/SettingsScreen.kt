@@ -32,7 +32,6 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.NavKey
 import com.bruno13palhano.hmiapp.R
@@ -41,6 +40,8 @@ import com.bruno13palhano.hmiapp.ui.components.CustomIntegerField
 import com.bruno13palhano.hmiapp.ui.components.CustomPasswordTextField
 import com.bruno13palhano.hmiapp.ui.components.CustomTextField
 import com.bruno13palhano.hmiapp.ui.components.DrawerMenu
+import com.bruno13palhano.hmiapp.ui.factory.ViewModelFactoryEntryPoint
+import com.bruno13palhano.hmiapp.ui.factory.assistedViewModel
 import com.bruno13palhano.hmiapp.ui.shared.clickableWithoutRipple
 import com.bruno13palhano.hmiapp.ui.shared.rememberFlowWithLifecycle
 import com.bruno13palhano.hmiapp.ui.theme.HMIAppTheme
@@ -49,7 +50,13 @@ import kotlinx.coroutines.launch
 @Composable
 fun SettingsScreen(
     navigateTo: (destination: NavKey) -> Unit,
-    viewModel: SettingsViewModel = hiltViewModel(),
+    viewModel: SettingsViewModel = assistedViewModel(
+        state = SettingsState(),
+        entryPoint = ViewModelFactoryEntryPoint::class.java,
+        factorySelector = { entryPoint, state ->
+            entryPoint.settingsViewModelFactory().create(state = state)
+        }
+    )
 ) {
     val state by viewModel.container.state.collectAsStateWithLifecycle()
     val sideEffect = rememberFlowWithLifecycle(flow = viewModel.container.sideEffect)

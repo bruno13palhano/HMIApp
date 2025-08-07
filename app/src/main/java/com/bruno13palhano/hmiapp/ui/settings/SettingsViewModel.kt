@@ -5,15 +5,15 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation3.runtime.NavKey
 import com.bruno13palhano.core.data.repository.MqttClientRepository
 import com.bruno13palhano.hmiapp.ui.shared.Container
-import dagger.hilt.android.lifecycle.HiltViewModel
-import javax.inject.Inject
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedInject
 
-@HiltViewModel
-class SettingsViewModel @Inject constructor(
-    private val mqttClientRepository: MqttClientRepository
+class SettingsViewModel @AssistedInject constructor(
+    private val mqttClientRepository: MqttClientRepository,
+    @Assisted private val initialState: SettingsState
 ) : ViewModel() {
     val container: Container<SettingsState, SettingsSideEffect> = Container(
-        initialSTATE = SettingsState(),
+        initialSTATE = initialState,
         scope = viewModelScope
     )
 

@@ -12,20 +12,20 @@ import com.bruno13palhano.core.model.DataSource
 import com.bruno13palhano.core.model.Widget
 import com.bruno13palhano.core.model.WidgetType
 import com.bruno13palhano.hmiapp.ui.shared.Container
-import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedInject
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.serialization.json.Json
 import java.io.InputStream
 import java.io.OutputStream
-import javax.inject.Inject
 
-@HiltViewModel
-class DashboardViewModel @Inject constructor(
+class DashboardViewModel @AssistedInject constructor(
     private val widgetRepository: WidgetRepository,
-    private val mqttClientRepository: MqttClientRepository
+    private val mqttClientRepository: MqttClientRepository,
+    @Assisted private val initialState: DashboardState,
 ) : ViewModel() {
     val container: Container<DashboardState, DashboardSideEffect> = Container(
-        initialSTATE = DashboardState(),
+        initialSTATE = initialState,
         scope = viewModelScope
     )
 
