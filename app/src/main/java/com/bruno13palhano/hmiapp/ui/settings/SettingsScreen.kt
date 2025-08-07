@@ -256,7 +256,7 @@ private fun SettingsContent(
 }
 
 @Composable
-fun getSettingInfo(): Map<SettingsInfo, String> {
+private fun getSettingInfo(): Map<SettingsInfo, String> {
     return mapOf(
         SettingsInfo.CLIENT_ID to stringResource(R.string.client_id_error),
         SettingsInfo.HOST to stringResource(R.string.host_error),
@@ -273,7 +273,7 @@ fun getSettingInfo(): Map<SettingsInfo, String> {
 
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
-fun SettingsPreview() {
+private fun SettingsPreview() {
     HMIAppTheme {
         SettingsContent(
             drawerState = DrawerState(initialValue = DrawerValue.Open),
