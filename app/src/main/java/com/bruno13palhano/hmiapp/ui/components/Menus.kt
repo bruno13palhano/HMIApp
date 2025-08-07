@@ -18,6 +18,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Menu
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -95,6 +97,29 @@ fun DrawerMenu(
         },
         content = content
     )
+}
+
+@Composable
+fun <T> VertMenu(
+    items: Map<T, String>,
+    expanded: Boolean,
+    onDismissRequest: () -> Unit,
+    onItemClick: (T) -> Unit,
+) {
+    DropdownMenu(
+        expanded = expanded,
+        onDismissRequest = onDismissRequest
+    ) {
+        items.forEach { item ->
+            DropdownMenuItem(
+                text = { Text(text = item.value) },
+                onClick = {
+                    onItemClick(item.key)
+                    onDismissRequest()
+                }
+            )
+        }
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
