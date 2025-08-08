@@ -78,7 +78,7 @@ data object Settings :  NavKey
 sealed class Screen(
     val key: NavKey,
     val icon: ImageVector,
-    @StringRes val resourceId: Int,
+    @param:StringRes val resourceId: Int,
 ) {
     data object DashboardScreen : Screen(
         key = Dashboard,
