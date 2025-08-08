@@ -1,13 +1,27 @@
 package com.bruno13palhano.core.data.repository
 
 import com.bruno13palhano.core.data.network.MqttClientManager
+import com.bruno13palhano.core.data.connection.Connection
+import com.bruno13palhano.core.data.connection.ConnectionSessionImpl
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.SharedFlow
 import javax.inject.Inject
 
 internal class MqttClientRepositoryImpl @Inject constructor(
-    private val mqtt: MqttClientManager
+    private val mqtt: MqttClientManager,
+    private val connectionSession: ConnectionSessionImpl
 ) : MqttClientRepository {
+
+    override suspend fun connectIfSessionExists() {
+        connectionSession.get()?.let {
+            mqtt.connect(
+                clientId = it.clientId,
+                host = it.host,
+                port = it.port,
+                username = it.username,
+                password = it.password
+            )
+        }
+    }
 
     override suspend fun connectMqtt(
         clientId: String,
@@ -23,6 +37,17 @@ internal class MqttClientRepositoryImpl @Inject constructor(
             username = username,
             password = password
         )
+            .onSuccess {
+                connectionSession.save(
+                    connection = Connection(
+                        clientId = clientId,
+                        host = host,
+                        port = port,
+                        username = username,
+                        password = password
+                    )
+                )
+            }
     }
 
     override suspend fun subscribeToTopic(topic: String): Result<Unit> {
@@ -41,7 +66,5 @@ internal class MqttClientRepositoryImpl @Inject constructor(
         return mqtt.disconnect()
     }
 
-    override fun incomingMessages(): SharedFlow<Pair<String, String>> {
-        return mqtt.incomingMessages
-    }
+    override fun incomingMessages() = mqtt.incomingMessages
 }

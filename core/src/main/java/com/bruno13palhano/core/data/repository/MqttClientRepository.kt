@@ -4,6 +4,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharedFlow
 
 interface MqttClientRepository {
+    suspend fun connectIfSessionExists()
     suspend fun connectMqtt(
         clientId: String,
         host: String,
