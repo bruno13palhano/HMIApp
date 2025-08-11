@@ -1,5 +1,6 @@
 package com.bruno13palhano.core.data.network
 
+import android.util.Log
 import com.hivemq.client.mqtt.MqttClient
 import com.hivemq.client.mqtt.MqttClientSslConfig
 import com.hivemq.client.mqtt.mqtt5.Mqtt5AsyncClient
@@ -14,6 +15,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.withContext
 import java.io.ByteArrayInputStream
+import java.nio.charset.StandardCharsets
 import java.security.KeyStore
 import java.security.cert.CertificateFactory
 import java.util.concurrent.CompletableFuture
@@ -49,18 +51,19 @@ internal class MqttClientManager @Inject constructor() {
         }
     }
 
-    suspend fun publish(topic: String, message: String): Result<Unit> = withContext(Dispatchers.IO) {
-        try {
-            client.publishWith()
-                .topic(topic)
-                .payload(message.toByteArray())
-                .send()
-                .await()
-            Result.success(Unit)
-        } catch (e: Exception) {
-            Result.failure(e)
+    suspend fun publish(topic: String, message: String): Result<Unit> =
+        withContext(Dispatchers.IO) {
+            try {
+                client.publishWith()
+                    .topic(topic)
+                    .payload(message.toByteArray())
+                    .send()
+                    .await()
+                Result.success(Unit)
+            } catch (e: Exception) {
+                Result.failure(e)
+            }
         }
-    }
 
     fun isConnected(): Flow<Boolean> {
         return flow {
@@ -92,152 +95,306 @@ internal class MqttClientManager @Inject constructor() {
         }
     }
 
-    suspend fun connect(mqttConnectionConfig: MqttConnectionConfig): Result<Unit> = withContext(Dispatchers.IO) {
-        try {
-            if (mqttConnectionConfig.caBytes?.isEmpty() == true || mqttConnectionConfig.clientP12Bytes?.isEmpty() == true) {
-                return@withContext Result.failure(IllegalArgumentException("Certificate or key is empty"))
-            }
 
-            // 1) Prepare TMF (with CA provided or system)
-            val tmf = loadTrustManagerFactoryFromCaBytes(caBytes = mqttConnectionConfig.caBytes)
 
-            // 2) If there is p12, try to use mutual TLS (client certificate)
-            if (mqttConnectionConfig.clientP12Bytes != null && mqttConnectionConfig.p12Password != null) {
-                try {
+//    @Throws(Exception::class)
+//    private suspend fun connectWithoutSsl(mqttConnectionConfig: MqttConnectionConfig): Result<Unit> {
+//        try {
+//            client = MqttClient.builder()
+//                .identifier(mqttConnectionConfig.clientId)
+//                .serverHost(mqttConnectionConfig.host)
+//                .serverPort(mqttConnectionConfig.port)
+//                .useMqttVersion5()
+//                .buildAsync()
+//
+//            val connectBuilder = client.connectWith()
+//            if (!mqttConnectionConfig.username.isNullOrBlank() && mqttConnectionConfig.password != null) {
+//                connectBuilder.simpleAuth()
+//                    .username(mqttConnectionConfig.username)
+//                    .password(mqttConnectionConfig.password.toByteArray())
+//                    .applySimpleAuth()
+//            }
+//
+//            connectBuilder.send().await()
+//            return Result.success(Unit)
+//        } catch (e: Exception) {
+//            throw e
+//        }
+//    }
+//
+//    @Throws(Exception::class)
+//    private suspend fun connectWithMutualTls(
+//        mqttConnectionConfig: MqttConnectionConfig,
+//        sslConfig: MqttClientSslConfig
+//    ): Result<Unit> {
+//        try {
+//            client = MqttClient.builder()
+//                .identifier(mqttConnectionConfig.clientId)
+//                .serverHost(mqttConnectionConfig.host)
+//                .serverPort(mqttConnectionConfig.port)
+//                .sslConfig(sslConfig)
+//                .useMqttVersion5()
+//                .buildAsync()
+//
+//            if (mqttConnectionConfig.username != null && mqttConnectionConfig.password != null) {
+//                // try to connect with username/password (mutual TLS)
+//                client.connectWith()
+//                    .simpleAuth()
+//                    .username(mqttConnectionConfig.username)
+//                    .password(mqttConnectionConfig.password.toByteArray())
+//                    .applySimpleAuth()
+//                    .send()
+//                    .await()
+//
+//                return Result.success(Unit)
+//            }
+//
+//            // try to connect without username/password (mutual TLS)
+//            client.connectWith()
+//                .send()
+//                .await()
+//
+//            return Result.success(Unit)
+//        } catch (e: Exception) {
+//            throw e
+//        }
+//    }
+//
+//    @Throws(Exception::class)
+//    suspend fun connectWithCredentialsOrAnonymous(
+//        mqttConnectionConfig: MqttConnectionConfig,
+//        sslConfig: MqttClientSslConfig
+//    ): Result<Unit> {
+//        try {
+//            client = MqttClient.builder()
+//                .identifier(mqttConnectionConfig.clientId)
+//                .serverHost(mqttConnectionConfig.host)
+//                .serverPort(mqttConnectionConfig.port)
+//                .sslConfig(sslConfig)
+//                .useMqttVersion5()
+//                .buildAsync()
+//
+//            val connectBuilder = client.connectWith()
+//            if (!mqttConnectionConfig.username.isNullOrBlank() &&
+//                mqttConnectionConfig.password != null
+//            ) {
+//                connectBuilder.simpleAuth()
+//                    .username(mqttConnectionConfig.username)
+//                    .password(mqttConnectionConfig.password.toByteArray())
+//                    .applySimpleAuth()
+//            }
+//            connectBuilder.send().await()
+//            return Result.success(Unit)
+//        } catch (e: Exception) {
+//            throw e
+//        }
+//    }
+//
+//    suspend fun connect(mqttConnectionConfig: MqttConnectionConfig): Result<Unit> =
+//        withContext(Dispatchers.IO) {
+//            try {
+//                // Try to connect without ssl if the broker allows it
+//                if (mqttConnectionConfig.caBytes == null
+//                    || mqttConnectionConfig.caBytes.isEmpty()
+//                ) {
+//                    try {
+//                        connectWithoutSsl(mqttConnectionConfig = mqttConnectionConfig)
+//                    } catch (e: Exception) {
+//                        e.printStackTrace()
+//                        return@withContext Result.failure(e)
+//                    }
+//                }
+//
+//                if (mqttConnectionConfig.clientP12Bytes?.isEmpty() == true) {
+//                    return@withContext Result.failure(
+//                        IllegalArgumentException("Key is empty")
+//                    )
+//                }
+//
+//                // 1) Prepare TMF (with CA provided or system)
+//                val tmf = loadTrustManagerFactoryFromCaBytes(caBytes = mqttConnectionConfig.caBytes)
+//
+//                // 2) If there is p12, try to use mutual TLS (client certificate)
+//                if (mqttConnectionConfig.clientP12Bytes != null &&
+//                    mqttConnectionConfig.p12Password != null
+//                ) {
+//                    try {
+//                        val kmf = loadKeyManagerFactoryFromP12Bytes(
+//                            p12Bytes = mqttConnectionConfig.clientP12Bytes,
+//                            p12Password = mqttConnectionConfig.p12Password
+//                        )
+//                        val sslConfig = buildSslConfig(tmf = tmf, kmf = kmf)
+//
+//                        return@withContext connectWithMutualTls(
+//                            mqttConnectionConfig = mqttConnectionConfig,
+//                            sslConfig = sslConfig
+//                        )
+//                    } catch (e: Exception) {
+//                        e.printStackTrace()
+//                    }
+//                }
+//
+//                val sslConfig = buildSslConfig(tmf, null)
+//
+//                connectWithCredentialsOrAnonymous(
+//                    mqttConnectionConfig = mqttConnectionConfig,
+//                    sslConfig = sslConfig
+//                )
+//            } catch (e: Exception) {
+//                e.printStackTrace()
+//                Result.failure(e)
+//            }
+//        }
+
+
+    suspend fun connect(mqttConnectionConfig: MqttConnectionConfig): Result<Unit> =
+        withContext(Dispatchers.IO) {
+            try {
+                Log.d(
+                    "MqttClientManager",
+                    "Starting connection to host: ${mqttConnectionConfig.host}:" +
+                            "${mqttConnectionConfig.port}"
+                )
+                if (mqttConnectionConfig.caBytes == null
+                    || mqttConnectionConfig.caBytes.isEmpty()
+                ) {
+                    try {
+                        Log.w(
+                            "MqttClientManager",
+                            "Attempting connection without TLS"
+                        )
+                        return@withContext connectWithoutSsl(
+                            mqttConnectionConfig = mqttConnectionConfig
+                        )
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        return@withContext Result.failure(e)
+                    }
+                }
+
+                val tmf = loadTrustManagerFactoryFromCaBytes(caBytes = mqttConnectionConfig.caBytes)
+
+                if (mqttConnectionConfig.clientP12Bytes != null &&
+                    mqttConnectionConfig.p12Password != null
+                ) {
+                    if (mqttConnectionConfig.clientP12Bytes.isEmpty()) {
+                        Log.e("MqttClientManager", "clientP12Bytes is empty")
+                        return@withContext Result.failure(
+                            IllegalArgumentException("Client P12 bytes are empty")
+                        )
+                    }
+
+                    try {
+                    Log.d("MqttClientManager", "Attempting connection with mutual TLS")
                     val kmf = loadKeyManagerFactoryFromP12Bytes(
                         p12Bytes = mqttConnectionConfig.clientP12Bytes,
                         p12Password = mqttConnectionConfig.p12Password
                     )
                     val sslConfig = buildSslConfig(tmf = tmf, kmf = kmf)
 
-                    client = MqttClient.builder()
-                        .identifier(mqttConnectionConfig.clientId)
-                        .serverHost(mqttConnectionConfig.host)
-                        .serverPort(mqttConnectionConfig.port)
-                        .sslConfig(sslConfig)
-                        .useMqttVersion5()
-                        .buildAsync()
-
-                    // try to connect without username/password (mutual TLS)
-                    client.connectWith()
-                        .send()
-                        .await()
-
-                    return@withContext Result.success(Unit)
-                } catch (e: Exception) {
-                    e.printStackTrace()
+                    return@withContext connectWithMutualTls(
+                        mqttConnectionConfig = mqttConnectionConfig,
+                        sslConfig = sslConfig
+                    )
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
                 }
+
+                Log.d("MqttClientManager", "Attempting connection with simple TLS")
+                val sslConfig = buildSslConfig(tmf, null)
+
+                connectWithCredentialsOrAnonymous(
+                    mqttConnectionConfig = mqttConnectionConfig,
+                    sslConfig = sslConfig
+                )
+            } catch (e: Exception) {
+                Log.e("MqttClientManager", "Connection failed: ${e.message}", e)
+                Result.failure(e)
             }
-
-            val sslConfig = buildSslConfig(tmf, null)
-
-            client = MqttClient.builder()
-                .identifier(mqttConnectionConfig.clientId)
-                .serverHost(mqttConnectionConfig.host)
-                .serverPort(mqttConnectionConfig.port)
-                .sslConfig(sslConfig)
-                .useMqttVersion5()
-                .buildAsync()
-
-            val connectBuilder = client.connectWith()
-            if (!mqttConnectionConfig.username.isNullOrBlank() && mqttConnectionConfig.password != null) {
-                connectBuilder.simpleAuth()
-                    .username(mqttConnectionConfig.username)
-                    .password(mqttConnectionConfig.password.toByteArray())
-                    .applySimpleAuth()
-            }
-            connectBuilder.send().await()
-            Result.success(Unit)
-        } catch (e: Exception) {
-            e.printStackTrace()
-            Result.failure(e)
         }
+
+    private fun buildMqttClient(
+        mqttConnectionConfig: MqttConnectionConfig,
+        sslConfig: MqttClientSslConfig? = null
+    ): Mqtt5AsyncClient {
+        return MqttClient.builder()
+            .identifier(mqttConnectionConfig.clientId)
+            .serverHost(mqttConnectionConfig.host)
+            .serverPort(mqttConnectionConfig.port)
+            .sslConfig(sslConfig)
+            .useMqttVersion5()
+            .buildAsync()
     }
 
-    /**
-     * Establishes a connection to an MQTT server using the provided configuration.
-     * Supports TLS authentication with a CA certificate and mutual authentication with a PKCS12 file,
-     * both provided as [ByteArray]. If no CA certificate is provided, the system's default truststore
-     * will be used. If a PKCS12 file is provided, attempts mutual TLS authentication; otherwise,
-     * uses username and password authentication, if provided.
-     *
-     * @param clientId Unique identifier for the MQTT client.
-     * @param host Address of the MQTT server.
-     * @param port Port of the MQTT server (e.g., 1883 for non-TLS, 8883 for TLS).
-     * @param username Username for authentication (optional).
-     * @param password Password for authentication (optional, requires [username]).
-     * @param caBytes CA certificate in X.509 DER format to configure the [TrustManagerFactory] (optional).
-     * @param clientP12Bytes PKCS12 file containing the client certificate and private key (optional).
-     * @param p12Password Password to unlock the PKCS12 file (required if [clientP12Bytes] is provided).
-     * @return [Result]<[Unit]> indicating success or failure of the connection.
-     * @throws Exception If an error occurs during configuration or connection to the MQTT server.
-     */
-    suspend fun connect(
-        clientId: String,
-        host: String,
-        port: Int,
-        username: String?,
-        password: String?,
-        caBytes: ByteArray?,
-        clientP12Bytes: ByteArray?,
-        p12Password: String?
-    ): Result<Unit> = withContext(Dispatchers.IO) {
-        try {
-            if (caBytes?.isEmpty() == true || clientP12Bytes?.isEmpty() == true) {
-                return@withContext Result.failure(IllegalArgumentException("Certificate or key is empty"))
-            }
+    @Throws(Exception::class)
+    private suspend fun connectWithoutSsl(mqttConnectionConfig: MqttConnectionConfig): Result<Unit> {
+        client = buildMqttClient(mqttConnectionConfig = mqttConnectionConfig)
 
-            // 1) Prepare TMF (with CA provided or system)
-            val tmf = loadTrustManagerFactoryFromCaBytes(caBytes = caBytes)
-
-            // 2) If there is p12, try to use mutual TLS (client certificate)
-            if (clientP12Bytes != null && p12Password != null) {
-                try {
-                    val kmf = loadKeyManagerFactoryFromP12Bytes(p12Bytes = clientP12Bytes, p12Password = p12Password)
-                    val sslConfig = buildSslConfig(tmf = tmf, kmf = kmf)
-
-                    client = MqttClient.builder()
-                        .identifier(clientId)
-                        .serverHost(host)
-                        .serverPort(port)
-                        .sslConfig(sslConfig)
-                        .useMqttVersion5()
-                        .buildAsync()
-
-                    // try to connect without username/password (mutual TLS)
-                    client.connectWith()
-                        .send()
-                        .await()
-
-                    return@withContext Result.success(Unit)
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
-            }
-
-            val sslConfig = buildSslConfig(tmf, null)
-
-            client = MqttClient.builder()
-                .identifier(clientId)
-                .serverHost(host)
-                .serverPort(port)
-                .sslConfig(sslConfig)
-                .useMqttVersion5()
-                .buildAsync()
-
-            val connectBuilder = client.connectWith()
-            if (!username.isNullOrBlank() && password != null) {
-                connectBuilder.simpleAuth()
-                    .username(username)
-                    .password(password.toByteArray())
-                    .applySimpleAuth()
-            }
-            connectBuilder.send().await()
-            Result.success(Unit)
-        } catch (e: Exception) {
-            e.printStackTrace()
-            Result.failure(e)
+        val connectBuilder = client.connectWith()
+        if (!mqttConnectionConfig.username.isNullOrBlank() && mqttConnectionConfig.password != null) {
+            connectBuilder.simpleAuth()
+                .username(mqttConnectionConfig.username)
+                .password(mqttConnectionConfig.password.toByteArray(StandardCharsets.UTF_8))
+                .applySimpleAuth()
         }
+
+        connectBuilder.send().await()
+        Log.d("MqttClientManager", "Connection successful")
+
+        return Result.success(Unit)
+    }
+
+    @Throws(Exception::class)
+    private suspend fun connectWithMutualTls(
+        mqttConnectionConfig: MqttConnectionConfig,
+        sslConfig: MqttClientSslConfig
+    ): Result<Unit> {
+        client = buildMqttClient(
+            mqttConnectionConfig = mqttConnectionConfig,
+            sslConfig = sslConfig
+        )
+
+        if (mqttConnectionConfig.username != null && mqttConnectionConfig.password != null) {
+            // try to connect with username/password (mutual TLS)
+            client.connectWith()
+                .simpleAuth()
+                .username(mqttConnectionConfig.username)
+                .password(mqttConnectionConfig.password.toByteArray(StandardCharsets.UTF_8))
+                .applySimpleAuth()
+        }
+
+        // try to connect without username/password (mutual TLS)
+        client.connectWith().send().await()
+        Log.d("MqttClientManager", "Connection successful")
+
+        return Result.success(Unit)
+    }
+
+    @Throws(Exception::class)
+    suspend fun connectWithCredentialsOrAnonymous(
+        mqttConnectionConfig: MqttConnectionConfig,
+        sslConfig: MqttClientSslConfig
+    ): Result<Unit> {
+        client = buildMqttClient(
+            mqttConnectionConfig = mqttConnectionConfig,
+            sslConfig = sslConfig
+        )
+
+        val connectBuilder = client.connectWith()
+        if (!mqttConnectionConfig.username.isNullOrBlank() &&
+            mqttConnectionConfig.password != null
+        ) {
+            connectBuilder.simpleAuth()
+                .username(mqttConnectionConfig.username)
+                .password(mqttConnectionConfig.password.toByteArray(StandardCharsets.UTF_8))
+                .applySimpleAuth()
+        }
+
+        connectBuilder.send().await()
+        Log.d("MqttClientManager", "Connection successful")
+
+        return Result.success(Unit)
     }
 
     @Throws(Exception::class)
@@ -252,7 +409,9 @@ internal class MqttClientManager @Inject constructor() {
         }
 
         val cf = CertificateFactory.getInstance("X.509")
-        val keyStore = KeyStore.getInstance(KeyStore.getDefaultType()).apply { load(null, null) }
+        val keyStore = KeyStore.getInstance(KeyStore.getDefaultType()).apply {
+            load(null, null)
+        }
         ByteArrayInputStream(caBytes).use { stream ->
             val caCert = cf.generateCertificate(stream)
             keyStore.setCertificateEntry("ca", caCert)
@@ -262,7 +421,10 @@ internal class MqttClientManager @Inject constructor() {
     }
 
     @Throws(Exception::class)
-    private fun loadKeyManagerFactoryFromP12Bytes(p12Bytes: ByteArray, p12Password: String): KeyManagerFactory {
+    private fun loadKeyManagerFactoryFromP12Bytes(
+        p12Bytes: ByteArray,
+        p12Password: String
+    ): KeyManagerFactory {
         // PKCS12 keystore that contains client cert + private key
         val keyStore = KeyStore.getInstance("PKCS12")
         ByteArrayInputStream(p12Bytes).use { stream ->
@@ -273,13 +435,17 @@ internal class MqttClientManager @Inject constructor() {
         return kmf
     }
 
-    private fun buildSslConfig(tmf: TrustManagerFactory, kmf: KeyManagerFactory?): MqttClientSslConfig {
+    private fun buildSslConfig(
+        tmf: TrustManagerFactory,
+        kmf: KeyManagerFactory?
+    ): MqttClientSslConfig {
         val builder = MqttClientSslConfig.builder()
             .trustManagerFactory(tmf)
-        // if there is KeyManager, add
         kmf?.let { builder.keyManagerFactory(it) }
 
-        // For development, accepts any hostname (not recommended in production)
-        return builder.hostnameVerifier { _, _ -> true }.build()
+        return builder
+            // For development, accepts any hostname
+            //.hostnameVerifier { _, _ -> true }
+            .build()
     }
 }
