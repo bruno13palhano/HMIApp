@@ -8,7 +8,7 @@ import com.bruno13palhano.core.data.database.entity.WidgetEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao
-interface WidgetDao {
+internal interface WidgetDao {
     @Query("SELECT * FROM widgets")
     fun getAll(): Flow<List<WidgetEntity>>
 

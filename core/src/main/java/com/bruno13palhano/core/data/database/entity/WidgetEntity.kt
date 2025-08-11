@@ -7,7 +7,7 @@ import com.bruno13palhano.core.model.Widget
 import com.bruno13palhano.core.model.WidgetType
 
 @Entity(tableName = "widgets")
-data class WidgetEntity(
+internal data class WidgetEntity(
     @PrimaryKey val id: String,
     val type: String,
     val label: String,
@@ -19,7 +19,7 @@ data class WidgetEntity(
     val height: Float
 )
 
-fun WidgetEntity.toDomain(): Widget {
+internal fun WidgetEntity.toDomain(): Widget {
     val dataSource = when (dataSourceType) {
         "MQTT" -> DataSource.MQTT(data)
         "HTTP" -> DataSource.HTTP(data)
@@ -28,7 +28,7 @@ fun WidgetEntity.toDomain(): Widget {
     return Widget(id, WidgetType.valueOf(type), label, dataSource, x, y, width, height)
 }
 
-fun Widget.toEntity(): WidgetEntity {
+internal fun Widget.toEntity(): WidgetEntity {
     val (typeStr, dataStr) = when (dataSource) {
         is DataSource.MQTT -> "MQTT" to dataSource.topic
         is DataSource.HTTP -> "HTTP" to dataSource.url
