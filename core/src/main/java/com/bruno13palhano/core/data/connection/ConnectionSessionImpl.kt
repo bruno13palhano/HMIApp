@@ -33,4 +33,8 @@ internal class ConnectionSessionImpl @Inject constructor(
         val json = preferences.getString(CONNECTION_JSON, null) ?: return null
         return runCatching { Json.decodeFromString<Connection>(json) }.getOrNull()
     }
+
+    override fun clear() {
+        preferences.edit { clear() }
+    }
 }
