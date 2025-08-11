@@ -1,6 +1,5 @@
 package com.bruno13palhano.core.data.network
 
-import android.util.Log
 import com.hivemq.client.mqtt.MqttClient
 import com.hivemq.client.mqtt.MqttClientSslConfig
 import com.hivemq.client.mqtt.mqtt5.Mqtt5AsyncClient
@@ -95,174 +94,13 @@ internal class MqttClientManager @Inject constructor() {
         }
     }
 
-
-
-//    @Throws(Exception::class)
-//    private suspend fun connectWithoutSsl(mqttConnectionConfig: MqttConnectionConfig): Result<Unit> {
-//        try {
-//            client = MqttClient.builder()
-//                .identifier(mqttConnectionConfig.clientId)
-//                .serverHost(mqttConnectionConfig.host)
-//                .serverPort(mqttConnectionConfig.port)
-//                .useMqttVersion5()
-//                .buildAsync()
-//
-//            val connectBuilder = client.connectWith()
-//            if (!mqttConnectionConfig.username.isNullOrBlank() && mqttConnectionConfig.password != null) {
-//                connectBuilder.simpleAuth()
-//                    .username(mqttConnectionConfig.username)
-//                    .password(mqttConnectionConfig.password.toByteArray())
-//                    .applySimpleAuth()
-//            }
-//
-//            connectBuilder.send().await()
-//            return Result.success(Unit)
-//        } catch (e: Exception) {
-//            throw e
-//        }
-//    }
-//
-//    @Throws(Exception::class)
-//    private suspend fun connectWithMutualTls(
-//        mqttConnectionConfig: MqttConnectionConfig,
-//        sslConfig: MqttClientSslConfig
-//    ): Result<Unit> {
-//        try {
-//            client = MqttClient.builder()
-//                .identifier(mqttConnectionConfig.clientId)
-//                .serverHost(mqttConnectionConfig.host)
-//                .serverPort(mqttConnectionConfig.port)
-//                .sslConfig(sslConfig)
-//                .useMqttVersion5()
-//                .buildAsync()
-//
-//            if (mqttConnectionConfig.username != null && mqttConnectionConfig.password != null) {
-//                // try to connect with username/password (mutual TLS)
-//                client.connectWith()
-//                    .simpleAuth()
-//                    .username(mqttConnectionConfig.username)
-//                    .password(mqttConnectionConfig.password.toByteArray())
-//                    .applySimpleAuth()
-//                    .send()
-//                    .await()
-//
-//                return Result.success(Unit)
-//            }
-//
-//            // try to connect without username/password (mutual TLS)
-//            client.connectWith()
-//                .send()
-//                .await()
-//
-//            return Result.success(Unit)
-//        } catch (e: Exception) {
-//            throw e
-//        }
-//    }
-//
-//    @Throws(Exception::class)
-//    suspend fun connectWithCredentialsOrAnonymous(
-//        mqttConnectionConfig: MqttConnectionConfig,
-//        sslConfig: MqttClientSslConfig
-//    ): Result<Unit> {
-//        try {
-//            client = MqttClient.builder()
-//                .identifier(mqttConnectionConfig.clientId)
-//                .serverHost(mqttConnectionConfig.host)
-//                .serverPort(mqttConnectionConfig.port)
-//                .sslConfig(sslConfig)
-//                .useMqttVersion5()
-//                .buildAsync()
-//
-//            val connectBuilder = client.connectWith()
-//            if (!mqttConnectionConfig.username.isNullOrBlank() &&
-//                mqttConnectionConfig.password != null
-//            ) {
-//                connectBuilder.simpleAuth()
-//                    .username(mqttConnectionConfig.username)
-//                    .password(mqttConnectionConfig.password.toByteArray())
-//                    .applySimpleAuth()
-//            }
-//            connectBuilder.send().await()
-//            return Result.success(Unit)
-//        } catch (e: Exception) {
-//            throw e
-//        }
-//    }
-//
-//    suspend fun connect(mqttConnectionConfig: MqttConnectionConfig): Result<Unit> =
-//        withContext(Dispatchers.IO) {
-//            try {
-//                // Try to connect without ssl if the broker allows it
-//                if (mqttConnectionConfig.caBytes == null
-//                    || mqttConnectionConfig.caBytes.isEmpty()
-//                ) {
-//                    try {
-//                        connectWithoutSsl(mqttConnectionConfig = mqttConnectionConfig)
-//                    } catch (e: Exception) {
-//                        e.printStackTrace()
-//                        return@withContext Result.failure(e)
-//                    }
-//                }
-//
-//                if (mqttConnectionConfig.clientP12Bytes?.isEmpty() == true) {
-//                    return@withContext Result.failure(
-//                        IllegalArgumentException("Key is empty")
-//                    )
-//                }
-//
-//                // 1) Prepare TMF (with CA provided or system)
-//                val tmf = loadTrustManagerFactoryFromCaBytes(caBytes = mqttConnectionConfig.caBytes)
-//
-//                // 2) If there is p12, try to use mutual TLS (client certificate)
-//                if (mqttConnectionConfig.clientP12Bytes != null &&
-//                    mqttConnectionConfig.p12Password != null
-//                ) {
-//                    try {
-//                        val kmf = loadKeyManagerFactoryFromP12Bytes(
-//                            p12Bytes = mqttConnectionConfig.clientP12Bytes,
-//                            p12Password = mqttConnectionConfig.p12Password
-//                        )
-//                        val sslConfig = buildSslConfig(tmf = tmf, kmf = kmf)
-//
-//                        return@withContext connectWithMutualTls(
-//                            mqttConnectionConfig = mqttConnectionConfig,
-//                            sslConfig = sslConfig
-//                        )
-//                    } catch (e: Exception) {
-//                        e.printStackTrace()
-//                    }
-//                }
-//
-//                val sslConfig = buildSslConfig(tmf, null)
-//
-//                connectWithCredentialsOrAnonymous(
-//                    mqttConnectionConfig = mqttConnectionConfig,
-//                    sslConfig = sslConfig
-//                )
-//            } catch (e: Exception) {
-//                e.printStackTrace()
-//                Result.failure(e)
-//            }
-//        }
-
-
     suspend fun connect(mqttConnectionConfig: MqttConnectionConfig): Result<Unit> =
         withContext(Dispatchers.IO) {
             try {
-                Log.d(
-                    "MqttClientManager",
-                    "Starting connection to host: ${mqttConnectionConfig.host}:" +
-                            "${mqttConnectionConfig.port}"
-                )
                 if (mqttConnectionConfig.caBytes == null
                     || mqttConnectionConfig.caBytes.isEmpty()
                 ) {
                     try {
-                        Log.w(
-                            "MqttClientManager",
-                            "Attempting connection without TLS"
-                        )
                         return@withContext connectWithoutSsl(
                             mqttConnectionConfig = mqttConnectionConfig
                         )
@@ -278,30 +116,27 @@ internal class MqttClientManager @Inject constructor() {
                     mqttConnectionConfig.p12Password != null
                 ) {
                     if (mqttConnectionConfig.clientP12Bytes.isEmpty()) {
-                        Log.e("MqttClientManager", "clientP12Bytes is empty")
                         return@withContext Result.failure(
                             IllegalArgumentException("Client P12 bytes are empty")
                         )
                     }
 
                     try {
-                    Log.d("MqttClientManager", "Attempting connection with mutual TLS")
-                    val kmf = loadKeyManagerFactoryFromP12Bytes(
-                        p12Bytes = mqttConnectionConfig.clientP12Bytes,
-                        p12Password = mqttConnectionConfig.p12Password
-                    )
-                    val sslConfig = buildSslConfig(tmf = tmf, kmf = kmf)
+                        val kmf = loadKeyManagerFactoryFromP12Bytes(
+                            p12Bytes = mqttConnectionConfig.clientP12Bytes,
+                            p12Password = mqttConnectionConfig.p12Password
+                        )
+                        val sslConfig = buildSslConfig(tmf = tmf, kmf = kmf)
 
-                    return@withContext connectWithMutualTls(
-                        mqttConnectionConfig = mqttConnectionConfig,
-                        sslConfig = sslConfig
-                    )
+                        return@withContext connectWithMutualTls(
+                            mqttConnectionConfig = mqttConnectionConfig,
+                            sslConfig = sslConfig
+                        )
                     } catch (e: Exception) {
                         e.printStackTrace()
                     }
                 }
 
-                Log.d("MqttClientManager", "Attempting connection with simple TLS")
                 val sslConfig = buildSslConfig(tmf, null)
 
                 connectWithCredentialsOrAnonymous(
@@ -309,7 +144,6 @@ internal class MqttClientManager @Inject constructor() {
                     sslConfig = sslConfig
                 )
             } catch (e: Exception) {
-                Log.e("MqttClientManager", "Connection failed: ${e.message}", e)
                 Result.failure(e)
             }
         }
@@ -328,20 +162,25 @@ internal class MqttClientManager @Inject constructor() {
     }
 
     @Throws(Exception::class)
-    private suspend fun connectWithoutSsl(mqttConnectionConfig: MqttConnectionConfig): Result<Unit> {
+    private suspend fun connectWithoutSsl(
+        mqttConnectionConfig: MqttConnectionConfig
+    ): Result<Unit> {
         client = buildMqttClient(mqttConnectionConfig = mqttConnectionConfig)
 
         val connectBuilder = client.connectWith()
-        if (!mqttConnectionConfig.username.isNullOrBlank() && mqttConnectionConfig.password != null) {
+        if (!mqttConnectionConfig.username.isNullOrBlank() &&
+            mqttConnectionConfig.password != null
+        ) {
             connectBuilder.simpleAuth()
                 .username(mqttConnectionConfig.username)
-                .password(mqttConnectionConfig.password.toByteArray(StandardCharsets.UTF_8))
+                .password(
+                    mqttConnectionConfig.password
+                        .toByteArray(StandardCharsets.UTF_8)
+                )
                 .applySimpleAuth()
         }
 
         connectBuilder.send().await()
-        Log.d("MqttClientManager", "Connection successful")
-
         return Result.success(Unit)
     }
 
@@ -360,14 +199,15 @@ internal class MqttClientManager @Inject constructor() {
             client.connectWith()
                 .simpleAuth()
                 .username(mqttConnectionConfig.username)
-                .password(mqttConnectionConfig.password.toByteArray(StandardCharsets.UTF_8))
+                .password(
+                    mqttConnectionConfig.password
+                        .toByteArray(StandardCharsets.UTF_8)
+                )
                 .applySimpleAuth()
         }
 
         // try to connect without username/password (mutual TLS)
         client.connectWith().send().await()
-        Log.d("MqttClientManager", "Connection successful")
-
         return Result.success(Unit)
     }
 
@@ -387,13 +227,14 @@ internal class MqttClientManager @Inject constructor() {
         ) {
             connectBuilder.simpleAuth()
                 .username(mqttConnectionConfig.username)
-                .password(mqttConnectionConfig.password.toByteArray(StandardCharsets.UTF_8))
+                .password(
+                    mqttConnectionConfig.password
+                        .toByteArray(StandardCharsets.UTF_8)
+                )
                 .applySimpleAuth()
         }
 
         connectBuilder.send().await()
-        Log.d("MqttClientManager", "Connection successful")
-
         return Result.success(Unit)
     }
 
