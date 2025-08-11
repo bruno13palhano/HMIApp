@@ -20,8 +20,9 @@ internal class MqttClientRepositoryImpl @Inject constructor(
     }
 
     override suspend fun connectMqtt(mqttConnectionConfig: MqttConnectionConfig): Result<Unit> {
-        mqttConnectionConfigDao.saveConfig(entity = mqttConnectionConfig.toEntity())
-        return mqtt.connect(mqttConnectionConfig = mqttConnectionConfig)
+        return mqtt.connect(mqttConnectionConfig = mqttConnectionConfig).onSuccess {
+            mqttConnectionConfigDao.saveConfig(entity = mqttConnectionConfig.toEntity())
+        }
     }
 
     override suspend fun subscribeToTopic(topic: String): Result<Unit> {
@@ -37,7 +38,9 @@ internal class MqttClientRepositoryImpl @Inject constructor(
     }
 
     override suspend fun disconnect(): Result<Unit> {
-        return mqtt.disconnect()
+        return mqtt.disconnect().onSuccess {
+            mqttConnectionConfigDao.clear()
+        }
     }
 
     override fun incomingMessages() = mqtt.incomingMessages
