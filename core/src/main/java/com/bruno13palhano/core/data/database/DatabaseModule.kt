@@ -2,6 +2,7 @@ package com.bruno13palhano.core.data.database
 
 import android.content.Context
 import androidx.room.Room
+import com.bruno13palhano.core.data.database.dao.MqttConnectionConfigDao
 import com.bruno13palhano.core.data.database.dao.WidgetDao
 import dagger.Module
 import dagger.Provides
@@ -12,7 +13,7 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-object DatabaseModule {
+internal object DatabaseModule {
     @Provides
     @Singleton
     fun provideDatabase(@ApplicationContext context: Context): AppDatabase {
@@ -27,4 +28,7 @@ object DatabaseModule {
 
     @Provides
     fun provideWidgetDao(db: AppDatabase): WidgetDao = db.widgetDao()
+
+    @Provides
+    fun provideMqttConnectionConfigDao(db: AppDatabase): MqttConnectionConfigDao = db.mqttConnectionConfigDao()
 }

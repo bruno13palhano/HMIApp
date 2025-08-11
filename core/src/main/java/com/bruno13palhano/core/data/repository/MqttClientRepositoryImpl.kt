@@ -1,53 +1,27 @@
 package com.bruno13palhano.core.data.repository
 
 import com.bruno13palhano.core.data.network.MqttClientManager
-import com.bruno13palhano.core.data.connection.Connection
-import com.bruno13palhano.core.data.connection.ConnectionSessionImpl
+import com.bruno13palhano.core.data.database.dao.MqttConnectionConfigDao
+import com.bruno13palhano.core.data.database.entity.toEntity
+import com.bruno13palhano.core.data.database.entity.toDomain
+import com.bruno13palhano.core.data.network.MqttConnectionConfig
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 internal class MqttClientRepositoryImpl @Inject constructor(
     private val mqtt: MqttClientManager,
-    private val connectionSession: ConnectionSessionImpl
+    private val mqttConnectionConfigDao: MqttConnectionConfigDao
 ) : MqttClientRepository {
 
     override suspend fun connectIfSessionExists() {
-        connectionSession.get()?.let {
-            mqtt.connect(
-                clientId = it.clientId,
-                host = it.host,
-                port = it.port,
-                username = it.username,
-                password = it.password
-            )
+        mqttConnectionConfigDao.getConfig()?.toDomain()?.let {
+            mqtt.connect(mqttConnectionConfig = it)
         }
     }
 
-    override suspend fun connectMqtt(
-        clientId: String,
-        host: String,
-        port: Int,
-        username: String,
-        password: String
-    ): Result<Unit> {
-        return mqtt.connect(
-            clientId = clientId,
-            host = host,
-            port = port,
-            username = username,
-            password = password
-        )
-            .onSuccess {
-                connectionSession.save(
-                    connection = Connection(
-                        clientId = clientId,
-                        host = host,
-                        port = port,
-                        username = username,
-                        password = password
-                    )
-                )
-            }
+    override suspend fun connectMqtt(mqttConnectionConfig: MqttConnectionConfig): Result<Unit> {
+        mqttConnectionConfigDao.saveConfig(entity = mqttConnectionConfig.toEntity())
+        return mqtt.connect(mqttConnectionConfig = mqttConnectionConfig)
     }
 
     override suspend fun subscribeToTopic(topic: String): Result<Unit> {
