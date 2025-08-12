@@ -41,4 +41,17 @@
     <string name="import_config">Import configuration</string>
     <string name="export_config_error">Failed to export widgets configuration</string>
     <string name="import_config_error">Failed to import widgets configuration</string>
+    <string name="widget_text">Text</string>
+    <string name="widget_button">Button</string>
+    <string name="widget_switch">Switch</string>
+    <string name="widget_slider">Slider</string>
+    <string name="widget_gauge">Gauge</string>
+    <string name="widget_progress_bar">Progress Bar</string>
+    <string name="widget_image">Image</string>
+    <string name="widget_chart">Chart</string>
+    <string name="widget_toggle_button">Toggle Button</string>
+    <string name="widget_input_field">Input Field</string>
+    <string name="widget_led_indicator">Led Indicator</string>
+    <string name="widget_dropdown">Dropdown</string>
+    <string name="widget_color_picker">Color Picker</string>
 </resources>
