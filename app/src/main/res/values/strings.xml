@@ -34,6 +34,7 @@
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
     <string name="remove">Remove</string>
+    <string name="edit">Edit</string>
     <string name="value">Value</string>
     <string name="show_widget_toolbox">Show widget toolbox</string>
     <string name="hide_widget_toolbox">Hide widget toolbox</string>
