@@ -45,24 +45,24 @@ private fun WidgetCanvasPreview() {
             widgets = listOf(
                 Widget(
                     type = WidgetType.GAUGE,
-                    label = "V1",
-                    dataSource = DataSource.MQTT(topic = "gauge/v1"),
+                    label = "Tension for M1",
+                    dataSource = DataSource.MQTT(topic = "/gauge/v1"),
                     value = "200",
                     x = 20f,
                     y = 20f
                 ),
                 Widget(
-                    type = WidgetType.TOGGLE_BUTTON,
+                    type = WidgetType.TEXT,
                     label = "T1",
-                    dataSource = DataSource.MQTT(topic = "toggle/t1"),
-                    value = "true",
+                    dataSource = DataSource.HTTP(url = "https://www.test.com/text/t1"),
+                    value = "Hello word",
                     x = 580f,
                     y = 20f
                 ),
                 Widget(
                     type = WidgetType.SWITCH,
-                    label = "S1",
-                    dataSource = DataSource.MQTT(topic = "switch/s1"),
+                    label = "Switch for M1",
+                    dataSource = DataSource.MQTT(topic = "/switch/s1"),
                     value = "true",
                     x = 20f,
                     y = 500f
@@ -70,7 +70,7 @@ private fun WidgetCanvasPreview() {
                 Widget(
                     type = WidgetType.BUTTON,
                     label = "B1",
-                    dataSource = DataSource.MQTT(topic = "button/b1"),
+                    dataSource = DataSource.MQTT(topic = "/button/b1"),
                     value = "",
                     x = 580f,
                     y = 500f
@@ -78,7 +78,7 @@ private fun WidgetCanvasPreview() {
                 Widget(
                     type = WidgetType.PROGRESS_BAR,
                     label = "P1",
-                    dataSource = DataSource.MQTT(topic = "progress/p1"),
+                    dataSource = DataSource.MQTT(topic = "/progress/p1"),
                     value = ".63",
                     x = 20f,
                     y = 1000f
@@ -86,7 +86,7 @@ private fun WidgetCanvasPreview() {
                 Widget(
                     type = WidgetType.SLIDER,
                     label = "L1",
-                    dataSource = DataSource.MQTT(topic = "test/topic"),
+                    dataSource = DataSource.HTTP(url = "http://www.test.com/slider/l1"),
                     value = "40.7",
                     x = 580f,
                     y = 1000f
@@ -94,15 +94,15 @@ private fun WidgetCanvasPreview() {
                 Widget(
                     type = WidgetType.LED_INDICATOR,
                     label = "LED1",
-                    dataSource = DataSource.MQTT(topic = "test/topic"),
+                    dataSource = DataSource.HTTP(url = "https://www.test.com/leds/l1"),
                     value = "WARN",
                     x = 20f,
                     y = 1500f
                 ),
                 Widget(
                     type = WidgetType.INPUT_FIELD,
-                    label = "M1",
-                    dataSource = DataSource.MQTT(topic = "test/topic"),
+                    label = "IP1",
+                    dataSource = DataSource.HTTP(url = "https://www.test.com/input/ip1"),
                     value = "ON",
                     x = 580f,
                     y = 1500f

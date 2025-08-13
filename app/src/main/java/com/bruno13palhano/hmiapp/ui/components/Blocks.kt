@@ -22,6 +22,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.material3.Slider
@@ -38,6 +39,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.bruno13palhano.core.model.Widget
 import com.bruno13palhano.core.model.WidgetType
@@ -107,7 +109,10 @@ fun TextWidget(
             modifier = Modifier
                 .padding(8.dp),
             text = widget.value,
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Center,
+            style = MaterialTheme.typography.titleMedium,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis
         )
     }
 }
@@ -177,7 +182,8 @@ fun SliderWidget(
         onRemove = onRemove
     ) {
         Text(
-            text = sliderValue.toString()
+            text = sliderValue.toString(),
+            style = MaterialTheme.typography.titleMedium
         )
         Box {
             Slider(
@@ -226,7 +232,8 @@ fun GaugeWidget(
             }
             Text(
                 modifier = Modifier.align(Alignment.Center),
-                text = value.toString()
+                text = value.toString(),
+                style = MaterialTheme.typography.titleMedium
             )
         }
     }
@@ -254,7 +261,8 @@ fun ProgressBarWidget(
         Box(modifier = Modifier.fillMaxHeight()) {
             Text(
                 modifier = Modifier.align(Alignment.TopCenter),
-                text = (progress * 100).toString()
+                text = (progress * 100).toString(),
+                style = MaterialTheme.typography.titleMedium
             )
             LinearProgressIndicator(
                 modifier = Modifier
@@ -341,7 +349,10 @@ fun ToggleButtonWidget(
                 .height((widget.width / 2).dp)
         ) {
             val text = if (toggled) "ON" else "OFF"
-            Text(text = text)
+            Text(
+                text = text,
+                style = MaterialTheme.typography.titleMedium
+            )
         }
     }
 }
@@ -397,7 +408,8 @@ fun LedIndicatorWidget(
         Box(modifier = Modifier.fillMaxHeight()) {
             Text(
                 modifier = Modifier.align(Alignment.TopCenter),
-                text = widget.value
+                text = widget.value,
+                style = MaterialTheme.typography.titleMedium
             )
             Box(
                 modifier = Modifier
@@ -431,7 +443,8 @@ fun DropdownWidget(
             text = selected,
             modifier = Modifier
                 .clickable { expanded = true }
-                .padding(8.dp)
+                .padding(8.dp),
+            style = MaterialTheme.typography.titleMedium
         )
         DropdownMenu(
             expanded = expanded,

@@ -31,7 +31,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -42,6 +42,7 @@ import com.bruno13palhano.core.model.Widget
 import com.bruno13palhano.core.model.WidgetType
 import com.bruno13palhano.hmiapp.R
 import com.bruno13palhano.hmiapp.ui.theme.HMIAppTheme
+import java.net.URI
 import kotlin.math.roundToInt
 
 @Composable
@@ -88,11 +89,11 @@ fun WidgetBlock(
         ) {
             Text(
                 modifier = Modifier.padding(horizontal = 8.dp).weight(2f),
-                text = getWidgetTypeName(widgetType = widget.type),
-                fontWeight = FontWeight.Bold,
+                text = widget.label,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
+                style = MaterialTheme.typography.titleMedium
             )
             IconButton(
                 modifier = Modifier.weight(1f),
@@ -129,12 +130,28 @@ fun WidgetBlock(
             modifier = Modifier
                 .padding(start = 8.dp, end = 8.dp, bottom = 8.dp)
                 .fillMaxWidth(),
-            text = widget.label,
-            fontWeight = FontWeight.Bold,
+            text = when (val dataSource = widget.dataSource) {
+                is DataSource.HTTP -> extractEndpoint(url = dataSource.url)
+                is DataSource.MQTT -> dataSource.topic
+            },
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Center,
+            fontStyle = FontStyle.Italic
         )
+    }
+}
+
+private fun extractEndpoint(url: String): String {
+    try {
+        val uri = URI(url)
+        val path = uri.path ?: "/"
+        val query = uri.query?.let {"?$it" } ?: ""
+        val  fragment = uri.fragment?.let { "#it" } ?: ""
+        return "$path$query$fragment"
+    } catch (e: Exception) {
+        e.printStackTrace()
+        return "/"
     }
 }
 
