@@ -142,7 +142,7 @@ fun WidgetBlock(
     }
 }
 
-private fun extractEndpoint(url: String): String {
+fun extractEndpoint(url: String): String {
     try {
         val uri = URI(url)
         val path = uri.path ?: "/"

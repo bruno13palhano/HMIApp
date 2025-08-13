@@ -11,6 +11,8 @@ import com.bruno13palhano.core.data.repository.WidgetRepository
 import com.bruno13palhano.core.model.DataSource
 import com.bruno13palhano.core.model.Widget
 import com.bruno13palhano.core.model.WidgetType
+import com.bruno13palhano.hmiapp.ui.components.WidgetEvent
+import com.bruno13palhano.hmiapp.ui.components.extractEndpoint
 import com.bruno13palhano.hmiapp.ui.shared.Container
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
@@ -37,6 +39,9 @@ class DashboardViewModel @AssistedInject constructor(
             is DashboardEvent.AddWidget -> addWidget()
             is DashboardEvent.RemoveWidget -> removeWidget(id = event.id)
             is DashboardEvent.MoveWidget -> moveWidget(id = event.id, x = event.x, y = event.y)
+            is DashboardEvent.OpenEditWidgetDialog -> openEditWidgetDialog(id = event.id)
+            is DashboardEvent.EditWidget -> editWidget()
+            is DashboardEvent.OnWidgetEvent -> onWidgetEvent(widgetEvent = event.widgetEvent)
             DashboardEvent.ToggleIsToolboxExpanded -> toggleIsToolboxExpanded()
             DashboardEvent.ToggleMenu -> toggleMenu()
             DashboardEvent.HideWidgetConfig -> hideWidgetDialog()
@@ -96,6 +101,99 @@ class DashboardViewModel @AssistedInject constructor(
 
     private fun moveWidget(id: String, x: Float, y: Float) = container.intent {
         widgetRepository.updatePosition(id = id, x = x, y = y)
+    }
+
+    private fun openEditWidgetDialog(id: String) = container.intent {
+        val state = state.value
+        val widget = state.widgets.find { it.id == id }
+
+        widget?.let {
+            showWidgetDialog(type = it.type)
+
+            reduce {
+                copy(
+                    id = it.id,
+                    label = it.label,
+                    endpoint = when (val dataSource = it.dataSource) {
+                        is DataSource.MQTT -> dataSource.topic
+                        is DataSource.HTTP -> extractEndpoint(url = dataSource.url)
+                    }
+                )
+            }
+        }
+    }
+
+    private fun editWidget() = container.intent {
+        reduce { copy(isWidgetInputDialogVisible = false) }
+
+        val state = state.value
+        val widget = state.widgets.find { it.id == state.id }
+
+        widget?.let {
+            val editWidget = it.copy(
+                type = state.type,
+                label = state.label,
+                dataSource = DataSource.MQTT(topic = state.endpoint)
+            )
+
+            widgetRepository.update(widget = editWidget)
+            if (widget.dataSource is DataSource.MQTT) {
+                mqttClientRepository.subscribeToTopic(
+                    topic = (widget.dataSource as DataSource.MQTT).topic
+                )
+            }
+
+            reduce { copy(id = "", label = "", endpoint = "") }
+        }
+    }
+
+    private fun onWidgetEvent(widgetEvent: WidgetEvent) {
+        when (widgetEvent) {
+            is WidgetEvent.ButtonClicked -> {
+                publishWidgetEvent(widgetId = widgetEvent.widgetId, message = "")
+            }
+            is WidgetEvent.ColorPicked -> {
+//                publishWidgetEvent(
+//                    widgetId = widgetEvent.widgetId,
+//                    message = widgetEvent.color
+//                )
+            }
+            is WidgetEvent.DropdownSelected -> {
+                publishWidgetEvent(widgetId = widgetEvent.widgetId, message = widgetEvent.selected)
+            }
+            is WidgetEvent.InputSubmitted -> {
+                publishWidgetEvent(widgetId = widgetEvent.widgetId, message = widgetEvent.text)
+            }
+            is WidgetEvent.SliderChanged -> {
+                publishWidgetEvent(
+                    widgetId = widgetEvent.widgetId,
+                    message = widgetEvent.value.toString()
+                )
+            }
+            is WidgetEvent.SwitchToggled -> {
+                publishWidgetEvent(
+                    widgetId = widgetEvent.widgetId,
+                    message = widgetEvent.state.toString()
+                )
+            }
+            is WidgetEvent.ToggleButtonChanged -> {
+               publishWidgetEvent(
+                   widgetId = widgetEvent.widgetId,
+                   message = widgetEvent.state.toString()
+               )
+            }
+        }
+    }
+
+    private fun publishWidgetEvent(widgetId: String, message: String) = container.intent {
+        val widget = state.value.widgets.find { it.id == widgetId}
+
+        widget?.let {
+            mqttClientRepository.publish(
+                topic = (it.dataSource as DataSource.MQTT).topic,
+                message = message
+            )
+        }
     }
 
     private fun toggleIsToolboxExpanded() = container.intent {

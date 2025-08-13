@@ -196,7 +196,11 @@ fun DashboardContent(
                             )
                         )
                     },
-                    onRemove = { id -> onEvent(DashboardEvent.RemoveWidget(id = id)) }
+                    onEdit = { id -> onEvent(DashboardEvent.OpenEditWidgetDialog(id = id)) },
+                    onRemove = { id -> onEvent(DashboardEvent.RemoveWidget(id = id)) },
+                    onEvent = { widgetEvent ->
+                        onEvent(DashboardEvent.OnWidgetEvent(widgetEvent = widgetEvent))
+                    }
                 )
                 Box(
                     modifier = Modifier.fillMaxSize(),
@@ -213,11 +217,19 @@ fun DashboardContent(
                     WidgetInputDialog(
                         label = state.label,
                         endpoint = state.endpoint,
-                        onLabelChange = { label -> onEvent(DashboardEvent.UpdateLabel(label = label)) },
+                        onLabelChange = {
+                            label -> onEvent(DashboardEvent.UpdateLabel(label = label))
+                        },
                         onEndpointChange = { endpoint ->
                             onEvent(DashboardEvent.UpdateEndpoint(endpoint = endpoint))
                         },
-                        onConfirm = { onEvent(DashboardEvent.AddWidget) },
+                        onConfirm = {
+                            if (state.id == "") {
+                                onEvent(DashboardEvent.AddWidget)
+                            } else {
+                                onEvent(DashboardEvent.EditWidget)
+                            }
+                        },
                         onDismissRequest = { onEvent(DashboardEvent.HideWidgetConfig) }
                     )
                 }
