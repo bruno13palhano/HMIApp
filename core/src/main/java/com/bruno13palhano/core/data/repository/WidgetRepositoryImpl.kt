@@ -19,6 +19,10 @@ internal class WidgetRepositoryImpl @Inject constructor(
         dao.insert(entity = widget.toEntity())
     }
 
+    override suspend fun update(widget: Widget) {
+        dao.update(entity = widget.toEntity())
+    }
+
     override suspend fun deleteById(id: String) {
         dao.deleteById(id = id)
     }
