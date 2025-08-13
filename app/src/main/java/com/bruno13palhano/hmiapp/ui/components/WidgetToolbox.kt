@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -71,6 +72,7 @@ fun WidgetToolbox(
                     )
                     .border(1.dp, MaterialTheme.colorScheme.secondary, RoundedCornerShape(5))
                     .padding(8.dp)
+                    .sizeIn(maxHeight = 400.dp)
                     .verticalScroll(rememberScrollState())
             ) {
                 WidgetType.entries.forEach { type ->
@@ -78,11 +80,30 @@ fun WidgetToolbox(
                         onClick = { onAdd(type) },
                         modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
                     ) {
-                        Text(text = "+ ${type.name}")
+                        Text(text = "+ ${getWidgetTypeName(widgetType = type)}")
                     }
                 }
             }
         }
+    }
+}
+
+@Composable
+fun getWidgetTypeName(widgetType: WidgetType): String {
+    return when(widgetType) {
+        WidgetType.TEXT -> stringResource(id = R.string.widget_text)
+        WidgetType.BUTTON -> stringResource(id = R.string.widget_button)
+        WidgetType.SWITCH -> stringResource(id = R.string.widget_switch)
+        WidgetType.SLIDER -> stringResource(id = R.string.widget_slider)
+        WidgetType.GAUGE -> stringResource(id = R.string.widget_gauge)
+        WidgetType.PROGRESS_BAR -> stringResource(id = R.string.widget_progress_bar)
+        WidgetType.IMAGE -> stringResource(id = R.string.widget_image)
+        WidgetType.CHART -> stringResource(id = R.string.widget_chart)
+        WidgetType.TOGGLE_BUTTON -> stringResource(id = R.string.widget_toggle_button)
+        WidgetType.INPUT_FIELD -> stringResource(id = R.string.widget_input_field)
+        WidgetType.LED_INDICATOR -> stringResource(id = R.string.widget_led_indicator)
+        WidgetType.DROPDOWN -> stringResource(id = R.string.widget_dropdown)
+        WidgetType.COLOR_PICKER -> stringResource(id = R.string.widget_color_picker)
     }
 }
 
