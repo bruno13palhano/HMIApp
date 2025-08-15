@@ -13,4 +13,7 @@ internal abstract class RepositoryModule {
 
     @Binds
     abstract fun bindMqttClientRepository(repository: MqttClientRepositoryImpl): MqttClientRepository
+
+    @Binds
+    abstract fun bindEnvironmentRepository(repository: EnvironmentRepositoryImpl): EnvironmentRepository
 }

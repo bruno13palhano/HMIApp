@@ -2,6 +2,7 @@ package com.bruno13palhano.core.data.database
 
 import android.content.Context
 import androidx.room.Room
+import com.bruno13palhano.core.data.database.dao.EnvironmentDao
 import com.bruno13palhano.core.data.database.dao.MqttConnectionConfigDao
 import com.bruno13palhano.core.data.database.dao.WidgetDao
 import dagger.Module
@@ -31,4 +32,7 @@ internal object DatabaseModule {
 
     @Provides
     fun provideMqttConnectionConfigDao(db: AppDatabase): MqttConnectionConfigDao = db.mqttConnectionConfigDao()
+
+    @Provides
+    fun provideEnvironmentDao(db: AppDatabase): EnvironmentDao = db.environmentDao()
 }
