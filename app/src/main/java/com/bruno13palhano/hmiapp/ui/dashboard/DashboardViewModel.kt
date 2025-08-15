@@ -77,7 +77,7 @@ class DashboardViewModel @AssistedInject constructor(
     }
 
     private fun addWidget() = container.intent {
-        hideWidgetDialog()
+        reduce { copy(isWidgetInputDialogVisible = false) }
 
         val state = state.value
         val widget = Widget(
@@ -87,20 +87,25 @@ class DashboardViewModel @AssistedInject constructor(
         )
 
         widgetRepository.insert(widget)
-        if (widget.dataSource is DataSource.MQTT) {
-            mqttClientRepository.subscribeToTopic(
-                topic = (widget.dataSource as DataSource.MQTT).topic
+        subscribeToTopic(widget = widget)
+    }
+
+    private fun editWidget() = container.intent {
+        reduce { copy(isWidgetInputDialogVisible = false) }
+
+        val state = state.value
+        val widget = state.widgets.find { it.id == state.id }
+
+        widget?.let {
+            val editWidget = it.copy(
+                type = state.type,
+                label = state.label,
+                dataSource = DataSource.MQTT(topic = state.endpoint)
             )
+
+            widgetRepository.update(widget = editWidget)
+            subscribeToTopic(widget = widget)
         }
-    }
-
-    private fun removeWidget(id: String) = container.intent {
-        widgetValues.remove(key = id)
-        widgetRepository.deleteById(id = id)
-    }
-
-    private fun moveWidget(id: String, x: Float, y: Float) = container.intent {
-        widgetRepository.updatePosition(id = id, x = x, y = y)
     }
 
     private fun openEditWidgetDialog(id: String) = container.intent {
@@ -123,34 +128,33 @@ class DashboardViewModel @AssistedInject constructor(
         }
     }
 
-    private fun editWidget() = container.intent {
-        reduce { copy(isWidgetInputDialogVisible = false) }
-
-        val state = state.value
-        val widget = state.widgets.find { it.id == state.id }
-
-        widget?.let {
-            val editWidget = it.copy(
-                type = state.type,
-                label = state.label,
-                dataSource = DataSource.MQTT(topic = state.endpoint)
+    private suspend fun subscribeToTopic(widget: Widget) {
+        if (widget.dataSource is DataSource.MQTT) {
+            mqttClientRepository.subscribeToTopic(
+                topic = (widget.dataSource as DataSource.MQTT).topic
             )
-
-            widgetRepository.update(widget = editWidget)
-            if (widget.dataSource is DataSource.MQTT) {
-                mqttClientRepository.subscribeToTopic(
-                    topic = (widget.dataSource as DataSource.MQTT).topic
-                )
-            }
-
-            reduce { copy(id = "", label = "", endpoint = "") }
         }
+
+        clearCurrentWidget()
+    }
+
+    private fun clearCurrentWidget() = container.intent {
+        reduce { copy(id = "", label = "", endpoint = "") }
+    }
+
+    private fun removeWidget(id: String) = container.intent {
+        widgetValues.remove(key = id)
+        widgetRepository.deleteById(id = id)
+    }
+
+    private fun moveWidget(id: String, x: Float, y: Float) = container.intent {
+        widgetRepository.updatePosition(id = id, x = x, y = y)
     }
 
     private fun onWidgetEvent(widgetEvent: WidgetEvent) {
         when (widgetEvent) {
             is WidgetEvent.ButtonClicked -> {
-                publishWidgetEvent(widgetId = widgetEvent.widgetId, message = "")
+                publishWidgetEvent(widgetId = widgetEvent.widgetId, message = "1")
             }
             is WidgetEvent.ColorPicked -> {
 //                publishWidgetEvent(
