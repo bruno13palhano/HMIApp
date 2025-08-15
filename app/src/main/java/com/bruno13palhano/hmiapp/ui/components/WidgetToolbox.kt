@@ -38,30 +38,30 @@ fun WidgetToolbox(
     onAdd: (WidgetType) -> Unit,
     onExpandedClick: () -> Unit
 ) {
-    Column {
-        Box(modifier = Modifier.fillMaxWidth()) {
-            IconButton(
-                onClick = onExpandedClick,
-                modifier = Modifier
-                    .padding(bottom = 16.dp)
-                    .align(Alignment.Center)
-            ) {
-                var contentDescription = stringResource(id = R.string.hide_widget_toolbox)
-                var icon = Icons.Outlined.ExpandLess
+    if (expanded) {
+        Column {
+            Box(modifier = Modifier.fillMaxWidth()) {
+                IconButton(
+                    onClick = onExpandedClick,
+                    modifier = Modifier
+                        .padding(bottom = 16.dp)
+                        .align(Alignment.Center)
+                ) {
+                    var contentDescription = stringResource(id = R.string.hide_widget_toolbox)
+                    var icon = Icons.Outlined.ExpandLess
 
-                if (expanded) {
-                    icon = Icons.Outlined.ExpandMore
-                    contentDescription = stringResource(id = R.string.hide_widget_toolbox)
+                    if (expanded) {
+                        icon = Icons.Outlined.ExpandMore
+                        contentDescription = stringResource(id = R.string.hide_widget_toolbox)
+                    }
+
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = contentDescription,
+                        tint = MaterialTheme.colorScheme.onSecondary
+                    )
                 }
-
-                Icon(
-                    imageVector = icon,
-                    contentDescription = contentDescription,
-                    tint = MaterialTheme.colorScheme.onSecondary
-                )
             }
-        }
-        if (expanded) {
             Column(
                 modifier = Modifier
                     .offset(y = (-32).dp)
@@ -114,22 +114,6 @@ private fun WidgetToolboxPreview() {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.BottomEnd) {
             WidgetToolbox(
                 expanded = true,
-                onAdd = {
-                    listOf(WidgetType.TEXT, WidgetType.BUTTON, WidgetType.SWITCH)
-                },
-                onExpandedClick = {}
-            )
-        }
-    }
-}
-
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-private fun WidgetToolboxNotExpandPreview() {
-    HMIAppTheme {
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.BottomEnd) {
-            WidgetToolbox(
-                expanded = false,
                 onAdd = {
                     listOf(WidgetType.TEXT, WidgetType.BUTTON, WidgetType.SWITCH)
                 },
