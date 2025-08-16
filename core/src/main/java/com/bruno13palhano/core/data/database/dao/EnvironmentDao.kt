@@ -24,6 +24,6 @@ internal interface EnvironmentDao {
     @Query("SELECT * FROM environments WHERE id = :id")
     suspend fun getById(id: Long): EnvironmentEntity?
 
-    @Query("SELECT * FROM environments LIMIT 1")
+    @Query("SELECT * FROM environments ORDER BY id DESC LIMIT 1")
     suspend fun getLast(): EnvironmentEntity?
 }
