@@ -45,7 +45,7 @@ fun <T>ExpandableFab(
     onOptionSelected: (T) -> Unit
 ) {
     val rotation by animateFloatAsState(
-        targetValue = if (expanded) 45f else 0f,
+        targetValue = if (expanded) 90f else 0f,
         label = "fabRotation"
     )
     Box(
