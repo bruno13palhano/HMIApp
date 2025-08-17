@@ -1,11 +1,20 @@
 package com.bruno13palhano.hmiapp.ui.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.tooling.preview.Preview
 import com.bruno13palhano.core.model.DataSource
 import com.bruno13palhano.core.model.Widget
@@ -15,24 +24,52 @@ import com.bruno13palhano.hmiapp.ui.theme.HMIAppTheme
 @Composable
 fun WidgetCanvas(
     widgets: List<Widget>,
+    initialScale: Float = 1f,
+    initialOffset: Offset = Offset.Zero,
     onMove: (id: String, x: Float, y: Float) -> Unit,
     onEdit: (id: String) -> Unit,
     onRemove: (id: String) -> Unit,
-    onEvent: (event: WidgetEvent) -> Unit
+    onEvent: (event: WidgetEvent) -> Unit,
+    onTransformChange: (scale: Float, offset: Offset) -> Unit
 ) {
+    var scale by remember { mutableFloatStateOf(initialScale) }
+    var offset by remember { mutableStateOf(initialOffset) }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.onSecondaryContainer)
+            .pointerInput(Unit) {
+                detectTransformGestures { _, pan, zoom, _ ->
+                    val newScale = (scale * zoom).coerceIn(0.3f, 3f)
+                    val newOffset = offset + pan
+
+                    scale = newScale
+                    offset = newOffset
+
+                    onTransformChange(newScale, newOffset)
+                }
+            }
     ) {
-        widgets.forEach { widget ->
-            WidgetRenderer(
-                widget = widget,
-                onMove = { x, y -> onMove(widget.id, x, y) },
-                onEdit = { onEdit(widget.id) },
-                onRemove = { onRemove(widget.id) },
-                onEvent = onEvent,
-            )
+        Box(
+            modifier = Modifier
+                .graphicsLayer(
+                    scaleX = scale,
+                    scaleY = scale,
+                    translationX = offset.x,
+                    translationY = offset.y
+                )
+                .fillMaxSize()
+        ) {
+            widgets.forEach { widget ->
+                WidgetRenderer(
+                    widget = widget,
+                    onMove = { x, y -> onMove(widget.id, x, y) },
+                    onEdit = { onEdit(widget.id) },
+                    onRemove = { onRemove(widget.id) },
+                    onEvent = onEvent,
+                )
+            }
         }
     }
 }
@@ -108,10 +145,11 @@ private fun WidgetCanvasPreview() {
                     y = 1500f
                 )
             ),
-            { _, _, _ -> },
-            {},
-            {},
-            onEvent = {}
+            onMove = { _, _, _ -> },
+            onEdit = {},
+            onRemove = {},
+            onEvent = {},
+            onTransformChange = { _, _ -> }
         )
     }
 }
