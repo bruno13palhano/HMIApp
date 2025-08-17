@@ -6,6 +6,7 @@ import androidx.navigation3.runtime.NavKey
 import com.bruno13palhano.core.data.configuration.LayoutConfig
 import com.bruno13palhano.core.data.configuration.toWidget
 import com.bruno13palhano.core.data.configuration.toWidgetConfig
+import com.bruno13palhano.core.data.repository.EnvironmentRepository
 import com.bruno13palhano.core.data.repository.MqttClientRepository
 import com.bruno13palhano.core.data.repository.WidgetRepository
 import com.bruno13palhano.core.model.DataSource
@@ -24,6 +25,7 @@ import java.io.OutputStream
 class DashboardViewModel @AssistedInject constructor(
     private val widgetRepository: WidgetRepository,
     private val mqttClientRepository: MqttClientRepository,
+    private val environmentRepository: EnvironmentRepository,
     @Assisted private val initialState: DashboardState,
 ) : ViewModel() {
     val container: Container<DashboardState, DashboardSideEffect> = Container(
@@ -41,13 +43,23 @@ class DashboardViewModel @AssistedInject constructor(
             is DashboardEvent.MoveWidget -> moveWidget(id = event.id, x = event.x, y = event.y)
             is DashboardEvent.OpenEditWidgetDialog -> openEditWidgetDialog(id = event.id)
             is DashboardEvent.EditWidget -> editWidget()
+            is DashboardEvent.OnUpdateCanvasState -> onUpdateCanvasState(
+                scale = event.scale,
+                offsetX = event.offsetX,
+                offsetY = event.offsetY
+            )
             is DashboardEvent.OnWidgetEvent -> onWidgetEvent(widgetEvent = event.widgetEvent)
+            DashboardEvent.AddEnvironment -> addEnvironment()
+            DashboardEvent.EditEnvironment -> editEnvironment()
             DashboardEvent.ToggleIsToolboxExpanded -> toggleIsToolboxExpanded()
             DashboardEvent.ToggleMenu -> toggleMenu()
+            DashboardEvent.ToggleDashboardOptions -> toggleDashboardOptions()
+            DashboardEvent.ToggleEnvironmentInputDialog -> toggleEnvironmentInputDialog()
             DashboardEvent.HideWidgetConfig -> hideWidgetDialog()
             is DashboardEvent.ShowWidgetDialog -> showWidgetDialog(type = event.type)
             is DashboardEvent.UpdateEndpoint -> updateEndpoint(endpoint = event.endpoint)
             is DashboardEvent.UpdateLabel -> updateLabel(label = event.label)
+            is DashboardEvent.UpdateEnvironmentName -> updateEnvironmentName(name = event.name)
             is DashboardEvent.NavigateTo -> navigateTo(key = event.destination)
             is DashboardEvent.ExportWidgetsConfig -> exportWidgets(stream = event.stream)
             is DashboardEvent.ImportWidgetsConfig -> importWidgets(stream = event.stream)
@@ -74,6 +86,32 @@ class DashboardViewModel @AssistedInject constructor(
 
     private fun updateLabel(label: String) = container.intent {
         reduce { copy(label = label) }
+    }
+
+    private fun updateEnvironmentName(name: String) = container.intent {
+        val environment = container.state.value.environment
+        reduce { copy(environment = environment.copy(name = name)) }
+    }
+
+    private fun addEnvironment() = container.intent {
+        val environment = state.value.environment
+        environmentRepository.insert(environment = environment)
+
+        reduce { copy(isEnvironmentDialogVisible = false) }
+
+        environmentRepository.getLast()?.let {
+            reduce { copy(environment = it) }
+        }
+    }
+
+    private fun editEnvironment() = container.intent {
+        val environment = state.value.environment
+        environmentRepository.update(environment = environment)
+
+        reduce { copy(isEnvironmentDialogVisible = false) }
+    }
+
+    private fun openEditEnvironmentDialog(id: Long) = container.intent {
     }
 
     private fun addWidget() = container.intent {
@@ -208,17 +246,44 @@ class DashboardViewModel @AssistedInject constructor(
         postSideEffect(effect = DashboardSideEffect.ToggleMenu)
     }
 
-    private fun dashboardInit() = container.intent {
-        mqttClientRepository.isConnected().collect { isConnected ->
-            if (!isConnected) {
-                postSideEffect(
-                    effect = DashboardSideEffect.ShowInfo(info = DashboardInfo.DISCONNECTED)
-                )
-            } else {
-                loadWidgets()
-                observeMessages()
+    private fun toggleDashboardOptions() = container.intent {
+        reduce { copy(isDashboardOptionsExpanded = !isDashboardOptionsExpanded) }
+    }
+
+    private fun toggleEnvironmentInputDialog() = container.intent {
+        reduce { copy(isEnvironmentDialogVisible = !isEnvironmentDialogVisible) }
+    }
+
+    private fun dashboardInit() {
+        container.intent {
+            mqttClientRepository.isConnected().collect { isConnected ->
+                if (!isConnected) {
+                    postSideEffect(
+                        effect = DashboardSideEffect.ShowInfo(info = DashboardInfo.DISCONNECTED)
+                    )
+                } else {
+                    observeMessages()
+                }
             }
         }
+
+        loadWidgets()
+        initEnvironment()
+    }
+
+    private fun initEnvironment() = container.intent {
+        environmentRepository.getLast()?.let {
+            reduce { copy(environment = it) }
+        }
+    }
+
+    private fun onUpdateCanvasState(scale: Float, offsetX: Float, offsetY: Float) = container.intent {
+        val environment = container.state.value.environment.copy(
+            scale = scale,
+            offsetX = offsetX,
+            offsetY = offsetY
+        )
+        environmentRepository.update(environment = environment)
     }
 
     private fun loadWidgets() = container.intent {

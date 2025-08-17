@@ -3,23 +3,34 @@ package com.bruno13palhano.hmiapp.ui.dashboard
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.Map
 import androidx.compose.material.icons.outlined.Menu
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.carousel.HorizontalUncontainedCarousel
+import androidx.compose.material3.carousel.rememberCarouselState
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -28,13 +39,20 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.NavKey
 import com.bruno13palhano.hmiapp.R
 import com.bruno13palhano.hmiapp.ui.components.DrawerMenu
+import com.bruno13palhano.hmiapp.ui.components.EnvironmentInputDialog
+import com.bruno13palhano.hmiapp.ui.components.ExpandableFab
+import com.bruno13palhano.hmiapp.ui.components.ExpandableFabButtons
 import com.bruno13palhano.hmiapp.ui.components.VertMenu
 import com.bruno13palhano.hmiapp.ui.components.WidgetCanvas
 import com.bruno13palhano.hmiapp.ui.components.WidgetInputDialog
@@ -144,6 +162,19 @@ fun DashboardContent(
         ConfigurationOptions.IMPORT to stringResource(id = R.string.import_config)
     )
 
+    val dashboardOptions = mapOf(
+        DashboardOptions.ADD_ENVIRONMENT to ExpandableFabButtons(
+            icon = Icons.Outlined.Add,
+            label = "Environment",
+            contentDescription  = "Add new environment"
+        ),
+        DashboardOptions.WIDGETS to ExpandableFabButtons(
+            icon = Icons.Outlined.Add,
+            label = "Widgets",
+            contentDescription  = "Widgets options button"
+        )
+    )
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -173,6 +204,25 @@ fun DashboardContent(
                 }
             )
         },
+        floatingActionButton = {
+            if (state.environment.id != 0L) {
+                ExpandableFab(
+                    expanded = state.isDashboardOptionsExpanded,
+                    items = dashboardOptions,
+                    onClick = { onEvent(DashboardEvent.ToggleDashboardOptions) },
+                    onOptionSelected = { item ->
+                        when (item) {
+                            DashboardOptions.ADD_ENVIRONMENT -> {
+                                onEvent(DashboardEvent.ToggleEnvironmentInputDialog)
+                            }
+                            DashboardOptions.WIDGETS -> {
+                                onEvent(DashboardEvent.ToggleIsToolboxExpanded)
+                            }
+                        }
+                    }
+                )
+            }
+        },
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) {
         DrawerMenu(
@@ -182,26 +232,45 @@ fun DashboardContent(
             navigateTo = { key -> onEvent(DashboardEvent.NavigateTo(destination = key)) },
             gesturesEnabled = state.isGestureEnabled,
         ) {
-            Box(modifier = Modifier
-                .padding(it)
-                .fillMaxSize()) {
-                WidgetCanvas(
-                    widgets = state.widgets,
-                    onMove = { id, x, y ->
-                        onEvent(
-                            DashboardEvent.MoveWidget(
-                                id = id,
-                                x = x,
-                                y = y
+            Box(
+                modifier = Modifier
+                    .padding(it)
+                    .fillMaxSize()
+            ) {
+                if (state.environment.id != 0L) {
+                    WidgetCanvas(
+                        widgets = state.widgets,
+                        initialScale = state.environment.scale,
+                        initialOffset = Offset(
+                            x = state.environment.offsetX,
+                            y = state.environment.offsetY
+                        ),
+                        onMove = { id, x, y ->
+                            onEvent(
+                                DashboardEvent.MoveWidget(
+                                    id = id,
+                                    x = x,
+                                    y = y
+                                )
                             )
-                        )
-                    },
-                    onEdit = { id -> onEvent(DashboardEvent.OpenEditWidgetDialog(id = id)) },
-                    onRemove = { id -> onEvent(DashboardEvent.RemoveWidget(id = id)) },
-                    onEvent = { widgetEvent ->
-                        onEvent(DashboardEvent.OnWidgetEvent(widgetEvent = widgetEvent))
-                    }
-                )
+                        },
+                        onEdit = { id -> onEvent(DashboardEvent.OpenEditWidgetDialog(id = id)) },
+                        onRemove = { id -> onEvent(DashboardEvent.RemoveWidget(id = id)) },
+                        onEvent = { widgetEvent ->
+                            onEvent(DashboardEvent.OnWidgetEvent(widgetEvent = widgetEvent))
+                        },
+                        onTransformChange = { scale, offset ->
+                            onEvent(
+                                DashboardEvent.OnUpdateCanvasState(
+                                    scale = scale,
+                                    offsetX = offset.x,
+                                    offsetY = offset.y
+                                )
+                            )
+                        }
+                    )
+                }
+
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.BottomEnd
@@ -211,6 +280,19 @@ fun DashboardContent(
                         onExpandedClick = { onEvent(DashboardEvent.ToggleIsToolboxExpanded) },
                         onAdd = { type -> onEvent(DashboardEvent.ShowWidgetDialog(type = type)) }
                     )
+                }
+
+                if (state.environment.id == 0L) {
+                    ExtendedFloatingActionButton(
+                        modifier = Modifier.align(Alignment.Center),
+                        onClick = { onEvent(DashboardEvent.ToggleEnvironmentInputDialog) }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Add,
+                            contentDescription = stringResource(id = R.string.add_environment_button)
+                        )
+                        Text(text = stringResource(id = R.string.environment))
+                    }
                 }
 
                 AnimatedVisibility(visible = state.isWidgetInputDialogVisible) {
@@ -233,6 +315,53 @@ fun DashboardContent(
                         onDismissRequest = { onEvent(DashboardEvent.HideWidgetConfig) }
                     )
                 }
+
+                AnimatedVisibility(visible = state.isEnvironmentDialogVisible) {
+                    EnvironmentInputDialog(
+                        name = state.environment.name,
+                        onNameChange = { name ->
+                            onEvent(DashboardEvent.UpdateEnvironmentName(name = name))
+                        },
+                        onConfirm = {
+                            if (state.environment.id == 0L) {
+                                onEvent(DashboardEvent.AddEnvironment)
+                            } else {
+                                onEvent(DashboardEvent.EditEnvironment)
+                            }
+                        },
+                        onDismissRequest = { onEvent(DashboardEvent.ToggleEnvironmentInputDialog) }
+                    )
+                }
+
+                val items = listOf(
+                    "Environ 1",
+                    "Environ 2",
+                    "Environ 3",
+                    "Environ 4",
+                    "Environ 5",
+                    "Environ 6",
+                    "Environ 7",
+                    "Environ 8",
+                )
+                HorizontalUncontainedCarousel(
+                    state = rememberCarouselState { items.count() },
+                    modifier = Modifier.align(Alignment.BottomCenter),
+                    itemWidth = 88.dp,
+                    itemSpacing = 16.dp,
+                    contentPadding = PaddingValues(horizontal = 4.dp)
+                ) { i ->
+                    val item = items[i]
+                    ListItem(
+                        headlineContent = {
+                            Text(
+                                text = item,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                style = MaterialTheme.typography.titleMedium
+                            )
+                        }
+                    )
+                }
             }
         }
     }
@@ -247,12 +376,30 @@ private fun getDashboardInfo(): Map<DashboardInfo, String> {
     )
 }
 
+private enum class DashboardOptions {
+    ADD_ENVIRONMENT,
+    WIDGETS
+}
+
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 private fun DashboardPreview() {
     HMIAppTheme {
         DashboardContent(
             drawerState = DrawerState(initialValue = DrawerValue.Open),
+            snackbarHostState = SnackbarHostState(),
+            state = DashboardState(),
+            onEvent = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+private fun DashboardClosedPreview() {
+    HMIAppTheme {
+        DashboardContent(
+            drawerState = DrawerState(initialValue = DrawerValue.Closed),
             snackbarHostState = SnackbarHostState(),
             state = DashboardState(),
             onEvent = {}
