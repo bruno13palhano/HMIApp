@@ -55,4 +55,10 @@
     <string name="widget_led_indicator">Led Indicator</string>
     <string name="widget_dropdown">Dropdown</string>
     <string name="widget_color_picker">Color Picker</string>
+    <string name="environment">Environment</string>
+    <string name="add_environment_button">Add environment button</string>
+    <string name="add_button">Add button</string>
+    <string name="close_button">Close button</string>
+    <string name="name">Name</string>
+    <string name="name_placeholder">Enter name</string>
 </resources>
