@@ -170,7 +170,8 @@ private fun WidgetBlockPreview() {
                     type = WidgetType.SWITCH,
                     label = "M1",
                     dataSource = DataSource.MQTT(topic = "test/topic"),
-                    value = "ON"
+                    value = "ON",
+                    environmentId = 1L
                 ),
                 onMove = { _, _ -> },
                 onEdit = { },

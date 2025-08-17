@@ -11,7 +11,8 @@ data class Widget(
     val y: Float = 0f,
     val width: Float = 160f,
     val height: Float = 160f,
-    val value: String = ""
+    val value: String = "",
+    val environmentId: Long
 )
 
 enum class WidgetType {

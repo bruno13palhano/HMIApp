@@ -86,7 +86,8 @@ private fun WidgetCanvasPreview() {
                     dataSource = DataSource.MQTT(topic = "/gauge/v1"),
                     value = "200",
                     x = 20f,
-                    y = 20f
+                    y = 20f,
+                    environmentId = 1L
                 ),
                 Widget(
                     type = WidgetType.TEXT,
@@ -94,7 +95,8 @@ private fun WidgetCanvasPreview() {
                     dataSource = DataSource.HTTP(url = "https://www.test.com/text/t1"),
                     value = "Hello word",
                     x = 580f,
-                    y = 20f
+                    y = 20f,
+                    environmentId = 1L
                 ),
                 Widget(
                     type = WidgetType.SWITCH,
@@ -102,7 +104,8 @@ private fun WidgetCanvasPreview() {
                     dataSource = DataSource.MQTT(topic = "/switch/s1"),
                     value = "true",
                     x = 20f,
-                    y = 500f
+                    y = 500f,
+                    environmentId = 1L
                 ),
                 Widget(
                     type = WidgetType.BUTTON,
@@ -110,7 +113,8 @@ private fun WidgetCanvasPreview() {
                     dataSource = DataSource.MQTT(topic = "/button/b1"),
                     value = "",
                     x = 580f,
-                    y = 500f
+                    y = 500f,
+                    environmentId = 1L
                 ),
                 Widget(
                     type = WidgetType.PROGRESS_BAR,
@@ -118,7 +122,8 @@ private fun WidgetCanvasPreview() {
                     dataSource = DataSource.MQTT(topic = "/progress/p1"),
                     value = ".63",
                     x = 20f,
-                    y = 1000f
+                    y = 1000f,
+                    environmentId = 1L
                 ),
                 Widget(
                     type = WidgetType.SLIDER,
@@ -126,7 +131,8 @@ private fun WidgetCanvasPreview() {
                     dataSource = DataSource.HTTP(url = "http://www.test.com/slider/l1"),
                     value = "40.7",
                     x = 580f,
-                    y = 1000f
+                    y = 1000f,
+                    environmentId = 1L
                 ),
                 Widget(
                     type = WidgetType.LED_INDICATOR,
@@ -134,7 +140,8 @@ private fun WidgetCanvasPreview() {
                     dataSource = DataSource.HTTP(url = "https://www.test.com/leds/l1"),
                     value = "WARN",
                     x = 20f,
-                    y = 1500f
+                    y = 1500f,
+                    environmentId = 1L
                 ),
                 Widget(
                     type = WidgetType.INPUT_FIELD,
@@ -142,7 +149,8 @@ private fun WidgetCanvasPreview() {
                     dataSource = DataSource.HTTP(url = "https://www.test.com/input/ip1"),
                     value = "ON",
                     x = 580f,
-                    y = 1500f
+                    y = 1500f,
+                    environmentId = 1L
                 )
             ),
             onMove = { _, _, _ -> },

@@ -10,8 +10,8 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 internal interface WidgetDao {
-    @Query("SELECT * FROM widgets")
-    fun getAll(): Flow<List<WidgetEntity>>
+    @Query("SELECT * FROM widgets WHERE environmentId = :environmentId")
+    fun getWidgets(environmentId: Long): Flow<List<WidgetEntity>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(entity: WidgetEntity)

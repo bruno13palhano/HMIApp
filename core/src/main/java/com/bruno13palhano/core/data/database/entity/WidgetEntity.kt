@@ -16,7 +16,8 @@ internal data class WidgetEntity(
     val x: Float,
     val y: Float,
     val width: Float,
-    val height: Float
+    val height: Float,
+    val environmentId: Long
 )
 
 internal fun WidgetEntity.toDomain(): Widget {
@@ -25,7 +26,17 @@ internal fun WidgetEntity.toDomain(): Widget {
         "HTTP" -> DataSource.HTTP(data)
         else -> DataSource.MQTT("")
     }
-    return Widget(id, WidgetType.valueOf(type), label, dataSource, x, y, width, height)
+    return Widget(
+        id = id,
+        type = WidgetType.valueOf(type),
+        label = label,
+        dataSource = dataSource,
+        x = x,
+        y = y,
+        width = width,
+        height = height,
+        environmentId = environmentId
+    )
 }
 
 internal fun Widget.toEntity(): WidgetEntity {
@@ -33,5 +44,16 @@ internal fun Widget.toEntity(): WidgetEntity {
         is DataSource.MQTT -> "MQTT" to dataSource.topic
         is DataSource.HTTP -> "HTTP" to dataSource.url
     }
-    return WidgetEntity(id, type.name, label, typeStr, dataStr, x, y, width, height)
+    return WidgetEntity(
+        id = id,
+        type = type.name,
+        label = label,
+        dataSourceType = typeStr,
+        data = dataStr,
+        x = x,
+        y = y,
+        width = width,
+        height = height,
+        environmentId = environmentId
+    )
 }

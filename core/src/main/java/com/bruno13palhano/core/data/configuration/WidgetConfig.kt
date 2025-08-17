@@ -15,7 +15,8 @@ data class WidgetConfig(
     val y: Float,
     val width: Float,
     val height: Float,
-    val value: String
+    val value: String,
+    val environmentId: Long
 )
 
 @Serializable
@@ -41,7 +42,8 @@ fun Widget.toWidgetConfig(): WidgetConfig = WidgetConfig(
     y = y,
     width = width,
     height = height,
-    value = value
+    value = value,
+    environmentId = environmentId
 )
 
 fun WidgetConfig.toWidget(): Widget = Widget(
@@ -56,5 +58,6 @@ fun WidgetConfig.toWidget(): Widget = Widget(
     y = y,
     width = width,
     height = height,
-    value = value
+    value = value,
+    environmentId = environmentId
 )

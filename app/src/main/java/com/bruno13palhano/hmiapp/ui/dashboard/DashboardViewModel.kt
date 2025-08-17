@@ -121,7 +121,8 @@ class DashboardViewModel @AssistedInject constructor(
         val widget = Widget(
             type = state.type,
             label = state.label,
-            dataSource = DataSource.MQTT(topic = state.endpoint)
+            dataSource = DataSource.MQTT(topic = state.endpoint),
+            environmentId = container.state.value.environment.id
         )
 
         widgetRepository.insert(widget)
@@ -267,8 +268,8 @@ class DashboardViewModel @AssistedInject constructor(
             }
         }
 
-        loadWidgets()
         initEnvironment()
+        loadWidgets()
     }
 
     private fun initEnvironment() = container.intent {
@@ -287,7 +288,8 @@ class DashboardViewModel @AssistedInject constructor(
     }
 
     private fun loadWidgets() = container.intent {
-        widgetRepository.getAll().collectLatest { widgets ->
+        val environmentId = state.value.environment.id
+        widgetRepository.getWidgets(environmentId = environmentId).collectLatest { widgets ->
             val updatedWidgets = widgets.map { widget ->
                 val value = widgetValues[widget.id] ?: ""
                 widget.copy(value = value)

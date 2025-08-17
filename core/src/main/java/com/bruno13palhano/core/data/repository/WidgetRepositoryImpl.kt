@@ -11,8 +11,10 @@ import javax.inject.Inject
 internal class WidgetRepositoryImpl @Inject constructor(
     private val dao: WidgetDao
 ) : WidgetRepository {
-    override fun getAll(): Flow<List<Widget>> {
-        return dao.getAll().map { it.map { entity -> entity.toDomain() } }
+    override fun getWidgets(environmentId: Long): Flow<List<Widget>> {
+        return dao.getWidgets(environmentId = environmentId).map {
+            it.map { entity -> entity.toDomain() }
+        }
     }
 
     override suspend fun insert(widget: Widget) {

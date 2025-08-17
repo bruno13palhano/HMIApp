@@ -4,7 +4,7 @@ import com.bruno13palhano.core.model.Widget
 import kotlinx.coroutines.flow.Flow
 
 interface WidgetRepository {
-    fun getAll(): Flow<List<Widget>>
+    fun getWidgets(environmentId: Long): Flow<List<Widget>>
     suspend fun insert(widget: Widget)
     suspend fun update(widget: Widget)
     suspend fun deleteById(id: String)
