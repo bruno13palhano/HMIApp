@@ -87,3 +87,57 @@ fun WidgetInputDialog(
         }
     }
 }
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun EnvironmentInputDialog(
+    name: String,
+    onNameChange: (name: String) -> Unit,
+    onConfirm: () -> Unit,
+    onDismissRequest: () -> Unit
+) {
+    BasicAlertDialog(onDismissRequest = onDismissRequest) {
+        Surface(
+            modifier = Modifier.wrapContentWidth().wrapContentHeight(),
+            shape = MaterialTheme.shapes.large,
+            tonalElevation = AlertDialogDefaults.TonalElevation
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(
+                    modifier = Modifier.align(Alignment.CenterHorizontally),
+                    text = stringResource(id = R.string.environment),
+                )
+                Spacer(modifier = Modifier.height(24.dp))
+                CustomTextField(
+                    modifier = Modifier
+                        .padding(horizontal = 8.dp)
+                        .fillMaxWidth(),
+                    value = name,
+                    onValueChange = onNameChange,
+                    label = stringResource(id = R.string.name),
+                    placeholder = stringResource(id = R.string.name_placeholder)
+                )
+
+                Row(
+                    modifier = Modifier
+                        .padding(top = 16.dp, end = 8.dp)
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    Button(
+                        onClick = onDismissRequest,
+                        modifier = Modifier.padding(end = 4.dp)
+                    ) {
+                        Text(text = stringResource(id = R.string.cancel))
+                    }
+                    Button(
+                        onClick = onConfirm,
+                        modifier = Modifier.padding(start = 4.dp)
+                    ) {
+                        Text(text = stringResource(id = R.string.ok))
+                    }
+                }
+            }
+        }
+    }
+}
