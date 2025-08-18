@@ -13,12 +13,21 @@ import java.io.OutputStream
 @Immutable
 data class DashboardState(
     val widgets: List<Widget> = emptyList(),
-    val environment: Environment = Environment(0L, "", 1f, 0f, 0f),
+    val environments: List<Environment> = emptyList(),
+    val environment: Environment =
+        Environment(
+            0L,
+            "",
+            1f,
+            0f,
+            0f
+        ),
     val id: String = "",
     val label: String = "",
     val endpoint: String = "",
     val type: WidgetType = WidgetType.TEXT,
     val currentDestination: NavKey = Dashboard,
+    val isEditEnvironmentName: Boolean = false,
     val isGestureEnabled: Boolean = false,
     val isToolboxExpanded: Boolean = false,
     val isDashboardOptionsExpanded: Boolean = false,
@@ -35,7 +44,11 @@ sealed interface DashboardEvent {
     data class MoveWidget(val id: String, val x: Float, val y: Float) : DashboardEvent
     data class OpenEditWidgetDialog(val id: String) : DashboardEvent
     data class OnWidgetEvent(val widgetEvent: WidgetEvent) : DashboardEvent
-    data class OnUpdateCanvasState(val scale: Float, val offsetX: Float, val offsetY: Float) : DashboardEvent
+    data class OnUpdateCanvasState(
+        val scale: Float,
+        val offsetX: Float,
+        val offsetY: Float
+    ) : DashboardEvent
     data class UpdateLabel(val label: String) : DashboardEvent
     data class UpdateEndpoint(val endpoint: String) : DashboardEvent
     data class UpdateEnvironmentName(val name: String) : DashboardEvent
@@ -50,7 +63,8 @@ sealed interface DashboardEvent {
     data object ToggleDashboardOptions : DashboardEvent
     data class OnVertMenuItemClick(val item: ConfigurationOptions) : DashboardEvent
     data object ToggleIsToolboxExpanded : DashboardEvent
-    data object ToggleEnvironmentInputDialog : DashboardEvent
+    data class OpenEnvironmentInputDialog(val isEdit: Boolean) : DashboardEvent
+    data object CloseEnvironmentInputDialog : DashboardEvent
     data object ToggleMenu : DashboardEvent
     data object Init : DashboardEvent
 }
