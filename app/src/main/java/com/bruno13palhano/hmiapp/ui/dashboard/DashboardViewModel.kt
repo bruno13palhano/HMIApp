@@ -73,7 +73,13 @@ class DashboardViewModel @AssistedInject constructor(
     }
 
     private fun showWidgetDialog(type: WidgetType) = container.intent {
-        reduce { copy(isWidgetInputDialogVisible = true, type = type) }
+        reduce {
+            copy(
+                isToolboxExpanded = false,
+                isWidgetInputDialogVisible = true,
+                type = type
+            )
+        }
     }
 
     private fun hideWidgetDialog() = container.intent {
@@ -109,9 +115,6 @@ class DashboardViewModel @AssistedInject constructor(
         environmentRepository.update(environment = environment)
 
         reduce { copy(isEnvironmentDialogVisible = false) }
-    }
-
-    private fun openEditEnvironmentDialog(id: Long) = container.intent {
     }
 
     private fun addWidget() = container.intent {
@@ -240,7 +243,9 @@ class DashboardViewModel @AssistedInject constructor(
     }
 
     private fun toggleIsToolboxExpanded() = container.intent {
-        reduce { copy(isToolboxExpanded = !isToolboxExpanded) }
+        reduce {
+            copy(isToolboxExpanded = !isToolboxExpanded, isDashboardOptionsExpanded = false)
+        }
     }
 
     private fun toggleMenu() = container.intent {
@@ -252,33 +257,39 @@ class DashboardViewModel @AssistedInject constructor(
     }
 
     private fun toggleEnvironmentInputDialog() = container.intent {
-        reduce { copy(isEnvironmentDialogVisible = !isEnvironmentDialogVisible) }
+        reduce {
+            copy(
+                isEnvironmentDialogVisible = !isEnvironmentDialogVisible,
+                isDashboardOptionsExpanded = false
+            )
+        }
     }
 
-    private fun dashboardInit() {
-        container.intent {
+    private fun dashboardInit() = container.intent {
+        environmentRepository.getLast()?.let {
+            reduce { copy(environment = it) }
+        }
+
             mqttClientRepository.isConnected().collect { isConnected ->
                 if (!isConnected) {
                     postSideEffect(
                         effect = DashboardSideEffect.ShowInfo(info = DashboardInfo.DISCONNECTED)
                     )
                 } else {
-                    observeMessages()
+                    val environmentId = state.value.environment.id
+                    if (environmentId != 0L) {
+                        loadWidgets(environmentId = environmentId)
+                        observeMessages()
+                    }
                 }
             }
         }
 
-        initEnvironment()
-        loadWidgets()
-    }
-
-    private fun initEnvironment() = container.intent {
-        environmentRepository.getLast()?.let {
-            reduce { copy(environment = it) }
-        }
-    }
-
-    private fun onUpdateCanvasState(scale: Float, offsetX: Float, offsetY: Float) = container.intent {
+    private fun onUpdateCanvasState(
+        scale: Float,
+        offsetX: Float,
+        offsetY: Float
+    ) = container.intent {
         val environment = container.state.value.environment.copy(
             scale = scale,
             offsetX = offsetX,
@@ -287,8 +298,7 @@ class DashboardViewModel @AssistedInject constructor(
         environmentRepository.update(environment = environment)
     }
 
-    private fun loadWidgets() = container.intent {
-        val environmentId = state.value.environment.id
+    private fun loadWidgets(environmentId: Long) = container.intent {
         widgetRepository.getWidgets(environmentId = environmentId).collectLatest { widgets ->
             val updatedWidgets = widgets.map { widget ->
                 val value = widgetValues[widget.id] ?: ""
