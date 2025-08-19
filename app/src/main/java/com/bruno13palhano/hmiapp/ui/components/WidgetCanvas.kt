@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -15,11 +16,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.IntSize
 import com.bruno13palhano.core.model.DataSource
 import com.bruno13palhano.core.model.Widget
 import com.bruno13palhano.core.model.WidgetType
 import com.bruno13palhano.hmiapp.ui.theme.HMIAppTheme
+
+private const val CANVAS_SIZE = 5000f
 
 @Composable
 fun WidgetCanvas(
@@ -34,6 +39,12 @@ fun WidgetCanvas(
 ) {
     var scale by remember { mutableFloatStateOf(initialScale) }
     var offset by remember { mutableStateOf(initialOffset) }
+    var screenSize by remember { mutableStateOf(IntSize.Zero) }
+
+    LaunchedEffect(initialScale, initialOffset) {
+        scale = initialScale
+        offset = initialOffset
+    }
 
     Box(
         modifier = Modifier
@@ -44,12 +55,28 @@ fun WidgetCanvas(
                     val newScale = (scale * zoom).coerceIn(0.3f, 3f)
                     val newOffset = offset + pan
 
-                    scale = newScale
-                    offset = newOffset
+                    val screenWidth = screenSize.width.toFloat()
+                    val screenHeight = screenSize.height.toFloat()
+                    val scaledWidth = CANVAS_SIZE * newScale
+                    val scaledHeight = CANVAS_SIZE * newScale
 
-                    onTransformChange(newScale, newOffset)
+                    val maxTranslationX = (scaledWidth - screenWidth) / 2
+                    val maxTranslationY = (scaledHeight - screenHeight) / 2
+
+                    offset = if (maxTranslationX > 0 && maxTranslationY > 0) {
+                        Offset(
+                            x = newOffset.x.coerceIn(-maxTranslationX, maxTranslationX),
+                            y = newOffset.y.coerceIn(-maxTranslationY, maxTranslationY)
+                        )
+                    } else {
+                        Offset.Zero
+                    }
+
+                    scale = newScale
+                    onTransformChange(scale, offset)
                 }
             }
+            .onSizeChanged { screenSize = it }
     ) {
         Box(
             modifier = Modifier
