@@ -1,5 +1,6 @@
 package com.bruno13palhano.hmiapp.ui.components
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.Box
@@ -14,6 +15,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
@@ -24,7 +26,7 @@ import com.bruno13palhano.core.model.Widget
 import com.bruno13palhano.core.model.WidgetType
 import com.bruno13palhano.hmiapp.ui.theme.HMIAppTheme
 
-private const val CANVAS_SIZE = 5000f
+const val CANVAS_SIZE = 5000f
 
 @Composable
 fun WidgetCanvas(
@@ -78,6 +80,46 @@ fun WidgetCanvas(
             }
             .onSizeChanged { screenSize = it }
     ) {
+        Canvas(
+            modifier = Modifier
+                .graphicsLayer(
+                    scaleX = scale,
+                    scaleY = scale,
+                    translationX = offset.x,
+                    translationY = offset.y
+                )
+                .fillMaxSize()
+        ) {
+            val step = 100f
+            val gridColor = Color.Red.copy(alpha = 0.25f)
+
+            val halfSize = CANVAS_SIZE / 2
+
+            // Drawn vertical lines (from -halfSize to halfSize)
+            var x = -halfSize
+            while (x <=  halfSize) {
+                drawLine(
+                    color = gridColor,
+                    start = Offset(x, -halfSize),
+                    end = Offset(x, halfSize),
+                    strokeWidth = 1f
+                )
+                x += step
+            }
+
+            // Draw horizontal lines (from -halfSize to halfSize)
+            var y = -halfSize
+            while (y <= halfSize) {
+                drawLine(
+                    color = gridColor,
+                    start = Offset(-halfSize, y),
+                    end = Offset(halfSize, y),
+                    strokeWidth = 1f
+                )
+                y += step
+            }
+        }
+
         Box(
             modifier = Modifier
                 .graphicsLayer(
