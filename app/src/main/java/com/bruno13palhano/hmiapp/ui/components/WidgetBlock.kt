@@ -68,8 +68,11 @@ fun WidgetBlock(
             .pointerInput(Unit) {
                 detectDragGestures { change, dragAmount ->
                     change.consume()
-                    offsetX += dragAmount.x
-                    offsetY += dragAmount.y
+
+                    val halfSize = CANVAS_SIZE / 2
+
+                    offsetX = (offsetX + dragAmount.x).coerceIn(-halfSize, halfSize - widget.width)
+                    offsetY = (offsetY + dragAmount.y).coerceIn(-halfSize, halfSize - widget.height)
                     onMove(offsetX, offsetY)
                 }
             }
