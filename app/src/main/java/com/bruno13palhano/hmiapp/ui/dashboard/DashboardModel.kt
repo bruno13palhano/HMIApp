@@ -54,6 +54,7 @@ sealed interface DashboardEvent {
     data class UpdateEnvironmentName(val name: String) : DashboardEvent
     data object AddEnvironment : DashboardEvent
     data object EditEnvironment : DashboardEvent
+    data class ChangeEnvironment(val id: Long) : DashboardEvent
     data class ShowWidgetDialog(val type: WidgetType) : DashboardEvent
     data class NavigateTo(val destination: NavKey) : DashboardEvent
     data class ExportWidgetsConfig(val stream: OutputStream) : DashboardEvent
