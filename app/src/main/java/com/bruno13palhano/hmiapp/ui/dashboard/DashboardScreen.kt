@@ -3,34 +3,31 @@ package com.bruno13palhano.hmiapp.ui.dashboard
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
-import androidx.compose.material.icons.outlined.Map
 import androidx.compose.material.icons.outlined.Menu
 import androidx.compose.material.icons.outlined.MoreVert
+import androidx.compose.material3.BottomAppBar
+import androidx.compose.material3.Button
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.carousel.HorizontalUncontainedCarousel
-import androidx.compose.material3.carousel.rememberCarouselState
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -40,7 +37,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -213,7 +209,7 @@ fun DashboardContent(
                     onOptionSelected = { item ->
                         when (item) {
                             DashboardOptions.ADD_ENVIRONMENT -> {
-                                onEvent(DashboardEvent.ToggleEnvironmentInputDialog)
+                                onEvent(DashboardEvent.OpenEnvironmentInputDialog(isEdit = false))
                             }
                             DashboardOptions.WIDGETS -> {
                                 onEvent(DashboardEvent.ToggleIsToolboxExpanded)
@@ -221,6 +217,29 @@ fun DashboardContent(
                         }
                     }
                 )
+            }
+        },
+        bottomBar = {
+            if (state.environments.isNotEmpty()) {
+                BottomAppBar {
+                    LazyRow(
+                        contentPadding = PaddingValues(horizontal = 4.dp)
+                    ) {
+                        items(items = state.environments, key = { env -> env.id }) { env ->
+                            Button(
+                                modifier = Modifier.padding(horizontal = 4.dp),
+                                onClick = { onEvent(DashboardEvent.ChangeEnvironment(id = env.id)) }
+                            ) {
+                                Text(
+                                    text = env.name,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    style = MaterialTheme.typography.titleMedium
+                                )
+                            }
+                        }
+                    }
+                }
             }
         },
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
@@ -285,7 +304,7 @@ fun DashboardContent(
                 if (state.environment.id == 0L) {
                     ExtendedFloatingActionButton(
                         modifier = Modifier.align(Alignment.Center),
-                        onClick = { onEvent(DashboardEvent.ToggleEnvironmentInputDialog) }
+                        onClick = { onEvent(DashboardEvent.OpenEnvironmentInputDialog(isEdit = false)) }
                     ) {
                         Icon(
                             imageVector = Icons.Outlined.Add,
@@ -323,43 +342,13 @@ fun DashboardContent(
                             onEvent(DashboardEvent.UpdateEnvironmentName(name = name))
                         },
                         onConfirm = {
-                            if (state.environment.id == 0L) {
-                                onEvent(DashboardEvent.AddEnvironment)
-                            } else {
+                            if (state.isEditEnvironmentName) {
                                 onEvent(DashboardEvent.EditEnvironment)
+                            } else {
+                                onEvent(DashboardEvent.AddEnvironment)
                             }
                         },
-                        onDismissRequest = { onEvent(DashboardEvent.ToggleEnvironmentInputDialog) }
-                    )
-                }
-
-                val items = listOf(
-                    "Environ 1",
-                    "Environ 2",
-                    "Environ 3",
-                    "Environ 4",
-                    "Environ 5",
-                    "Environ 6",
-                    "Environ 7",
-                    "Environ 8",
-                )
-                HorizontalUncontainedCarousel(
-                    state = rememberCarouselState { items.count() },
-                    modifier = Modifier.align(Alignment.BottomCenter),
-                    itemWidth = 88.dp,
-                    itemSpacing = 16.dp,
-                    contentPadding = PaddingValues(horizontal = 4.dp)
-                ) { i ->
-                    val item = items[i]
-                    ListItem(
-                        headlineContent = {
-                            Text(
-                                text = item,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                style = MaterialTheme.typography.titleMedium
-                            )
-                        }
+                        onDismissRequest = { onEvent(DashboardEvent.CloseEnvironmentInputDialog) }
                     )
                 }
             }
