@@ -17,6 +17,7 @@ import com.bruno13palhano.hmiapp.ui.components.extractEndpoint
 import com.bruno13palhano.hmiapp.ui.shared.Container
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.serialization.json.Json
 import java.io.InputStream
@@ -51,10 +52,12 @@ class DashboardViewModel @AssistedInject constructor(
             is DashboardEvent.OnWidgetEvent -> onWidgetEvent(widgetEvent = event.widgetEvent)
             DashboardEvent.AddEnvironment -> addEnvironment()
             DashboardEvent.EditEnvironment -> editEnvironment()
+            is DashboardEvent.ChangeEnvironment -> changeEnvironment(id = event.id)
             DashboardEvent.ToggleIsToolboxExpanded -> toggleIsToolboxExpanded()
             DashboardEvent.ToggleMenu -> toggleMenu()
             DashboardEvent.ToggleDashboardOptions -> toggleDashboardOptions()
-            DashboardEvent.ToggleEnvironmentInputDialog -> toggleEnvironmentInputDialog()
+            is DashboardEvent.OpenEnvironmentInputDialog -> openEnvironmentInputDialog(isEdit = event.isEdit)
+            DashboardEvent.CloseEnvironmentInputDialog -> closeEnvironmentInputDialog()
             DashboardEvent.HideWidgetConfig -> hideWidgetDialog()
             is DashboardEvent.ShowWidgetDialog -> showWidgetDialog(type = event.type)
             is DashboardEvent.UpdateEndpoint -> updateEndpoint(endpoint = event.endpoint)
@@ -99,25 +102,44 @@ class DashboardViewModel @AssistedInject constructor(
         reduce { copy(environment = environment.copy(name = name)) }
     }
 
-    private fun addEnvironment() = container.intent {
-        val environment = state.value.environment
-        environmentRepository.insert(environment = environment)
+    private fun addEnvironment() {
+        container.intent(dispatcher = Dispatchers.IO) {
+            val environment = state.value.environment.copy(
+                id = 0L,
+                scale = 1f,
+                offsetX = 0f,
+                offsetY = 0f
+            )
 
-        reduce { copy(isEnvironmentDialogVisible = false) }
+            environmentRepository.insert(environment = environment)
+            reduce { copy(isEnvironmentDialogVisible = false) }
+        }
 
-        environmentRepository.getLast()?.let {
-            reduce { copy(environment = it) }
+        container.intent(dispatcher = Dispatchers.IO) {
+            environmentRepository.getLast()?.let {
+                reduce { copy(environment = it) }
+            }
         }
     }
 
-    private fun editEnvironment() = container.intent {
+    private fun editEnvironment() = container.intent(dispatcher = Dispatchers.IO) {
         val environment = state.value.environment
         environmentRepository.update(environment = environment)
 
         reduce { copy(isEnvironmentDialogVisible = false) }
     }
 
-    private fun addWidget() = container.intent {
+    private fun changeEnvironment(id: Long){
+        container.intent(dispatcher = Dispatchers.IO) {
+            environmentRepository.getById(id = id)?.let {
+                reduce { copy(environment = it) }
+            }
+        }
+
+        loadWidgets(environmentId = id)
+    }
+
+    private fun addWidget() = container.intent(dispatcher = Dispatchers.IO) {
         reduce { copy(isWidgetInputDialogVisible = false) }
 
         val state = state.value
@@ -125,14 +147,14 @@ class DashboardViewModel @AssistedInject constructor(
             type = state.type,
             label = state.label,
             dataSource = DataSource.MQTT(topic = state.endpoint),
-            environmentId = container.state.value.environment.id
+            environmentId = state.environment.id
         )
 
         widgetRepository.insert(widget)
         subscribeToTopic(widget = widget)
     }
 
-    private fun editWidget() = container.intent {
+    private fun editWidget() = container.intent(dispatcher = Dispatchers.IO) {
         reduce { copy(isWidgetInputDialogVisible = false) }
 
         val state = state.value
@@ -184,14 +206,15 @@ class DashboardViewModel @AssistedInject constructor(
         reduce { copy(id = "", label = "", endpoint = "") }
     }
 
-    private fun removeWidget(id: String) = container.intent {
+    private fun removeWidget(id: String) = container.intent(dispatcher = Dispatchers.IO) {
         widgetValues.remove(key = id)
         widgetRepository.deleteById(id = id)
     }
 
-    private fun moveWidget(id: String, x: Float, y: Float) = container.intent {
-        widgetRepository.updatePosition(id = id, x = x, y = y)
-    }
+    private fun moveWidget(id: String, x: Float, y: Float) =
+        container.intent(dispatcher = Dispatchers.IO) {
+            widgetRepository.updatePosition(id = id, x = x, y = y)
+        }
 
     private fun onWidgetEvent(widgetEvent: WidgetEvent) {
         when (widgetEvent) {
@@ -231,16 +254,17 @@ class DashboardViewModel @AssistedInject constructor(
         }
     }
 
-    private fun publishWidgetEvent(widgetId: String, message: String) = container.intent {
-        val widget = state.value.widgets.find { it.id == widgetId}
+    private fun publishWidgetEvent(widgetId: String, message: String) =
+        container.intent(dispatcher = Dispatchers.IO) {
+            val widget = state.value.widgets.find { it.id == widgetId }
 
-        widget?.let {
-            mqttClientRepository.publish(
-                topic = (it.dataSource as DataSource.MQTT).topic,
-                message = message
-            )
+            widget?.let {
+                mqttClientRepository.publish(
+                    topic = (it.dataSource as DataSource.MQTT).topic,
+                    message = message
+                )
+            }
         }
-    }
 
     private fun toggleIsToolboxExpanded() = container.intent {
         reduce {
@@ -256,20 +280,38 @@ class DashboardViewModel @AssistedInject constructor(
         reduce { copy(isDashboardOptionsExpanded = !isDashboardOptionsExpanded) }
     }
 
-    private fun toggleEnvironmentInputDialog() = container.intent {
+    private fun openEnvironmentInputDialog(isEdit: Boolean) = container.intent {
         reduce {
             copy(
-                isEnvironmentDialogVisible = !isEnvironmentDialogVisible,
-                isDashboardOptionsExpanded = false
+                isEnvironmentDialogVisible = true,
+                isDashboardOptionsExpanded = false,
+                isEditEnvironmentName = isEdit
             )
         }
     }
 
-    private fun dashboardInit() = container.intent {
-        environmentRepository.getLast()?.let {
-            reduce { copy(environment = it) }
+    private fun closeEnvironmentInputDialog() = container.intent {
+        reduce { copy(isEnvironmentDialogVisible = false) }
+    }
+
+    private fun dashboardInit() {
+        var id = 0L
+
+        loadEnvironments()
+
+        container.intent(dispatcher = Dispatchers.IO) {
+            //Change to the right environment
+            environmentRepository.getLast()?.let {
+                reduce { copy(environment = it) }
+
+                if (it.id != id) {
+                    id = it.id
+                    loadWidgets(environmentId = id)
+                }
+            }
         }
 
+        container.intent(dispatcher = Dispatchers.IO) {
             mqttClientRepository.isConnected().collect { isConnected ->
                 if (!isConnected) {
                     postSideEffect(
@@ -278,12 +320,18 @@ class DashboardViewModel @AssistedInject constructor(
                 } else {
                     val environmentId = state.value.environment.id
                     if (environmentId != 0L) {
-                        loadWidgets(environmentId = environmentId)
                         observeMessages()
                     }
                 }
             }
         }
+    }
+
+    private fun loadEnvironments() = container.intent(dispatcher = Dispatchers.IO) {
+        environmentRepository.getAll().collectLatest {
+            reduce { copy(environments = it) }
+        }
+    }
 
     private fun onUpdateCanvasState(
         scale: Float,
@@ -298,8 +346,8 @@ class DashboardViewModel @AssistedInject constructor(
         environmentRepository.update(environment = environment)
     }
 
-    private fun loadWidgets(environmentId: Long) = container.intent {
-        widgetRepository.getWidgets(environmentId = environmentId).collectLatest { widgets ->
+    private fun loadWidgets(environmentId: Long) = container.intent(dispatcher = Dispatchers.IO) {
+        widgetRepository.getWidgets(environmentId = environmentId).let { widgets ->
             val updatedWidgets = widgets.map { widget ->
                 val value = widgetValues[widget.id] ?: ""
                 widget.copy(value = value)
@@ -317,7 +365,7 @@ class DashboardViewModel @AssistedInject constructor(
     }
 
     private fun observeMessages() {
-        container.intent {
+        container.intent(dispatcher = Dispatchers.IO) {
             mqttClientRepository.incomingMessages().collect { (topic, message) ->
                 val updatedWidgets = state.value.widgets.map { widget ->
                     if ((widget.dataSource as DataSource.MQTT).topic == topic) {
@@ -331,34 +379,36 @@ class DashboardViewModel @AssistedInject constructor(
         }
     }
 
-    private fun exportWidgets(stream: OutputStream) = container.intent {
-        val widgets = state.value.widgets.map { it.toWidgetConfig() }
-        val layout = LayoutConfig(widgets)
+    private fun exportWidgets(stream: OutputStream) =
+        container.intent(dispatcher = Dispatchers.Default) {
+            val widgets = state.value.widgets.map { it.toWidgetConfig() }
+            val layout = LayoutConfig(widgets)
 
-        try {
-            val json = Json.encodeToString(value = layout)
-            stream.bufferedWriter().use { it.write(json) }
-        } catch (_: Exception) {
-            postSideEffect(
-                effect = DashboardSideEffect.ShowInfo(info = DashboardInfo.EXPORT_FAILURE)
-            )
-        }
-    }
-
-    private fun importWidgets(stream: InputStream) = container.intent {
-        try {
-            val json = stream.bufferedReader().use { it.readText() }
-            val layout = Json.decodeFromString<LayoutConfig>(string = json)
-
-            layout.widgets.map { it.toWidget() }.forEach { widget ->
-                widgetRepository.insert(widget = widget)
+            try {
+                val json = Json.encodeToString(value = layout)
+                stream.bufferedWriter().use { it.write(json) }
+            } catch (_: Exception) {
+                postSideEffect(
+                    effect = DashboardSideEffect.ShowInfo(info = DashboardInfo.EXPORT_FAILURE)
+                )
             }
-        } catch (_: Exception) {
-            postSideEffect(
-                effect = DashboardSideEffect.ShowInfo(info = DashboardInfo.IMPORT_FAILURE)
-            )
         }
-    }
+
+    private fun importWidgets(stream: InputStream) =
+        container.intent(dispatcher = Dispatchers.IO) {
+            try {
+                val json = stream.bufferedReader().use { it.readText() }
+                val layout = Json.decodeFromString<LayoutConfig>(string = json)
+
+                layout.widgets.map { it.toWidget() }.forEach { widget ->
+                    widgetRepository.insert(widget = widget)
+                }
+            } catch (_: Exception) {
+                postSideEffect(
+                    effect = DashboardSideEffect.ShowInfo(info = DashboardInfo.IMPORT_FAILURE)
+                )
+            }
+        }
 
     private fun onExportWidgetsConfig() = container.intent {
         postSideEffect(effect = DashboardSideEffect.LaunchExportWidgetsConfig)
