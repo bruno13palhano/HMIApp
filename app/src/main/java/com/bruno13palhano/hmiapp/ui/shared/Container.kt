@@ -1,5 +1,6 @@
 package com.bruno13palhano.hmiapp.ui.shared
 
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -35,26 +36,15 @@ class Container<STATE, EFFECT>(
     )
     val sideEffect: Flow<EFFECT> = _sideEffect.asSharedFlow()
 
-    fun intent(transform: suspend Container<STATE, EFFECT>.() -> Unit) {
-        scope.launch {
-            try {
-                this@Container.transform()
-            } catch (e: Exception) {
-                onError(e)
-            }
-        }
-    }
-
-    /**
-     * Variation to make possible to choice the coroutine dispatcher.
-     */
     fun intent(
-        dispatcher: CoroutineDispatcher,
+        dispatcher: CoroutineDispatcher = Dispatchers.Main.immediate,
         transform: suspend Container<STATE, EFFECT>.() -> Unit
     ) {
         scope.launch(dispatcher) {
             try {
                 this@Container.transform()
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 onError(e)
             }
@@ -64,6 +54,8 @@ class Container<STATE, EFFECT>(
     suspend fun intentSync(transform: suspend Container<STATE, EFFECT>.() -> Unit) {
         try {
             this.transform()
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             onError(e)
         }
