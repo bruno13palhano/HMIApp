@@ -1,16 +1,23 @@
 package com.bruno13palhano.hmiapp.ui.settings
 
+import android.net.Uri
 import androidx.compose.runtime.Immutable
 import androidx.navigation3.runtime.NavKey
 import com.bruno13palhano.hmiapp.ui.navigation.Settings
 
 @Immutable
 data class SettingsState(
-    val clientId: String = "",
-    val host: String = "",
-    val port: String = "",
-    val username: String = "",
-    val password: String = "",
+    val clientId: String = "bruno",
+    val host: String = "192.168.1.113",
+    val port: String = "8883",
+    val username: String = "mqtt_user",
+    val password: String = "34151430",
+    val caCert: ByteArray? = null,
+    val clientCert: ByteArray? = null,
+    val clientKey: ByteArray? = null,
+    val clientP12Uri: Uri? = null,
+    val caUri: Uri? = null,
+    val insecure: Boolean = false,
     val passwordVisibility: Boolean = false,
     val currentDestination: NavKey = Settings,
     val isGestureEnabled: Boolean = true,
@@ -37,6 +44,9 @@ sealed interface SettingsEvent {
     data object ConnectMqtt : SettingsEvent
     data object DisconnectMqtt : SettingsEvent
     data object HideKeyboardAndClearFocus : SettingsEvent
+    data class LoadCA(val caCert: ByteArray?, val caUri: Uri?) : SettingsEvent
+    data class LoadClientCert(val clientCert: ByteArray?, val clientP12Uri: Uri?) : SettingsEvent
+    data class LoadClientKey(val clientKey: ByteArray?) : SettingsEvent
 }
 
 @Immutable
