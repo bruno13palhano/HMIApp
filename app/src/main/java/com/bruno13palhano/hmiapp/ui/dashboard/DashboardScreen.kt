@@ -267,9 +267,9 @@ fun DashboardContent(
                             x = state.environment.offsetX,
                             y = state.environment.offsetY
                         ),
-                        onMove = { id, x, y ->
+                        onDragEnd = { id, x, y ->
                             onEvent(
-                                DashboardEvent.MoveWidget(
+                                DashboardEvent.OnWidgetDragEnd(
                                     id = id,
                                     x = x,
                                     y = y

@@ -47,37 +47,37 @@ import com.bruno13palhano.core.model.WidgetType
 @Composable
 fun WidgetRenderer(
     widget: Widget,
-    onMove: (x: Float, y: Float) -> Unit,
+    onDragEnd: (x: Float, y: Float) -> Unit,
     onEdit: () -> Unit,
     onRemove: () -> Unit,
     onEvent: (event: WidgetEvent) -> Unit,
 ) {
     when (widget.type) {
-        WidgetType.TEXT -> TextWidget(widget, onMove, onEdit, onRemove)
-        WidgetType.BUTTON -> ButtonWidget(widget, onMove, onEdit, onRemove) {
+        WidgetType.TEXT -> TextWidget(widget, onDragEnd, onEdit, onRemove)
+        WidgetType.BUTTON -> ButtonWidget(widget, onDragEnd, onEdit, onRemove) {
             onEvent(WidgetEvent.ButtonClicked(widget.id))
         }
-        WidgetType.SWITCH -> SwitchWidget(widget, onMove, onEdit, onRemove) { state ->
+        WidgetType.SWITCH -> SwitchWidget(widget, onDragEnd, onEdit, onRemove) { state ->
             onEvent(WidgetEvent.SwitchToggled(widget.id, state))
         }
-        WidgetType.SLIDER -> SliderWidget(widget, onMove, onEdit, onRemove) { value ->
+        WidgetType.SLIDER -> SliderWidget(widget, onDragEnd, onEdit, onRemove) { value ->
             onEvent(WidgetEvent.SliderChanged(widget.id, value))
         }
-        WidgetType.GAUGE -> GaugeWidget(widget, onMove, onEdit, onRemove)
-        WidgetType.PROGRESS_BAR -> ProgressBarWidget(widget, onMove, onEdit, onRemove)
-        WidgetType.IMAGE -> ImageWidget(widget, onMove, onEdit, onRemove)
-        WidgetType.CHART -> ChartWidget(widget, onMove, onEdit, onRemove)
-        WidgetType.TOGGLE_BUTTON -> ToggleButtonWidget(widget, onMove, onEdit, onRemove) { state ->
+        WidgetType.GAUGE -> GaugeWidget(widget, onDragEnd, onEdit, onRemove)
+        WidgetType.PROGRESS_BAR -> ProgressBarWidget(widget, onDragEnd, onEdit, onRemove)
+        WidgetType.IMAGE -> ImageWidget(widget, onDragEnd, onEdit, onRemove)
+        WidgetType.CHART -> ChartWidget(widget, onDragEnd, onEdit, onRemove)
+        WidgetType.TOGGLE_BUTTON -> ToggleButtonWidget(widget, onDragEnd, onEdit, onRemove) { state ->
             onEvent(WidgetEvent.ToggleButtonChanged(widget.id, state))
         }
-        WidgetType.INPUT_FIELD -> InputFieldWidget(widget, onMove, onEdit, onRemove) { text ->
+        WidgetType.INPUT_FIELD -> InputFieldWidget(widget, onDragEnd, onEdit, onRemove) { text ->
             onEvent(WidgetEvent.InputSubmitted(widget.id, text))
         }
-        WidgetType.LED_INDICATOR -> LedIndicatorWidget(widget, onMove, onEdit, onRemove)
-        WidgetType.DROPDOWN -> DropdownWidget(widget, onMove, onEdit, onRemove) { selected ->
+        WidgetType.LED_INDICATOR -> LedIndicatorWidget(widget, onDragEnd, onEdit, onRemove)
+        WidgetType.DROPDOWN -> DropdownWidget(widget, onDragEnd, onEdit, onRemove) { selected ->
             onEvent(WidgetEvent.DropdownSelected(widget.id, selected))
         }
-        WidgetType.COLOR_PICKER -> ColorPickerWidget(widget, onMove, onEdit, onRemove) { color ->
+        WidgetType.COLOR_PICKER -> ColorPickerWidget(widget, onDragEnd, onEdit, onRemove) { color ->
             onEvent(WidgetEvent.ColorPicked(widget.id, color))
         }
     }
@@ -95,13 +95,13 @@ sealed class WidgetEvent {
 @Composable
 fun TextWidget(
     widget: Widget,
-    onMove: (x: Float, y: Float) -> Unit,
+    onDragEnd: (x: Float, y: Float) -> Unit,
     onEdit: () -> Unit,
     onRemove: () -> Unit
 ) {
     WidgetBlock(
         widget = widget,
-        onMove = onMove,
+        onDragEnd = onDragEnd,
         onEdit = onEdit,
         onRemove = onRemove
     ) {
@@ -120,14 +120,14 @@ fun TextWidget(
 @Composable
 fun ButtonWidget(
     widget: Widget,
-    onMove: (x: Float, y: Float) -> Unit,
+    onDragEnd: (x: Float, y: Float) -> Unit,
     onEdit: () -> Unit,
     onRemove: () -> Unit,
     onClick: () -> Unit
 ) {
     WidgetBlock(
         widget = widget,
-        onMove = onMove,
+        onDragEnd = onDragEnd,
         onEdit = onEdit,
         onRemove = onRemove
     ) {
@@ -143,7 +143,7 @@ fun ButtonWidget(
 @Composable
 fun SwitchWidget(
     widget: Widget,
-    onMove: (x: Float, y: Float) -> Unit,
+    onDragEnd: (x: Float, y: Float) -> Unit,
     onEdit: () -> Unit,
     onRemove: () -> Unit,
     onToggle: (Boolean) -> Unit
@@ -151,7 +151,7 @@ fun SwitchWidget(
     var checked by remember { mutableStateOf(widget.value.lowercase() == "true") }
     WidgetBlock(
         widget = widget,
-        onMove = onMove,
+        onDragEnd = onDragEnd,
         onEdit = onEdit,
         onRemove = onRemove
     ) {
@@ -169,7 +169,7 @@ fun SwitchWidget(
 @Composable
 fun SliderWidget(
     widget: Widget,
-    onMove: (x: Float, y: Float) -> Unit,
+    onDragEnd: (x: Float, y: Float) -> Unit,
     onEdit: () -> Unit,
     onRemove: () -> Unit,
     onValueChange: (Float) -> Unit
@@ -177,7 +177,7 @@ fun SliderWidget(
     var sliderValue by remember { mutableFloatStateOf(widget.value.toFloatOrNull() ?: 0f) }
     WidgetBlock(
         widget = widget,
-        onMove = onMove,
+        onDragEnd = onDragEnd,
         onEdit = onEdit,
         onRemove = onRemove
     ) {
@@ -204,16 +204,14 @@ fun SliderWidget(
 @Composable
 fun GaugeWidget(
     widget: Widget,
-    onMove: (x: Float, y: Float) -> Unit,
+    onDragEnd: (x: Float, y: Float) -> Unit,
     onEdit: () -> Unit,
     onRemove: () -> Unit,
 ) {
     val value = widget.value.toFloatOrNull() ?: 0f
     WidgetBlock(
         widget = widget,
-        onMove = { x, y ->
-            onMove(x, y)
-        },
+        onDragEnd = onDragEnd,
         onEdit = onEdit,
         onRemove = onRemove
     ) {
@@ -242,7 +240,7 @@ fun GaugeWidget(
 @Composable
 fun ProgressBarWidget(
     widget: Widget,
-    onMove: (x: Float, y: Float) -> Unit,
+    onDragEnd: (x: Float, y: Float) -> Unit,
     onEdit: () -> Unit,
     onRemove: () -> Unit,
 ) {
@@ -254,7 +252,7 @@ fun ProgressBarWidget(
 
     WidgetBlock(
         widget = widget,
-        onMove = onMove,
+        onDragEnd = onDragEnd,
         onEdit = onEdit,
         onRemove = onRemove
     ) {
@@ -278,13 +276,13 @@ fun ProgressBarWidget(
 @Composable
 fun ImageWidget(
     widget: Widget,
-    onMove: (x: Float, y: Float) -> Unit,
+    onDragEnd: (x: Float, y: Float) -> Unit,
     onEdit: () -> Unit,
     onRemove: () -> Unit,
 ) {
     WidgetBlock(
         widget = widget,
-        onMove = onMove,
+        onDragEnd = onDragEnd,
         onEdit = onEdit,
         onRemove = onRemove
     ) {
@@ -302,13 +300,13 @@ fun ImageWidget(
 @Composable
 fun ChartWidget(
     widget: Widget,
-    onMove: (x: Float, y: Float) -> Unit,
+    onDragEnd: (x: Float, y: Float) -> Unit,
     onEdit: () -> Unit,
     onRemove: () -> Unit,
 ) {
     WidgetBlock(
         widget = widget,
-        onMove = onMove,
+        onDragEnd = onDragEnd,
         onEdit = onEdit,
         onRemove = onRemove
     ) {
@@ -324,7 +322,7 @@ fun ChartWidget(
 @Composable
 fun ToggleButtonWidget(
     widget: Widget,
-    onMove: (x: Float, y: Float) -> Unit,
+    onDragEnd: (x: Float, y: Float) -> Unit,
     onEdit: () -> Unit,
     onRemove: () -> Unit,
     onToggle: (Boolean) -> Unit
@@ -332,7 +330,7 @@ fun ToggleButtonWidget(
     var toggled by remember { mutableStateOf(widget.value == "true") }
     WidgetBlock(
         widget = widget,
-        onMove = onMove,
+        onDragEnd = onDragEnd,
         onEdit = onEdit,
         onRemove = onRemove
     ) {
@@ -360,7 +358,7 @@ fun ToggleButtonWidget(
 @Composable
 fun InputFieldWidget(
     widget: Widget,
-    onMove: (x: Float, y: Float) -> Unit,
+    onDragEnd: (x: Float, y: Float) -> Unit,
     onEdit: () -> Unit,
     onRemove: () -> Unit,
     onSubmit: (String) -> Unit
@@ -368,7 +366,7 @@ fun InputFieldWidget(
     var text by remember { mutableStateOf(widget.value) }
     WidgetBlock(
         widget = widget,
-        onMove = onMove,
+        onDragEnd = onDragEnd,
         onEdit = onEdit,
         onRemove = onRemove
     ) {
@@ -389,7 +387,7 @@ fun InputFieldWidget(
 @Composable
 fun LedIndicatorWidget(
     widget: Widget,
-    onMove: (x: Float, y: Float) -> Unit,
+    onDragEnd: (x: Float, y: Float) -> Unit,
     onEdit: () -> Unit,
     onRemove: () -> Unit,
 ) {
@@ -401,7 +399,7 @@ fun LedIndicatorWidget(
     }
     WidgetBlock(
         widget = widget,
-        onMove = onMove,
+        onDragEnd = onDragEnd,
         onEdit = onEdit,
         onRemove = onRemove
     ) {
@@ -426,7 +424,7 @@ fun LedIndicatorWidget(
 @Composable
 fun DropdownWidget(
     widget: Widget,
-    onMove: (x: Float, y: Float) -> Unit,
+    onDragEnd: (x: Float, y: Float) -> Unit,
     onEdit: () -> Unit,
     onRemove: () -> Unit,
     onSelected: (String) -> Unit
@@ -435,7 +433,7 @@ fun DropdownWidget(
     var selected by remember { mutableStateOf(widget.value) }
     WidgetBlock(
         widget = widget,
-        onMove = onMove,
+        onDragEnd = onDragEnd,
         onEdit = onEdit,
         onRemove = onRemove
     ) {
@@ -467,7 +465,7 @@ fun DropdownWidget(
 @Composable
 fun ColorPickerWidget(
     widget: Widget,
-    onMove: (x: Float, y: Float) -> Unit,
+    onDragEnd: (x: Float, y: Float) -> Unit,
     onEdit: () -> Unit,
     onRemove: () -> Unit,
     onPick: (Color) -> Unit
@@ -475,7 +473,7 @@ fun ColorPickerWidget(
     val colors = listOf(Color.Red, Color.Green, Color.Blue, Color.Yellow, Color.Magenta)
     WidgetBlock(
         widget = widget,
-        onMove = onMove,
+        onDragEnd = onDragEnd,
         onEdit = onEdit,
         onRemove = onRemove
     ) {

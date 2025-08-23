@@ -48,7 +48,7 @@ import kotlin.math.roundToInt
 @Composable
 fun WidgetBlock(
     widget: Widget,
-    onMove: (x: Float, y: Float) -> Unit,
+    onDragEnd: (x: Float, y: Float) -> Unit,
     onEdit: () -> Unit,
     onRemove: () -> Unit,
     content: @Composable ColumnScope.() -> Unit
@@ -66,14 +66,20 @@ fun WidgetBlock(
         modifier = Modifier
             .offset { IntOffset(offsetX.roundToInt(), offsetY.roundToInt()) }
             .pointerInput(Unit) {
-                detectDragGestures { change, dragAmount ->
+                detectDragGestures(
+                    onDragEnd = {
+                        onDragEnd(offsetX, offsetY)
+                    },
+                    onDragCancel = {
+                        onDragEnd(offsetX, offsetY)
+                    }
+                ) { change, dragAmount ->
                     change.consume()
 
                     val halfSize = CANVAS_SIZE / 2
 
                     offsetX = (offsetX + dragAmount.x).coerceIn(-halfSize, halfSize - widget.width)
                     offsetY = (offsetY + dragAmount.y).coerceIn(-halfSize, halfSize - widget.height)
-                    onMove(offsetX, offsetY)
                 }
             }
             .padding(8.dp)
@@ -176,7 +182,7 @@ private fun WidgetBlockPreview() {
                     value = "ON",
                     environmentId = 1L
                 ),
-                onMove = { _, _ -> },
+                onDragEnd = { _, _ -> },
                 onEdit = { },
                 onRemove = { },
                 content = {}

@@ -9,10 +9,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -25,15 +27,19 @@ import com.bruno13palhano.core.model.DataSource
 import com.bruno13palhano.core.model.Widget
 import com.bruno13palhano.core.model.WidgetType
 import com.bruno13palhano.hmiapp.ui.theme.HMIAppTheme
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.debounce
 
 const val CANVAS_SIZE = 5000f
 
+@OptIn(FlowPreview::class)
 @Composable
 fun WidgetCanvas(
     widgets: List<Widget>,
     initialScale: Float = 1f,
     initialOffset: Offset = Offset.Zero,
-    onMove: (id: String, x: Float, y: Float) -> Unit,
+    onDragEnd: (id: String, x: Float, y: Float) -> Unit,
     onEdit: (id: String) -> Unit,
     onRemove: (id: String) -> Unit,
     onEvent: (event: WidgetEvent) -> Unit,
@@ -46,6 +52,14 @@ fun WidgetCanvas(
     LaunchedEffect(initialScale, initialOffset) {
         scale = initialScale
         offset = initialOffset
+    }
+
+    LaunchedEffect(Unit) {
+        snapshotFlow { scale to offset }
+            .debounce(300)
+            .collectLatest { (s, o) ->
+                onTransformChange(s, o)
+            }
     }
 
     Box(
@@ -75,7 +89,6 @@ fun WidgetCanvas(
                     }
 
                     scale = newScale
-                    onTransformChange(scale, offset)
                 }
             }
             .onSizeChanged { screenSize = it }
@@ -131,13 +144,15 @@ fun WidgetCanvas(
                 .fillMaxSize()
         ) {
             widgets.forEach { widget ->
-                WidgetRenderer(
-                    widget = widget,
-                    onMove = { x, y -> onMove(widget.id, x, y) },
-                    onEdit = { onEdit(widget.id) },
-                    onRemove = { onRemove(widget.id) },
-                    onEvent = onEvent,
-                )
+                key(widget.id) {
+                    WidgetRenderer(
+                        widget = widget,
+                        onDragEnd = { x, y -> onDragEnd(widget.id, x, y) },
+                        onEdit = { onEdit(widget.id) },
+                        onRemove = { onRemove(widget.id) },
+                        onEvent = onEvent,
+                    )
+                }
             }
         }
     }
@@ -222,11 +237,11 @@ private fun WidgetCanvasPreview() {
                     environmentId = 1L
                 )
             ),
-            onMove = { _, _, _ -> },
+            onDragEnd = { _, _, _ -> },
             onEdit = {},
             onRemove = {},
             onEvent = {},
-            onTransformChange = { _, _ -> }
+            onTransformChange = { _, _ -> },
         )
     }
 }

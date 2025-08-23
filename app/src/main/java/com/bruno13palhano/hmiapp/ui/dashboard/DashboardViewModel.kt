@@ -41,7 +41,7 @@ class DashboardViewModel @AssistedInject constructor(
             DashboardEvent.Init -> dashboardInit()
             is DashboardEvent.AddWidget -> addWidget()
             is DashboardEvent.RemoveWidget -> removeWidget(id = event.id)
-            is DashboardEvent.MoveWidget -> moveWidget(id = event.id, x = event.x, y = event.y)
+            is DashboardEvent.OnWidgetDragEnd -> onWidgetDragEnd(id = event.id, x = event.x, y = event.y)
             is DashboardEvent.OpenEditWidgetDialog -> openEditWidgetDialog(id = event.id)
             is DashboardEvent.EditWidget -> editWidget()
             is DashboardEvent.OnUpdateCanvasState -> onUpdateCanvasState(
@@ -102,31 +102,29 @@ class DashboardViewModel @AssistedInject constructor(
         reduce { copy(environment = environment.copy(name = name)) }
     }
 
-    private fun addEnvironment() {
-        container.intent(dispatcher = Dispatchers.IO) {
-            val environment = state.value.environment.copy(
-                id = 0L,
-                scale = 1f,
-                offsetX = 0f,
-                offsetY = 0f
-            )
+    // fix to refresh the new environment
+    private fun addEnvironment() = container.intent(dispatcher = Dispatchers.IO) {
+        reduce { copy(isEnvironmentDialogVisible = false) }
 
-            environmentRepository.insert(environment = environment)
-            reduce { copy(isEnvironmentDialogVisible = false) }
-        }
+        val environment = state.value.environment.copy(
+            id = 0L,
+            scale = 1f,
+            offsetX = 0f,
+            offsetY = 0f
+        )
 
-        container.intent(dispatcher = Dispatchers.IO) {
-            environmentRepository.getLast()?.let {
-                reduce { copy(environment = it) }
-            }
+        environmentRepository.insert(environment = environment)
+        environmentRepository.getLast()?.let {
+            reduce { copy(environment = it) }
         }
     }
 
     private fun editEnvironment() = container.intent(dispatcher = Dispatchers.IO) {
-        val environment = state.value.environment
-        environmentRepository.update(environment = environment)
-
         reduce { copy(isEnvironmentDialogVisible = false) }
+
+        val environment = state.value.environment
+
+        environmentRepository.update(environment = environment)
     }
 
     private fun changeEnvironment(id: Long){
@@ -211,7 +209,7 @@ class DashboardViewModel @AssistedInject constructor(
         widgetRepository.deleteById(id = id)
     }
 
-    private fun moveWidget(id: String, x: Float, y: Float) =
+    private fun onWidgetDragEnd(id: String, x: Float, y: Float) =
         container.intent(dispatcher = Dispatchers.IO) {
             widgetRepository.updatePosition(id = id, x = x, y = y)
         }
@@ -333,18 +331,13 @@ class DashboardViewModel @AssistedInject constructor(
         }
     }
 
-    private fun onUpdateCanvasState(
-        scale: Float,
-        offsetX: Float,
-        offsetY: Float
-    ) = container.intent {
-        val environment = container.state.value.environment.copy(
-            scale = scale,
-            offsetX = offsetX,
-            offsetY = offsetY
-        )
-        environmentRepository.update(environment = environment)
-    }
+    private fun onUpdateCanvasState(scale: Float, offsetX: Float, offsetY: Float) =
+        container.intent(Dispatchers.IO) {
+            val currentEnv = state.value.environment.copy(scale = scale, offsetX = offsetX, offsetY = offsetY)
+            if (currentEnv.id != 0L) {
+                environmentRepository.update(environment = currentEnv)
+            }
+        }
 
     private fun loadWidgets(environmentId: Long) = container.intent(dispatcher = Dispatchers.IO) {
         widgetRepository.getWidgets(environmentId = environmentId).let { widgets ->
