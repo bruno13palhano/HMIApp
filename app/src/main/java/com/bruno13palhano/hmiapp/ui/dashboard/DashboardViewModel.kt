@@ -149,7 +149,9 @@ class DashboardViewModel @AssistedInject constructor(
         )
 
         widgetRepository.insert(widget)
-        subscribeToTopic(widget = widget)
+        loadWidgets(environmentId = state.environment.id)
+        clearCurrentWidget()
+        observeMessages()
     }
 
     private fun editWidget() = container.intent(dispatcher = Dispatchers.IO) {
@@ -166,7 +168,9 @@ class DashboardViewModel @AssistedInject constructor(
             )
 
             widgetRepository.update(widget = editWidget)
-            subscribeToTopic(widget = widget)
+            loadWidgets(environmentId = state.environment.id)
+            clearCurrentWidget()
+            observeMessages()
         }
     }
 
@@ -190,16 +194,6 @@ class DashboardViewModel @AssistedInject constructor(
         }
     }
 
-    private suspend fun subscribeToTopic(widget: Widget) {
-        if (widget.dataSource is DataSource.MQTT) {
-            mqttClientRepository.subscribeToTopic(
-                topic = (widget.dataSource as DataSource.MQTT).topic
-            )
-        }
-
-        clearCurrentWidget()
-    }
-
     private fun clearCurrentWidget() = container.intent {
         reduce { copy(id = "", label = "", endpoint = "") }
     }
@@ -207,6 +201,7 @@ class DashboardViewModel @AssistedInject constructor(
     private fun removeWidget(id: String) = container.intent(dispatcher = Dispatchers.IO) {
         widgetValues.remove(key = id)
         widgetRepository.deleteById(id = id)
+        loadWidgets(environmentId = state.value.environment.id)
     }
 
     private fun onWidgetDragEnd(id: String, x: Float, y: Float) =
@@ -293,8 +288,6 @@ class DashboardViewModel @AssistedInject constructor(
     }
 
     private fun dashboardInit() {
-        var id = 0L
-
         loadEnvironments()
 
         container.intent(dispatcher = Dispatchers.IO) {
@@ -302,9 +295,9 @@ class DashboardViewModel @AssistedInject constructor(
             environmentRepository.getLast()?.let {
                 reduce { copy(environment = it) }
 
-                if (it.id != id) {
-                    id = it.id
-                    loadWidgets(environmentId = id)
+                if (it.id != 0L) {
+                    loadWidgets(environmentId = it.id)
+                    observeMessages()
                 }
             }
         }
@@ -316,10 +309,10 @@ class DashboardViewModel @AssistedInject constructor(
                         effect = DashboardSideEffect.ShowInfo(info = DashboardInfo.DISCONNECTED)
                     )
                 } else {
-                    val environmentId = state.value.environment.id
-                    if (environmentId != 0L) {
-                        observeMessages()
-                    }
+//                    val environmentId = state.value.environment.id
+//                    if (environmentId != 0L) {
+//                        observeMessages()
+//                    }
                 }
             }
         }
