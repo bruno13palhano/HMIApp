@@ -13,6 +13,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Send
 import androidx.compose.material3.Button
@@ -38,11 +40,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.bruno13palhano.core.model.Widget
 import com.bruno13palhano.core.model.WidgetType
+import com.bruno13palhano.hmiapp.ui.shared.clearFocusOnKeyboardDismiss
 
 @Composable
 fun WidgetRenderer(
@@ -374,12 +378,16 @@ fun InputFieldWidget(
             value = text,
             onValueChange = { text = it },
             modifier = Modifier
-                .padding(horizontal = 8.dp),
+                .padding(horizontal = 8.dp)
+                .clearFocusOnKeyboardDismiss(),
             trailingIcon = {
                 IconButton(onClick = { onSubmit(text) }) {
                     Icon(Icons.AutoMirrored.Outlined.Send, contentDescription = "Send")
                 }
-            }
+            },
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+            keyboardActions = KeyboardActions(onDone = { defaultKeyboardAction(ImeAction.Done) })
         )
     }
 }
