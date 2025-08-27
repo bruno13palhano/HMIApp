@@ -46,6 +46,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.NavKey
 import com.bruno13palhano.hmiapp.R
+import com.bruno13palhano.hmiapp.ui.components.CircularProgress
 import com.bruno13palhano.hmiapp.ui.components.DrawerMenu
 import com.bruno13palhano.hmiapp.ui.components.EnvironmentInputDialog
 import com.bruno13palhano.hmiapp.ui.components.ExpandableFab
@@ -202,7 +203,7 @@ fun DashboardContent(
             )
         },
         floatingActionButton = {
-            if (state.environment.id != 0L) {
+            if (state.environment.id != 0L && !state.loading) {
                 ExpandableFab(
                     expanded = state.isDashboardOptionsExpanded,
                     items = dashboardOptions,
@@ -259,100 +260,108 @@ fun DashboardContent(
                     .padding(it)
                     .fillMaxSize()
             ) {
-                if (state.environment.id != 0L) {
-                    WidgetCanvas(
-                        widgets = state.widgets,
-                        initialScale = state.environment.scale,
-                        initialOffset = Offset(
-                            x = state.environment.offsetX,
-                            y = state.environment.offsetY
-                        ),
-                        onDragEnd = { id, x, y ->
-                            onEvent(
-                                DashboardEvent.OnWidgetDragEnd(
-                                    id = id,
-                                    x = x,
-                                    y = y
-                                )
-                            )
-                        },
-                        onEdit = { id -> onEvent(DashboardEvent.OpenEditWidgetDialog(id = id)) },
-                        onRemove = { id -> onEvent(DashboardEvent.RemoveWidget(id = id)) },
-                        onEvent = { widgetEvent ->
-                            onEvent(DashboardEvent.OnWidgetEvent(widgetEvent = widgetEvent))
-                        },
-                        onTransformChange = { scale, offset ->
-                            onEvent(
-                                DashboardEvent.OnUpdateCanvasState(
-                                    scale = scale,
-                                    offsetX = offset.x,
-                                    offsetY = offset.y
-                                )
-                            )
-                        }
+                if (state.loading) {
+                    CircularProgress(
+                        modifier = Modifier
+                            .padding(it)
+                            .fillMaxSize()
                     )
-                }
-
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.BottomEnd
-                ) {
-                    WidgetToolbox(
-                        expanded = state.isToolboxExpanded,
-                        onExpandedClick = { onEvent(DashboardEvent.ToggleIsToolboxExpanded) },
-                        onAdd = { type -> onEvent(DashboardEvent.ShowWidgetDialog(type = type)) }
-                    )
-                }
-
-                if (state.environment.id == 0L) {
-                    ExtendedFloatingActionButton(
-                        modifier = Modifier.align(Alignment.Center),
-                        onClick = { onEvent(DashboardEvent.OpenEnvironmentInputDialog(isEdit = false)) }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Outlined.Add,
-                            contentDescription = stringResource(id = R.string.add_environment_button)
+                } else {
+                    if (state.environment.id != 0L) {
+                        WidgetCanvas(
+                            widgets = state.widgets,
+                            initialScale = state.environment.scale,
+                            initialOffset = Offset(
+                                x = state.environment.offsetX,
+                                y = state.environment.offsetY
+                            ),
+                            onDragEnd = { id, x, y ->
+                                onEvent(
+                                    DashboardEvent.OnWidgetDragEnd(
+                                        id = id,
+                                        x = x,
+                                        y = y
+                                    )
+                                )
+                            },
+                            onEdit = { id -> onEvent(DashboardEvent.OpenEditWidgetDialog(id = id)) },
+                            onRemove = { id -> onEvent(DashboardEvent.RemoveWidget(id = id)) },
+                            onEvent = { widgetEvent ->
+                                onEvent(DashboardEvent.OnWidgetEvent(widgetEvent = widgetEvent))
+                            },
+                            onTransformChange = { scale, offset ->
+                                onEvent(
+                                    DashboardEvent.OnUpdateCanvasState(
+                                        scale = scale,
+                                        offsetX = offset.x,
+                                        offsetY = offset.y
+                                    )
+                                )
+                            }
                         )
-                        Text(text = stringResource(id = R.string.environment))
                     }
-                }
 
-                AnimatedVisibility(visible = state.isWidgetInputDialogVisible) {
-                    WidgetInputDialog(
-                        label = state.label,
-                        endpoint = state.endpoint,
-                        onLabelChange = {
-                            label -> onEvent(DashboardEvent.UpdateLabel(label = label))
-                        },
-                        onEndpointChange = { endpoint ->
-                            onEvent(DashboardEvent.UpdateEndpoint(endpoint = endpoint))
-                        },
-                        onConfirm = {
-                            if (state.id == "") {
-                                onEvent(DashboardEvent.AddWidget)
-                            } else {
-                                onEvent(DashboardEvent.EditWidget)
-                            }
-                        },
-                        onDismissRequest = { onEvent(DashboardEvent.HideWidgetConfig) }
-                    )
-                }
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.BottomEnd
+                    ) {
+                        WidgetToolbox(
+                            expanded = state.isToolboxExpanded,
+                            onExpandedClick = { onEvent(DashboardEvent.ToggleIsToolboxExpanded) },
+                            onAdd = { type -> onEvent(DashboardEvent.ShowWidgetDialog(type = type)) }
+                        )
+                    }
 
-                AnimatedVisibility(visible = state.isEnvironmentDialogVisible) {
-                    EnvironmentInputDialog(
-                        name = state.environment.name,
-                        onNameChange = { name ->
-                            onEvent(DashboardEvent.UpdateEnvironmentName(name = name))
-                        },
-                        onConfirm = {
-                            if (state.isEditEnvironmentName) {
-                                onEvent(DashboardEvent.EditEnvironment)
-                            } else {
-                                onEvent(DashboardEvent.AddEnvironment)
-                            }
-                        },
-                        onDismissRequest = { onEvent(DashboardEvent.CloseEnvironmentInputDialog) }
-                    )
+                    if (state.environment.id == 0L) {
+                        ExtendedFloatingActionButton(
+                            modifier = Modifier.align(Alignment.Center),
+                            onClick = { onEvent(DashboardEvent.OpenEnvironmentInputDialog(isEdit = false)) }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.Add,
+                                contentDescription = stringResource(id = R.string.add_environment_button)
+                            )
+                            Text(text = stringResource(id = R.string.environment))
+                        }
+                    }
+
+                    AnimatedVisibility(visible = state.isWidgetInputDialogVisible) {
+                        WidgetInputDialog(
+                            label = state.label,
+                            endpoint = state.endpoint,
+                            onLabelChange = { label ->
+                                onEvent(DashboardEvent.UpdateLabel(label = label))
+                            },
+                            onEndpointChange = { endpoint ->
+                                onEvent(DashboardEvent.UpdateEndpoint(endpoint = endpoint))
+                            },
+                            onConfirm = {
+                                if (state.id == "") {
+                                    onEvent(DashboardEvent.AddWidget)
+                                } else {
+                                    onEvent(DashboardEvent.EditWidget)
+                                }
+                            },
+                            onDismissRequest = { onEvent(DashboardEvent.HideWidgetConfig) }
+                        )
+                    }
+
+                    AnimatedVisibility(visible = state.isEnvironmentDialogVisible) {
+                        EnvironmentInputDialog(
+                            name = state.environment.name,
+                            onNameChange = { name ->
+                                onEvent(DashboardEvent.UpdateEnvironmentName(name = name))
+                            },
+                            onConfirm = {
+                                if (state.isEditEnvironmentName) {
+                                    onEvent(DashboardEvent.EditEnvironment)
+                                } else {
+                                    onEvent(DashboardEvent.AddEnvironment)
+                                }
+                            },
+                            onDismissRequest = { onEvent(DashboardEvent.CloseEnvironmentInputDialog) }
+                        )
+                    }
                 }
             }
         }
@@ -389,6 +398,19 @@ private fun DashboardPreview() {
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 private fun DashboardClosedPreview() {
+    HMIAppTheme {
+        DashboardContent(
+            drawerState = DrawerState(initialValue = DrawerValue.Closed),
+            snackbarHostState = SnackbarHostState(),
+            state = DashboardState(loading = false),
+            onEvent = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+private fun DashboardClosedLoadingPreview() {
     HMIAppTheme {
         DashboardContent(
             drawerState = DrawerState(initialValue = DrawerValue.Closed),

@@ -12,6 +12,7 @@ import java.io.OutputStream
 
 @Immutable
 data class DashboardState(
+    val loading: Boolean = true,
     val widgets: List<Widget> = emptyList(),
     val environments: List<Environment> = emptyList(),
     val environment: Environment =

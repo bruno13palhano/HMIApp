@@ -176,13 +176,9 @@ class DashboardViewModel @AssistedInject constructor(
     }
 
     private fun dashboardInit() {
+        container.intent { reduce { copy(loading = true) } }
+
         environmentManager.loadEnvironments()
-
-        environmentManager.loadPreviousEnvironment { id ->
-            widgetManager.loadWidgets(environmentId = id)
-            widgetManager.observeMessages()
-        }
-
 
         container.intent(dispatcher = Dispatchers.IO) {
             mqttClientRepository.isConnected().collect { isConnected ->
@@ -193,6 +189,16 @@ class DashboardViewModel @AssistedInject constructor(
                 }
             }
         }
+
+        environmentManager.loadPreviousEnvironment(
+            onLoadSuccess =  { id ->
+                widgetManager.loadWidgets(environmentId = id)
+                widgetManager.observeMessages()
+            },
+            onFinish = {
+                container.intent { reduce { copy(loading = false) } }
+            }
+        )
     }
 
     private fun onUpdateCanvasState(scale: Float, offsetX: Float, offsetY: Float) {
