@@ -104,9 +104,16 @@ class DashboardViewModel @AssistedInject constructor(
         reduce { copy(environment = environment.copy(name = name)) }
     }
 
-    private fun addEnvironment() = environmentManager.addEnvironment()
+    private fun addEnvironment() {
+        environmentManager.addEnvironment { id ->
+            widgetManager.loadWidgets(environmentId = container.state.value.environment.id)
+        }
+    }
 
-    private fun editEnvironment() = environmentManager.editEnvironment()
+    private fun editEnvironment() {
+        environmentManager.editEnvironment()
+        widgetManager.loadWidgets(environmentId = container.state.value.environment.id)
+    }
 
     private fun changeEnvironment(id: Long) {
         environmentManager.changeEnvironment(id = id)

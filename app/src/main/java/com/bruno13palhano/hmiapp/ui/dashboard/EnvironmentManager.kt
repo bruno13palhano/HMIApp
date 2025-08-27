@@ -9,7 +9,7 @@ class EnvironmentManager(
     private val environmentRepository: EnvironmentRepository,
     private val container: Container<DashboardState, DashboardSideEffect>
 ) {
-    fun addEnvironment() = container.intent(dispatcher = Dispatchers.IO) {
+    fun addEnvironment(onSuccess: (id: Long) -> Unit) = container.intent(dispatcher = Dispatchers.IO) {
         reduce { copy(isEnvironmentDialogVisible = false) }
 
         val environment = state.value.environment.copy(
@@ -20,7 +20,10 @@ class EnvironmentManager(
         )
 
         environmentRepository.insert(environment)
-        environmentRepository.getLast()?.let { reduce { copy(environment = it) } }
+        environmentRepository.getLast()?.let {
+            reduce { copy(environment = it) }
+            onSuccess(it.id)
+        }
     }
 
     fun editEnvironment() = container.intent(dispatcher = Dispatchers.IO) {
