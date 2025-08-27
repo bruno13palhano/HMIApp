@@ -45,6 +45,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.NavKey
+import com.bruno13palhano.core.model.Environment
 import com.bruno13palhano.hmiapp.R
 import com.bruno13palhano.hmiapp.ui.components.CircularProgress
 import com.bruno13palhano.hmiapp.ui.components.DrawerMenu
@@ -85,7 +86,7 @@ fun DashboardScreen(
         contract = ActivityResultContracts.CreateDocument("application/json")
     ) { uri: Uri? ->
         uri?.let {
-            context.contentResolver.openOutputStream(it)?.use { stream ->
+            context.contentResolver.openOutputStream(it)?.let { stream ->
                 viewModel.onEvent(event = DashboardEvent.ExportWidgetsConfig(stream = stream))
             }
         }
@@ -95,7 +96,7 @@ fun DashboardScreen(
         contract = ActivityResultContracts.OpenDocument()
     ) { uri: Uri? ->
         uri?.let {
-            context.contentResolver.openInputStream(it)?.use { stream ->
+            context.contentResolver.openInputStream(it)?.let { stream ->
                 viewModel.onEvent(event = DashboardEvent.ImportWidgetsConfig(stream = stream))
             }
         }
@@ -232,6 +233,7 @@ fun DashboardContent(
                                 modifier = Modifier
                                     .padding(horizontal = 4.dp)
                                     .width(112.dp),
+                                enabled = env.id != state.environment.id,
                                 onClick = { onEvent(DashboardEvent.ChangeEnvironment(id = env.id)) }
                             ) {
                                 Text(
@@ -416,6 +418,27 @@ private fun DashboardClosedLoadingPreview() {
             drawerState = DrawerState(initialValue = DrawerValue.Closed),
             snackbarHostState = SnackbarHostState(),
             state = DashboardState(),
+            onEvent = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+private fun DashboardBottomMenuPreview() {
+    HMIAppTheme {
+        DashboardContent(
+            drawerState = DrawerState(initialValue = DrawerValue.Closed),
+            snackbarHostState = SnackbarHostState(),
+            state = DashboardState(
+                loading = false,
+                environment = Environment(1L, "Home", 0f, 0f, 0f),
+                environments = listOf(
+                    Environment(1L, "Home", 0f, 0f, 0f),
+                    Environment(2L, "Garden", 0f, 0f, 0f),
+                    Environment(3L, "Farm", 0f, 0f, 0f)
+                )
+            ),
             onEvent = {}
         )
     }
