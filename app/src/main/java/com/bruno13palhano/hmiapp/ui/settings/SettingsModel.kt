@@ -7,11 +7,11 @@ import com.bruno13palhano.hmiapp.ui.navigation.Settings
 
 @Immutable
 data class SettingsState(
-    val clientId: String = "bruno",
-    val host: String = "192.168.1.113",
-    val port: String = "8883",
-    val username: String = "mqtt_user",
-    val password: String = "34151430",
+    val clientId: String = "",
+    val host: String = "",
+    val port: String = "",
+    val username: String = "",
+    val password: String = "",
     val caCert: ByteArray? = null,
     val clientCert: ByteArray? = null,
     val clientKey: ByteArray? = null,
@@ -27,7 +27,8 @@ data class SettingsState(
     val isUsernameInvalid: Boolean = false,
     val isPasswordInvalid: Boolean = false,
     val isLoading: Boolean = false,
-    val isConnected: Boolean = false
+    val isConnected: Boolean = false,
+    val isCredentialDialogOpen: Boolean = false
 )
 
 @Immutable
@@ -44,6 +45,7 @@ sealed interface SettingsEvent {
     data object ConnectMqtt : SettingsEvent
     data object DisconnectMqtt : SettingsEvent
     data object HideKeyboardAndClearFocus : SettingsEvent
+    data object ToggleCredentialDialog : SettingsEvent
     data class LoadCA(val caCert: ByteArray?, val caUri: Uri?) : SettingsEvent
     data class LoadClientCert(val clientCert: ByteArray?, val clientP12Uri: Uri?) : SettingsEvent
     data class LoadClientKey(val clientKey: ByteArray?) : SettingsEvent

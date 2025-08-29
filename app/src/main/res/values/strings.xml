@@ -61,4 +61,6 @@
     <string name="close_button">Close button</string>
     <string name="name">Name</string>
     <string name="name_placeholder">Enter name</string>
+    <string name="load_ca">Load CA</string>
+    <string name="load_client_p12">Load ClientP12</string>
 </resources>

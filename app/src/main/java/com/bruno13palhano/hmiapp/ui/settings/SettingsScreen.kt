@@ -29,10 +29,8 @@ import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
@@ -151,19 +149,9 @@ private fun SettingsContent(
         }
     }
 
-    val pickClientKeyLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.OpenDocument()
-    ) { uri ->
-        uri?.let {
-            onEvent(
-                SettingsEvent.LoadClientKey(clientKey = content.uriToByteArray(uri = it))
-            )
-        }
-    }
-
-    val items = mapOf(
-        "CA" to "Load CA",
-        "CL" to "Load clientP12",
+    val credentialItems = mapOf(
+        CredentialOptions.CA to stringResource(id = R.string.load_ca),
+        CredentialOptions.P12 to stringResource(id = R.string.load_client_p12),
     )
 
     Scaffold(
@@ -181,24 +169,24 @@ private fun SettingsContent(
                     }
                 },
                 actions = {
-                    var s by remember { mutableStateOf(false) }
-
-                    IconButton(onClick = { s = true }) {
+                    IconButton(onClick = { onEvent(SettingsEvent.ToggleCredentialDialog) }) {
                         Icon(
                             imageVector = Icons.Outlined.MoreVert,
                             contentDescription = null
                         )
 
                         VertMenu(
-                            items = items,
-                            expanded = s,
-                            onDismissRequest = { s = false },
+                            items = credentialItems,
+                            expanded = state.isCredentialDialogOpen,
+                            onDismissRequest = { onEvent(SettingsEvent.ToggleCredentialDialog) },
                             onItemClick = { item ->
                                 when (item) {
-                                    "CA" -> pickCaLauncher.launch(arrayOf("*/*"))
-                                    "CL" -> pickClientLauncher.launch(arrayOf("*/*"))
-                                    "CK" -> pickClientKeyLauncher.launch(arrayOf("*/*"))
-                                    else -> ""
+                                    CredentialOptions.CA -> {
+                                        pickCaLauncher.launch(arrayOf("*/*"))
+                                    }
+                                    CredentialOptions.P12 -> {
+                                        pickClientLauncher.launch(arrayOf("*/*"))
+                                    }
                                 }
                             }
                         )
@@ -331,6 +319,11 @@ private fun SettingsContent(
             }
         }
     }
+}
+
+enum class CredentialOptions {
+    CA,
+    P12
 }
 
 fun Context.uriToByteArray(uri: Uri): ByteArray? {

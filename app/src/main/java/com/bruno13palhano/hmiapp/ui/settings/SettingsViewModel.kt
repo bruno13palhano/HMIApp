@@ -33,6 +33,9 @@ class SettingsViewModel @AssistedInject constructor(
             SettingsEvent.ConnectMqtt -> connectMqtt()
             SettingsEvent.DisconnectMqtt -> disconnectMqtt()
             is SettingsEvent.NavigateTo -> navigateTo(destination = event.destination)
+            SettingsEvent.ToggleCredentialDialog -> container.intent {
+                reduce { copy(isCredentialDialogOpen = !isCredentialDialogOpen) }
+            }
             is SettingsEvent.LoadCA -> container.intent {
                 reduce { copy(caCert = event.caCert, caUri = event.caUri) }
             }
