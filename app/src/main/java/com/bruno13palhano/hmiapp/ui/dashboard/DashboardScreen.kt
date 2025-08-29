@@ -164,13 +164,13 @@ fun DashboardContent(
     val dashboardOptions = mapOf(
         DashboardOptions.ADD_ENVIRONMENT to ExpandableFabButtons(
             icon = Icons.Outlined.Add,
-            label = "Environment",
-            contentDescription  = "Add new environment"
+            label = stringResource(id = R.string.environment),
+            contentDescription = stringResource(id = R.string.add_environment_button)
         ),
         DashboardOptions.WIDGETS to ExpandableFabButtons(
             icon = Icons.Outlined.Add,
-            label = "Widgets",
-            contentDescription  = "Widgets options button"
+            label = stringResource(id = R.string.widgets),
+            contentDescription  = stringResource(id = R.string.widgets_options_button)
         )
     )
 

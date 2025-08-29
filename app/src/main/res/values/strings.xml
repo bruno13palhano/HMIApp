@@ -38,6 +38,8 @@
     <string name="remove">Remove</string>
     <string name="edit">Edit</string>
     <string name="value">Value</string>
+    <string name="widgets">Widgets</string>
+    <string name="widgets_options_button">Widgets options button</string>
     <string name="show_widget_toolbox">Show widget toolbox</string>
     <string name="hide_widget_toolbox">Hide widget toolbox</string>
     <string name="export_config">Export configuration</string>
