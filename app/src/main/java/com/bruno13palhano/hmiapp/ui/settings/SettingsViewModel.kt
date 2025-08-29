@@ -3,10 +3,12 @@ package com.bruno13palhano.hmiapp.ui.settings
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation3.runtime.NavKey
+import com.bruno13palhano.core.data.network.MqttConnectionConfig
 import com.bruno13palhano.core.data.repository.MqttClientRepository
 import com.bruno13palhano.hmiapp.ui.shared.Container
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.Dispatchers
 
 class SettingsViewModel @AssistedInject constructor(
     private val mqttClientRepository: MqttClientRepository,
@@ -31,6 +33,15 @@ class SettingsViewModel @AssistedInject constructor(
             SettingsEvent.ConnectMqtt -> connectMqtt()
             SettingsEvent.DisconnectMqtt -> disconnectMqtt()
             is SettingsEvent.NavigateTo -> navigateTo(destination = event.destination)
+            is SettingsEvent.LoadCA -> container.intent {
+                reduce { copy(caCert = event.caCert, caUri = event.caUri) }
+            }
+            is SettingsEvent.LoadClientCert -> container.intent {
+                reduce { copy(clientCert = event.clientCert, clientP12Uri = event.clientP12Uri) }
+            }
+            is SettingsEvent.LoadClientKey -> container.intent {
+                reduce { copy(clientKey = event.clientKey) }
+            }
         }
     }
 
@@ -75,13 +86,13 @@ class SettingsViewModel @AssistedInject constructor(
         reduce { copy(passwordVisibility = !passwordVisibility) }
     }
 
-    private fun checkConnection() = container.intent {
+    private fun checkConnection() = container.intent(dispatcher = Dispatchers.IO) {
         mqttClientRepository.isConnected().collect {
             reduce { copy(isConnected = it) }
         }
     }
 
-    private fun connectMqtt() = container.intent {
+    private fun connectMqtt() = container.intent(dispatcher = Dispatchers.IO) {
         val state = state.value
         if (isMqttPropertiesEmpty(state = state) || state.isConnected) {
             return@intent
@@ -90,12 +101,27 @@ class SettingsViewModel @AssistedInject constructor(
         reduce { copy(isLoading = true) }
 
         mqttClientRepository.connectMqtt(
-            clientId = state.clientId,
-            host = state.host,
-            port = state.port.toInt(),
-            username = state.username,
-            password = state.password
+            mqttConnectionConfig = MqttConnectionConfig(
+                clientId = state.clientId,
+                host = state.host,
+                port = state.port.toInt(),
+                username = state.username,
+                password = state.password,
+                caBytes = state.caCert,
+                clientP12Bytes = state.clientCert,
+                p12Password = state.password
+            )
         )
+//        mqttClientRepository.connectMqtt(
+//            clientId = state.clientId,
+//            host = state.host,
+//            port = state.port.toInt(),
+//            username = state.username,
+//            password = state.password,
+//            caBytes = state.caCert,
+//            clientP12Bytes = state.clientCert,
+//            p12Password = state.password
+//        )
             .onSuccess {
                 reduce { copy(isLoading = false) }
                 postSideEffect(
@@ -114,7 +140,7 @@ class SettingsViewModel @AssistedInject constructor(
             }
     }
 
-    private fun disconnectMqtt() = container.intent {
+    private fun disconnectMqtt() = container.intent(dispatcher = Dispatchers.IO) {
         mqttClientRepository.disconnect()
             .onSuccess {
                 postSideEffect(
@@ -133,7 +159,7 @@ class SettingsViewModel @AssistedInject constructor(
     }
 
     private fun isMqttPropertiesEmpty(state: SettingsState): Boolean {
-        return state.clientId.isBlank() || state.host.isBlank() || state.port.isBlank() ||
-                state.username.isBlank() || state.password.isBlank()
+        return state.clientId.isBlank() || state.host.isBlank() || state.port.isBlank()
+//                || state.username.isBlank() || state.password.isBlank()
     }
 }

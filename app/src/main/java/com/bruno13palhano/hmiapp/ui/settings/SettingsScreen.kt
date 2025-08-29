@@ -1,5 +1,9 @@
 package com.bruno13palhano.hmiapp.ui.settings
 
+import android.content.Context
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -9,6 +13,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Menu
+import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material3.Button
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
@@ -24,9 +29,12 @@ import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
@@ -40,6 +48,7 @@ import com.bruno13palhano.hmiapp.ui.components.CustomIntegerField
 import com.bruno13palhano.hmiapp.ui.components.CustomPasswordTextField
 import com.bruno13palhano.hmiapp.ui.components.CustomTextField
 import com.bruno13palhano.hmiapp.ui.components.DrawerMenu
+import com.bruno13palhano.hmiapp.ui.components.VertMenu
 import com.bruno13palhano.hmiapp.ui.factory.ViewModelFactoryEntryPoint
 import com.bruno13palhano.hmiapp.ui.factory.assistedViewModel
 import com.bruno13palhano.hmiapp.ui.shared.clickableWithoutRipple
@@ -119,6 +128,44 @@ private fun SettingsContent(
     state: SettingsState,
     onEvent: (event: SettingsEvent) -> Unit
 ) {
+    val content = LocalContext.current
+
+    val pickCaLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument()
+    ) { uri ->
+        uri?.let {
+            onEvent(SettingsEvent.LoadCA(caCert = content.uriToByteArray(uri = it), caUri = it))
+        }
+    }
+
+    val pickClientLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument()
+    ) { uri ->
+        uri?.let {
+            onEvent(
+                SettingsEvent.LoadClientCert(
+                    clientCert = content.uriToByteArray(uri = it),
+                    clientP12Uri = it
+                )
+            )
+        }
+    }
+
+    val pickClientKeyLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument()
+    ) { uri ->
+        uri?.let {
+            onEvent(
+                SettingsEvent.LoadClientKey(clientKey = content.uriToByteArray(uri = it))
+            )
+        }
+    }
+
+    val items = mapOf(
+        "CA" to "Load CA",
+        "CL" to "Load clientP12",
+    )
+
     Scaffold(
         modifier = Modifier
             .clickableWithoutRipple { onEvent(SettingsEvent.HideKeyboardAndClearFocus) },
@@ -130,6 +177,30 @@ private fun SettingsContent(
                         Icon(
                             imageVector = Icons.Outlined.Menu,
                             contentDescription = stringResource(id = R.string.menu_button)
+                        )
+                    }
+                },
+                actions = {
+                    var s by remember { mutableStateOf(false) }
+
+                    IconButton(onClick = { s = true }) {
+                        Icon(
+                            imageVector = Icons.Outlined.MoreVert,
+                            contentDescription = null
+                        )
+
+                        VertMenu(
+                            items = items,
+                            expanded = s,
+                            onDismissRequest = { s = false },
+                            onItemClick = { item ->
+                                when (item) {
+                                    "CA" -> pickCaLauncher.launch(arrayOf("*/*"))
+                                    "CL" -> pickClientLauncher.launch(arrayOf("*/*"))
+                                    "CK" -> pickClientKeyLauncher.launch(arrayOf("*/*"))
+                                    else -> ""
+                                }
+                            }
                         )
                     }
                 }
@@ -259,6 +330,12 @@ private fun SettingsContent(
                 }
             }
         }
+    }
+}
+
+fun Context.uriToByteArray(uri: Uri): ByteArray? {
+    return contentResolver.openInputStream(uri)?.use { inputStream ->
+        inputStream.readBytes()
     }
 }
 
