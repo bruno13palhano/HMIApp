@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import com.bruno13palhano.core.data.database.dao.EnvironmentDao
 import com.bruno13palhano.core.data.database.dao.MqttConnectionConfigDao
+import com.bruno13palhano.core.data.database.dao.PreferencesDao
 import com.bruno13palhano.core.data.database.dao.WidgetDao
 import dagger.Module
 import dagger.Provides
@@ -35,4 +36,7 @@ internal object DatabaseModule {
 
     @Provides
     fun provideEnvironmentDao(db: AppDatabase): EnvironmentDao = db.environmentDao()
+
+    @Provides
+    fun providesPreferencesDao(db: AppDatabase): PreferencesDao = db.preferencesDao()
 }
