@@ -10,4 +10,6 @@ interface EnvironmentRepository {
     fun getAll(): Flow<List<Environment>>
     suspend fun getById(id: Long): Environment?
     suspend fun getLast(): Environment?
+    suspend fun getLastEnvironmentId(): Long?
+    suspend fun setLastEnvironmentId(id: Long)
 }

@@ -30,6 +30,7 @@ class DashboardViewModel @AssistedInject constructor(
 
     private val widgetManager = WidgetManager(
         widgetRepository = widgetRepository,
+        environmentRepository = environmentRepository,
         mqttClientRepository = mqttClientRepository,
         container = container
     )

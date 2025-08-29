@@ -48,13 +48,15 @@ class EnvironmentManager(
         onLoadSuccess: (id: Long) -> Unit,
         onFinish: () -> Unit
     ) = container.intent(dispatcher = Dispatchers.IO) {
-            environmentRepository.getLast()?.let {
+        environmentRepository.getLastEnvironmentId()?.let { id ->
+            environmentRepository.getById(id = id)?.let {
                 reduce { copy(environment = it) }
 
                 if (it.id != 0L) onLoadSuccess(it.id)
             }
-            onFinish()
         }
+        onFinish()
+    }
 
     fun updateEnvironmentState(scale: Float, offsetX: Float, offsetY: Float) =
         container.intent(dispatcher = Dispatchers.IO) {

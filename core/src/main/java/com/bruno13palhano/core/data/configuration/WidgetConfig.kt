@@ -27,9 +27,6 @@ sealed class DataSourceConfig {
     data class HTTP(val url: String, val method: String = "GET") : DataSourceConfig()
 }
 
-@Serializable
-data class LayoutConfig(val widgets: List<WidgetConfig>)
-
 fun Widget.toWidgetConfig(): WidgetConfig = WidgetConfig(
     id = id,
     type = type.name,

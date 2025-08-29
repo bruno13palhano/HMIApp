@@ -1,8 +1,11 @@
 package com.bruno13palhano.hmiapp.ui.dashboard
 
 import com.bruno13palhano.core.data.configuration.LayoutConfig
+import com.bruno13palhano.core.data.configuration.toEnvironment
+import com.bruno13palhano.core.data.configuration.toEnvironmentConfig
 import com.bruno13palhano.core.data.configuration.toWidget
 import com.bruno13palhano.core.data.configuration.toWidgetConfig
+import com.bruno13palhano.core.data.repository.EnvironmentRepository
 import com.bruno13palhano.core.data.repository.MqttClientRepository
 import com.bruno13palhano.core.data.repository.WidgetRepository
 import com.bruno13palhano.core.model.DataSource
@@ -16,6 +19,7 @@ import java.io.OutputStream
 
 class WidgetManager(
     private val widgetRepository: WidgetRepository,
+    private val environmentRepository: EnvironmentRepository,
     private val mqttClientRepository: MqttClientRepository,
     private val container: Container<DashboardState, DashboardSideEffect>
 ) {
@@ -154,16 +158,23 @@ class WidgetManager(
 
     fun exportWidgets(stream: OutputStream) =
         container.intent(dispatcher = Dispatchers.Default) {
-            val widgets = state.value.widgets.map { it.toWidgetConfig() }
-            val layout = LayoutConfig(widgets = widgets)
-
-            try {
-                val json = Json.encodeToString(value = layout)
-                stream.bufferedWriter().use { it.write(json) }
-            } catch (_: Exception) {
-                postSideEffect(
-                    effect = DashboardSideEffect.ShowInfo(info = DashboardInfo.EXPORT_FAILURE)
+            environmentRepository.getLastEnvironmentId()?.let { environmentId ->
+                val environment = environmentRepository.getById(id = environmentId)!!
+                val widgets = widgetRepository.getWidgets(environmentId = environmentId)
+                    .map { it.toWidgetConfig() }
+                val layout = LayoutConfig(
+                    environment = environment.toEnvironmentConfig(),
+                    widgets = widgets
                 )
+
+                try {
+                    val json = Json.encodeToString(value = layout)
+                    stream.bufferedWriter().use { it.write(json) }
+                } catch (_: Exception) {
+                    postSideEffect(
+                        effect = DashboardSideEffect.ShowInfo(info = DashboardInfo.EXPORT_FAILURE)
+                    )
+                }
             }
         }
 
@@ -173,6 +184,7 @@ class WidgetManager(
                 val json = stream.bufferedReader().use { it.readText() }
                 val layout = Json.decodeFromString<LayoutConfig>(string = json)
 
+                environmentRepository.insert(environment = layout.environment.toEnvironment())
                 layout.widgets
                     .map { it.toWidget() }
                     .forEach { widget ->
