@@ -1,6 +1,5 @@
 package com.bruno13palhano.hmiapp.ui.settings
 
-import android.net.Uri
 import androidx.compose.runtime.Immutable
 import androidx.navigation3.runtime.NavKey
 import com.bruno13palhano.hmiapp.ui.navigation.Settings
@@ -13,10 +12,7 @@ data class SettingsState(
     val username: String = "",
     val password: String = "",
     val caCert: ByteArray? = null,
-    val clientCert: ByteArray? = null,
-    val clientKey: ByteArray? = null,
-    val clientP12Uri: Uri? = null,
-    val caUri: Uri? = null,
+    val clientP12: ByteArray? = null,
     val insecure: Boolean = false,
     val passwordVisibility: Boolean = false,
     val currentDestination: NavKey = Settings,
@@ -24,8 +20,6 @@ data class SettingsState(
     val isClientIdInvalid: Boolean = false,
     val isHostInvalid: Boolean = false,
     val isPortInvalid: Boolean = false,
-    val isUsernameInvalid: Boolean = false,
-    val isPasswordInvalid: Boolean = false,
     val isLoading: Boolean = false,
     val isConnected: Boolean = false,
     val isCredentialDialogOpen: Boolean = false
@@ -46,9 +40,8 @@ sealed interface SettingsEvent {
     data object DisconnectMqtt : SettingsEvent
     data object HideKeyboardAndClearFocus : SettingsEvent
     data object ToggleCredentialDialog : SettingsEvent
-    data class LoadCA(val caCert: ByteArray?, val caUri: Uri?) : SettingsEvent
-    data class LoadClientCert(val clientCert: ByteArray?, val clientP12Uri: Uri?) : SettingsEvent
-    data class LoadClientKey(val clientKey: ByteArray?) : SettingsEvent
+    data class LoadCA(val caCert: ByteArray?) : SettingsEvent
+    data class LoadClientCert(val clientCert: ByteArray?) : SettingsEvent
 }
 
 @Immutable

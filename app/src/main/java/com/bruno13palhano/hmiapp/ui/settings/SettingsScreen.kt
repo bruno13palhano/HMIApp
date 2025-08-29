@@ -132,7 +132,7 @@ private fun SettingsContent(
         contract = ActivityResultContracts.OpenDocument()
     ) { uri ->
         uri?.let {
-            onEvent(SettingsEvent.LoadCA(caCert = content.uriToByteArray(uri = it), caUri = it))
+            onEvent(SettingsEvent.LoadCA(caCert = content.uriToByteArray(uri = it)))
         }
     }
 
@@ -141,10 +141,7 @@ private fun SettingsContent(
     ) { uri ->
         uri?.let {
             onEvent(
-                SettingsEvent.LoadClientCert(
-                    clientCert = content.uriToByteArray(uri = it),
-                    clientP12Uri = it
-                )
+                SettingsEvent.LoadClientCert(clientCert = content.uriToByteArray(uri = it))
             )
         }
     }
@@ -269,7 +266,6 @@ private fun SettingsContent(
                         enabled = !state.isConnected,
                         label = stringResource(id = R.string.username),
                         placeholder = stringResource(id = R.string.username_placeholder),
-                        isError = state.isUsernameInvalid
                     )
 
                     CustomPasswordTextField(
@@ -285,7 +281,6 @@ private fun SettingsContent(
                         enabled = !state.isConnected,
                         label = stringResource(id = R.string.password),
                         placeholder = stringResource(id = R.string.password_placeholder),
-                        isError = state.isPasswordInvalid
                     )
 
                     Column(
@@ -353,7 +348,7 @@ private fun getSettingInfo(): Map<SettingsInfo, String> {
 private fun SettingsPreview() {
     HMIAppTheme {
         SettingsContent(
-            drawerState = DrawerState(initialValue = DrawerValue.Open),
+            drawerState = DrawerState(initialValue = DrawerValue.Closed),
             snackbarHostState = SnackbarHostState(),
             state = SettingsState(),
             onEvent = {}

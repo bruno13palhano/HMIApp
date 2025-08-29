@@ -33,18 +33,9 @@ class SettingsViewModel @AssistedInject constructor(
             SettingsEvent.ConnectMqtt -> connectMqtt()
             SettingsEvent.DisconnectMqtt -> disconnectMqtt()
             is SettingsEvent.NavigateTo -> navigateTo(destination = event.destination)
-            SettingsEvent.ToggleCredentialDialog -> container.intent {
-                reduce { copy(isCredentialDialogOpen = !isCredentialDialogOpen) }
-            }
-            is SettingsEvent.LoadCA -> container.intent {
-                reduce { copy(caCert = event.caCert, caUri = event.caUri) }
-            }
-            is SettingsEvent.LoadClientCert -> container.intent {
-                reduce { copy(clientCert = event.clientCert, clientP12Uri = event.clientP12Uri) }
-            }
-            is SettingsEvent.LoadClientKey -> container.intent {
-                reduce { copy(clientKey = event.clientKey) }
-            }
+            SettingsEvent.ToggleCredentialDialog -> toggleCredentialDialog()
+            is SettingsEvent.LoadCA -> loadCA(caCert = event.caCert)
+            is SettingsEvent.LoadClientCert -> loadClientP12(clientP12 = event.clientCert)
         }
     }
 
@@ -76,17 +67,27 @@ class SettingsViewModel @AssistedInject constructor(
     }
 
     private fun updateUsername(username: String) = container.intent {
-        val isInvalid = username.isBlank()
-        reduce { copy(username = username, isUsernameInvalid = isInvalid) }
+        reduce { copy(username = username) }
     }
 
     private fun updatePassword(password: String) = container.intent {
-        val isInvalid = password.isBlank()
-        reduce { copy(password = password, isPasswordInvalid = isInvalid) }
+        reduce { copy(password = password) }
     }
 
     private fun togglePasswordVisibility() = container.intent {
         reduce { copy(passwordVisibility = !passwordVisibility) }
+    }
+
+    private fun toggleCredentialDialog() = container.intent {
+        reduce { copy(isCredentialDialogOpen = !isCredentialDialogOpen) }
+    }
+
+    private fun loadCA(caCert: ByteArray?) = container.intent {
+        reduce { copy(caCert = caCert) }
+    }
+
+    private fun loadClientP12(clientP12: ByteArray?) = container.intent {
+        reduce { copy(clientP12 = clientP12) }
     }
 
     private fun checkConnection() = container.intent(dispatcher = Dispatchers.IO) {
@@ -111,20 +112,10 @@ class SettingsViewModel @AssistedInject constructor(
                 username = state.username,
                 password = state.password,
                 caBytes = state.caCert,
-                clientP12Bytes = state.clientCert,
+                clientP12Bytes = state.clientP12,
                 p12Password = state.password
             )
         )
-//        mqttClientRepository.connectMqtt(
-//            clientId = state.clientId,
-//            host = state.host,
-//            port = state.port.toInt(),
-//            username = state.username,
-//            password = state.password,
-//            caBytes = state.caCert,
-//            clientP12Bytes = state.clientCert,
-//            p12Password = state.password
-//        )
             .onSuccess {
                 reduce { copy(isLoading = false) }
                 postSideEffect(
@@ -163,6 +154,5 @@ class SettingsViewModel @AssistedInject constructor(
 
     private fun isMqttPropertiesEmpty(state: SettingsState): Boolean {
         return state.clientId.isBlank() || state.host.isBlank() || state.port.isBlank()
-//                || state.username.isBlank() || state.password.isBlank()
     }
 }
