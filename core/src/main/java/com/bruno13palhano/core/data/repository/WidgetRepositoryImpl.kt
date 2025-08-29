@@ -4,17 +4,13 @@ import com.bruno13palhano.core.data.database.dao.WidgetDao
 import com.bruno13palhano.core.data.database.entity.toDomain
 import com.bruno13palhano.core.data.database.entity.toEntity
 import com.bruno13palhano.core.model.Widget
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 internal class WidgetRepositoryImpl @Inject constructor(
     private val dao: WidgetDao
 ) : WidgetRepository {
-    override fun getWidgets(environmentId: Long): Flow<List<Widget>> {
-        return dao.getWidgets(environmentId = environmentId).map {
-            it.map { entity -> entity.toDomain() }
-        }
+    override suspend fun getWidgets(environmentId: Long): List<Widget> {
+        return dao.getWidgets(environmentId = environmentId).map { it.toDomain() }
     }
 
     override suspend fun insert(widget: Widget) {
