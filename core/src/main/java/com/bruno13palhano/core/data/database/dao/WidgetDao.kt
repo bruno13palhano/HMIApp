@@ -6,12 +6,11 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import com.bruno13palhano.core.data.database.entity.WidgetEntity
-import kotlinx.coroutines.flow.Flow
 
 @Dao
 internal interface WidgetDao {
     @Query("SELECT * FROM widgets WHERE environmentId = :environmentId")
-    fun getWidgets(environmentId: Long): Flow<List<WidgetEntity>>
+    suspend fun getWidgets(environmentId: Long): List<WidgetEntity>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(entity: WidgetEntity)
