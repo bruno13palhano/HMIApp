@@ -28,8 +28,10 @@ class SettingsViewModel @AssistedInject constructor(
             is SettingsEvent.UpdatePort -> updatePort(port = event.port)
             is SettingsEvent.UpdateUsername -> updateUsername(username = event.username)
             is SettingsEvent.UpdatePassword -> updatePassword(password = event.password)
+            is SettingsEvent.UpdateP12Password -> updateP12Password(p12Password = event.p12Password)
             SettingsEvent.CheckConnection -> checkConnection()
             SettingsEvent.TogglePasswordVisibility -> togglePasswordVisibility()
+            SettingsEvent.ToggleP12PasswordVisibility -> toggleP12PasswordVisibility()
             SettingsEvent.ConnectMqtt -> connectMqtt()
             SettingsEvent.DisconnectMqtt -> disconnectMqtt()
             is SettingsEvent.NavigateTo -> navigateTo(destination = event.destination)
@@ -74,8 +76,16 @@ class SettingsViewModel @AssistedInject constructor(
         reduce { copy(password = password) }
     }
 
+    private fun updateP12Password(p12Password: String) = container.intent {
+        reduce { copy(p12Password = p12Password) }
+    }
+
     private fun togglePasswordVisibility() = container.intent {
         reduce { copy(passwordVisibility = !passwordVisibility) }
+    }
+
+    private fun toggleP12PasswordVisibility() = container.intent {
+        reduce { copy(p12PasswordVisibility = !p12PasswordVisibility) }
     }
 
     private fun toggleCredentialDialog() = container.intent {
@@ -106,14 +116,14 @@ class SettingsViewModel @AssistedInject constructor(
 
         mqttClientRepository.connectMqtt(
             mqttConnectionConfig = MqttConnectionConfig(
-                clientId = state.clientId,
-                host = state.host,
-                port = state.port.toInt(),
-                username = state.username,
-                password = state.password,
+                clientId = state.clientId.trim(),
+                host = state.host.trim(),
+                port = state.port.trim().toInt(),
+                username = state.username.trim(),
+                password = state.password.trim(),
                 caBytes = state.caCert,
                 clientP12Bytes = state.clientP12,
-                p12Password = state.password
+                p12Password = state.p12Password.trim()
             )
         )
             .onSuccess {

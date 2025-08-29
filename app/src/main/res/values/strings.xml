@@ -14,6 +14,8 @@
     <string name="username_placeholder">The username for connection</string>
     <string name="password">Password</string>
     <string name="password_placeholder">The password for connection</string>
+    <string name="p12_password">P12 password</string>
+    <string name="p12_password_placeholder">The P12 client password</string>
     <string name="connect">Connect</string>
     <string name="disconnect">Disconnect</string>
     <string name="client_id_error">Invalid client id</string>

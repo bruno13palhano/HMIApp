@@ -11,10 +11,12 @@ data class SettingsState(
     val port: String = "",
     val username: String = "",
     val password: String = "",
+    val p12Password: String = "",
     val caCert: ByteArray? = null,
     val clientP12: ByteArray? = null,
     val insecure: Boolean = false,
     val passwordVisibility: Boolean = false,
+    val p12PasswordVisibility: Boolean = false,
     val currentDestination: NavKey = Settings,
     val isGestureEnabled: Boolean = true,
     val isClientIdInvalid: Boolean = false,
@@ -32,7 +34,9 @@ sealed interface SettingsEvent {
     data class UpdatePort(val port: String) : SettingsEvent
     data class UpdateUsername(val username: String) : SettingsEvent
     data class UpdatePassword(val password: String) : SettingsEvent
+    data class UpdateP12Password(val p12Password: String) : SettingsEvent
     data object TogglePasswordVisibility : SettingsEvent
+    data object ToggleP12PasswordVisibility : SettingsEvent
     data object CheckConnection : SettingsEvent
     data class NavigateTo(val destination: NavKey) : SettingsEvent
     data object ToggleMenu : SettingsEvent

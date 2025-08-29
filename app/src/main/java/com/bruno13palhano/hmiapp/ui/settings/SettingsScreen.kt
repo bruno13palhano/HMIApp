@@ -283,6 +283,21 @@ private fun SettingsContent(
                         placeholder = stringResource(id = R.string.password_placeholder),
                     )
 
+                    CustomPasswordTextField(
+                        modifier = Modifier
+                            .padding(horizontal = 8.dp)
+                            .fillMaxWidth(),
+                        value = state.p12Password,
+                        visibility = state.p12PasswordVisibility,
+                        onValueChange = { p12Password ->
+                            onEvent(SettingsEvent.UpdateP12Password(p12Password = p12Password))
+                        },
+                        togglePasswordVisibility = { onEvent(SettingsEvent.ToggleP12PasswordVisibility) },
+                        enabled = !state.isConnected,
+                        label = stringResource(id = R.string.p12_password),
+                        placeholder = stringResource(id = R.string.p12_password_placeholder),
+                    )
+
                     Column(
                         modifier = Modifier
                             .padding(vertical = 32.dp)
