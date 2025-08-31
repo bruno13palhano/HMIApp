@@ -190,6 +190,13 @@ class WidgetManager(
                     .forEach { widget ->
                         widgetRepository.insert(widget = widget)
                     }
+
+                // This is necessary to load the data if the Activity isn't recreated
+                environmentRepository.getLast()?.let {
+                    reduce { copy(environment = it) }
+                    loadWidgets(environmentId = it.id)
+                    observeMessages()
+                }
             } catch (_: Exception) {
                 postSideEffect(
                     effect = DashboardSideEffect.ShowInfo(info = DashboardInfo.IMPORT_FAILURE)
