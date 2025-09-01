@@ -27,6 +27,7 @@ data class DashboardState(
     val label: String = "",
     val endpoint: String = "",
     val type: WidgetType = WidgetType.TEXT,
+    val isPinned: Boolean = false,
     val currentDestination: NavKey = Dashboard,
     val isEditEnvironmentName: Boolean = false,
     val isGestureEnabled: Boolean = false,
@@ -53,6 +54,7 @@ sealed interface DashboardEvent {
     data class UpdateLabel(val label: String) : DashboardEvent
     data class UpdateEndpoint(val endpoint: String) : DashboardEvent
     data class UpdateEnvironmentName(val name: String) : DashboardEvent
+    data class OnToggleWidgetPin(val id: String) : DashboardEvent
     data object AddEnvironment : DashboardEvent
     data object EditEnvironment : DashboardEvent
     data class ChangeEnvironment(val id: Long) : DashboardEvent

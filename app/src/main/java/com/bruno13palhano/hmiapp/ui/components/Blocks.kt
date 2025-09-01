@@ -52,36 +52,37 @@ import com.bruno13palhano.hmiapp.ui.shared.clearFocusOnKeyboardDismiss
 fun WidgetRenderer(
     widget: Widget,
     onDragEnd: (x: Float, y: Float) -> Unit,
+    onTogglePin: () -> Unit,
     onEdit: () -> Unit,
     onRemove: () -> Unit,
     onEvent: (event: WidgetEvent) -> Unit,
 ) {
     when (widget.type) {
-        WidgetType.TEXT -> TextWidget(widget, onDragEnd, onEdit, onRemove)
-        WidgetType.BUTTON -> ButtonWidget(widget, onDragEnd, onEdit, onRemove) {
+        WidgetType.TEXT -> TextWidget(widget, onDragEnd, onTogglePin, onEdit, onRemove)
+        WidgetType.BUTTON -> ButtonWidget(widget, onDragEnd, onTogglePin, onEdit, onRemove) {
             onEvent(WidgetEvent.ButtonClicked(widget.id))
         }
-        WidgetType.SWITCH -> SwitchWidget(widget, onDragEnd, onEdit, onRemove) { state ->
+        WidgetType.SWITCH -> SwitchWidget(widget, onDragEnd, onTogglePin, onEdit, onRemove) { state ->
             onEvent(WidgetEvent.SwitchToggled(widget.id, state))
         }
-        WidgetType.SLIDER -> SliderWidget(widget, onDragEnd, onEdit, onRemove) { value ->
+        WidgetType.SLIDER -> SliderWidget(widget, onDragEnd, onTogglePin, onEdit, onRemove) { value ->
             onEvent(WidgetEvent.SliderChanged(widget.id, value))
         }
-        WidgetType.GAUGE -> GaugeWidget(widget, onDragEnd, onEdit, onRemove)
-        WidgetType.PROGRESS_BAR -> ProgressBarWidget(widget, onDragEnd, onEdit, onRemove)
-        WidgetType.IMAGE -> ImageWidget(widget, onDragEnd, onEdit, onRemove)
-        WidgetType.CHART -> ChartWidget(widget, onDragEnd, onEdit, onRemove)
-        WidgetType.TOGGLE_BUTTON -> ToggleButtonWidget(widget, onDragEnd, onEdit, onRemove) { state ->
+        WidgetType.GAUGE -> GaugeWidget(widget, onDragEnd, onTogglePin, onEdit, onRemove)
+        WidgetType.PROGRESS_BAR -> ProgressBarWidget(widget, onDragEnd, onTogglePin, onEdit, onRemove)
+        WidgetType.IMAGE -> ImageWidget(widget, onDragEnd, onTogglePin, onEdit, onRemove)
+        WidgetType.CHART -> ChartWidget(widget, onDragEnd, onTogglePin, onEdit, onRemove)
+        WidgetType.TOGGLE_BUTTON -> ToggleButtonWidget(widget, onDragEnd, onTogglePin, onEdit, onRemove) { state ->
             onEvent(WidgetEvent.ToggleButtonChanged(widget.id, state))
         }
-        WidgetType.INPUT_FIELD -> InputFieldWidget(widget, onDragEnd, onEdit, onRemove) { text ->
+        WidgetType.INPUT_FIELD -> InputFieldWidget(widget, onDragEnd, onTogglePin, onEdit, onRemove) { text ->
             onEvent(WidgetEvent.InputSubmitted(widget.id, text))
         }
-        WidgetType.LED_INDICATOR -> LedIndicatorWidget(widget, onDragEnd, onEdit, onRemove)
-        WidgetType.DROPDOWN -> DropdownWidget(widget, onDragEnd, onEdit, onRemove) { selected ->
+        WidgetType.LED_INDICATOR -> LedIndicatorWidget(widget, onDragEnd, onTogglePin, onEdit, onRemove)
+        WidgetType.DROPDOWN -> DropdownWidget(widget, onDragEnd, onTogglePin, onEdit, onRemove) { selected ->
             onEvent(WidgetEvent.DropdownSelected(widget.id, selected))
         }
-        WidgetType.COLOR_PICKER -> ColorPickerWidget(widget, onDragEnd, onEdit, onRemove) { color ->
+        WidgetType.COLOR_PICKER -> ColorPickerWidget(widget, onDragEnd, onTogglePin, onEdit, onRemove) { color ->
             onEvent(WidgetEvent.ColorPicked(widget.id, color))
         }
     }
@@ -100,12 +101,14 @@ sealed class WidgetEvent {
 fun TextWidget(
     widget: Widget,
     onDragEnd: (x: Float, y: Float) -> Unit,
+    onTogglePin: () -> Unit,
     onEdit: () -> Unit,
     onRemove: () -> Unit
 ) {
     WidgetBlock(
         widget = widget,
         onDragEnd = onDragEnd,
+        onTogglePin = onTogglePin,
         onEdit = onEdit,
         onRemove = onRemove
     ) {
@@ -125,6 +128,7 @@ fun TextWidget(
 fun ButtonWidget(
     widget: Widget,
     onDragEnd: (x: Float, y: Float) -> Unit,
+    onTogglePin: () -> Unit,
     onEdit: () -> Unit,
     onRemove: () -> Unit,
     onClick: () -> Unit
@@ -132,6 +136,7 @@ fun ButtonWidget(
     WidgetBlock(
         widget = widget,
         onDragEnd = onDragEnd,
+        onTogglePin = onTogglePin,
         onEdit = onEdit,
         onRemove = onRemove
     ) {
@@ -148,6 +153,7 @@ fun ButtonWidget(
 fun SwitchWidget(
     widget: Widget,
     onDragEnd: (x: Float, y: Float) -> Unit,
+    onTogglePin: () -> Unit,
     onEdit: () -> Unit,
     onRemove: () -> Unit,
     onToggle: (Boolean) -> Unit
@@ -156,6 +162,7 @@ fun SwitchWidget(
     WidgetBlock(
         widget = widget,
         onDragEnd = onDragEnd,
+        onTogglePin = onTogglePin,
         onEdit = onEdit,
         onRemove = onRemove
     ) {
@@ -174,6 +181,7 @@ fun SwitchWidget(
 fun SliderWidget(
     widget: Widget,
     onDragEnd: (x: Float, y: Float) -> Unit,
+    onTogglePin: () -> Unit,
     onEdit: () -> Unit,
     onRemove: () -> Unit,
     onValueChange: (Float) -> Unit
@@ -182,6 +190,7 @@ fun SliderWidget(
     WidgetBlock(
         widget = widget,
         onDragEnd = onDragEnd,
+        onTogglePin = onTogglePin,
         onEdit = onEdit,
         onRemove = onRemove
     ) {
@@ -209,6 +218,7 @@ fun SliderWidget(
 fun GaugeWidget(
     widget: Widget,
     onDragEnd: (x: Float, y: Float) -> Unit,
+    onTogglePin: () -> Unit,
     onEdit: () -> Unit,
     onRemove: () -> Unit,
 ) {
@@ -216,6 +226,7 @@ fun GaugeWidget(
     WidgetBlock(
         widget = widget,
         onDragEnd = onDragEnd,
+        onTogglePin = onTogglePin,
         onEdit = onEdit,
         onRemove = onRemove
     ) {
@@ -245,6 +256,7 @@ fun GaugeWidget(
 fun ProgressBarWidget(
     widget: Widget,
     onDragEnd: (x: Float, y: Float) -> Unit,
+    onTogglePin: () -> Unit,
     onEdit: () -> Unit,
     onRemove: () -> Unit,
 ) {
@@ -257,6 +269,7 @@ fun ProgressBarWidget(
     WidgetBlock(
         widget = widget,
         onDragEnd = onDragEnd,
+        onTogglePin = onTogglePin,
         onEdit = onEdit,
         onRemove = onRemove
     ) {
@@ -281,12 +294,14 @@ fun ProgressBarWidget(
 fun ImageWidget(
     widget: Widget,
     onDragEnd: (x: Float, y: Float) -> Unit,
+    onTogglePin: () -> Unit,
     onEdit: () -> Unit,
     onRemove: () -> Unit,
 ) {
     WidgetBlock(
         widget = widget,
         onDragEnd = onDragEnd,
+        onTogglePin = onTogglePin,
         onEdit = onEdit,
         onRemove = onRemove
     ) {
@@ -305,12 +320,14 @@ fun ImageWidget(
 fun ChartWidget(
     widget: Widget,
     onDragEnd: (x: Float, y: Float) -> Unit,
+    onTogglePin: () -> Unit,
     onEdit: () -> Unit,
     onRemove: () -> Unit,
 ) {
     WidgetBlock(
         widget = widget,
         onDragEnd = onDragEnd,
+        onTogglePin = onTogglePin,
         onEdit = onEdit,
         onRemove = onRemove
     ) {
@@ -327,6 +344,7 @@ fun ChartWidget(
 fun ToggleButtonWidget(
     widget: Widget,
     onDragEnd: (x: Float, y: Float) -> Unit,
+    onTogglePin: () -> Unit,
     onEdit: () -> Unit,
     onRemove: () -> Unit,
     onToggle: (Boolean) -> Unit
@@ -335,6 +353,7 @@ fun ToggleButtonWidget(
     WidgetBlock(
         widget = widget,
         onDragEnd = onDragEnd,
+        onTogglePin = onTogglePin,
         onEdit = onEdit,
         onRemove = onRemove
     ) {
@@ -363,6 +382,7 @@ fun ToggleButtonWidget(
 fun InputFieldWidget(
     widget: Widget,
     onDragEnd: (x: Float, y: Float) -> Unit,
+    onTogglePin: () -> Unit,
     onEdit: () -> Unit,
     onRemove: () -> Unit,
     onSubmit: (String) -> Unit
@@ -371,6 +391,7 @@ fun InputFieldWidget(
     WidgetBlock(
         widget = widget,
         onDragEnd = onDragEnd,
+        onTogglePin = onTogglePin,
         onEdit = onEdit,
         onRemove = onRemove
     ) {
@@ -396,6 +417,7 @@ fun InputFieldWidget(
 fun LedIndicatorWidget(
     widget: Widget,
     onDragEnd: (x: Float, y: Float) -> Unit,
+    onTogglePin: () -> Unit,
     onEdit: () -> Unit,
     onRemove: () -> Unit,
 ) {
@@ -408,6 +430,7 @@ fun LedIndicatorWidget(
     WidgetBlock(
         widget = widget,
         onDragEnd = onDragEnd,
+        onTogglePin = onTogglePin,
         onEdit = onEdit,
         onRemove = onRemove
     ) {
@@ -433,6 +456,7 @@ fun LedIndicatorWidget(
 fun DropdownWidget(
     widget: Widget,
     onDragEnd: (x: Float, y: Float) -> Unit,
+    onTogglePin: () -> Unit,
     onEdit: () -> Unit,
     onRemove: () -> Unit,
     onSelected: (String) -> Unit
@@ -442,6 +466,7 @@ fun DropdownWidget(
     WidgetBlock(
         widget = widget,
         onDragEnd = onDragEnd,
+        onTogglePin = onTogglePin,
         onEdit = onEdit,
         onRemove = onRemove
     ) {
@@ -474,6 +499,7 @@ fun DropdownWidget(
 fun ColorPickerWidget(
     widget: Widget,
     onDragEnd: (x: Float, y: Float) -> Unit,
+    onTogglePin: () -> Unit,
     onEdit: () -> Unit,
     onRemove: () -> Unit,
     onPick: (Color) -> Unit
@@ -482,6 +508,7 @@ fun ColorPickerWidget(
     WidgetBlock(
         widget = widget,
         onDragEnd = onDragEnd,
+        onTogglePin = onTogglePin,
         onEdit = onEdit,
         onRemove = onRemove
     ) {

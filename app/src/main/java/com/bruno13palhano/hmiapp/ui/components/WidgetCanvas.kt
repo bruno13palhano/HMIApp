@@ -40,6 +40,7 @@ fun WidgetCanvas(
     initialScale: Float = 1f,
     initialOffset: Offset = Offset.Zero,
     onDragEnd: (id: String, x: Float, y: Float) -> Unit,
+    onTogglePin: (id: String) -> Unit,
     onEdit: (id: String) -> Unit,
     onRemove: (id: String) -> Unit,
     onEvent: (event: WidgetEvent) -> Unit,
@@ -148,6 +149,7 @@ fun WidgetCanvas(
                     WidgetRenderer(
                         widget = widget,
                         onDragEnd = { x, y -> onDragEnd(widget.id, x, y) },
+                        onTogglePin = { onTogglePin(widget.id) },
                         onEdit = { onEdit(widget.id) },
                         onRemove = { onRemove(widget.id) },
                         onEvent = onEvent,
@@ -238,6 +240,7 @@ private fun WidgetCanvasPreview() {
                 )
             ),
             onDragEnd = { _, _, _ -> },
+            onTogglePin = {},
             onEdit = {},
             onRemove = {},
             onEvent = {},

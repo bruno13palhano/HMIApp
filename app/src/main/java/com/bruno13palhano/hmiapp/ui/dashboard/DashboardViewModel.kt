@@ -52,6 +52,7 @@ class DashboardViewModel @AssistedInject constructor(
                 offsetX = event.offsetX,
                 offsetY = event.offsetY
             )
+            is DashboardEvent.OnToggleWidgetPin -> onToggleWidgetPin(id = event.id)
             is DashboardEvent.OnWidgetEvent -> onWidgetEvent(widgetEvent = event.widgetEvent)
             DashboardEvent.AddEnvironment -> addEnvironment()
             DashboardEvent.EditEnvironment -> editEnvironment()
@@ -103,6 +104,12 @@ class DashboardViewModel @AssistedInject constructor(
     private fun updateEnvironmentName(name: String) = container.intent {
         val environment = container.state.value.environment
         reduce { copy(environment = environment.copy(name = name)) }
+    }
+
+    private fun onToggleWidgetPin(id: String) = container.intent {
+        state.value.widgets.find { it.id == id }?.let { widget ->
+            widgetManager.updateWidgetPin(widget = widget)
+        }
     }
 
     private fun addEnvironment() {

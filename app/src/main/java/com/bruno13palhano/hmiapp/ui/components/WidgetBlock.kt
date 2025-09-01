@@ -49,6 +49,7 @@ import kotlin.math.roundToInt
 fun WidgetBlock(
     widget: Widget,
     onDragEnd: (x: Float, y: Float) -> Unit,
+    onTogglePin: () -> Unit,
     onEdit: () -> Unit,
     onRemove: () -> Unit,
     content: @Composable ColumnScope.() -> Unit
@@ -57,7 +58,14 @@ fun WidgetBlock(
     var offsetY by remember { mutableFloatStateOf(widget.y) }
 
     var expandMenu by remember { mutableStateOf(false) }
+
+    val pinUnpin = if (!widget.isPinned) {
+        stringResource(id = R.string.pin)
+    } else {
+        stringResource(id = R.string.unpin)
+    }
     val items = mapOf(
+        MenuOptions.PIN_UNPIN to pinUnpin,
         MenuOptions.EDIT to stringResource(id = R.string.edit),
         MenuOptions.REMOVE to stringResource(id = R.string.remove)
     )
@@ -65,21 +73,25 @@ fun WidgetBlock(
     Column(
         modifier = Modifier
             .offset { IntOffset(offsetX.roundToInt(), offsetY.roundToInt()) }
-            .pointerInput(Unit) {
-                detectDragGestures(
-                    onDragEnd = {
-                        onDragEnd(offsetX, offsetY)
-                    },
-                    onDragCancel = {
-                        onDragEnd(offsetX, offsetY)
+            .pointerInput(widget.isPinned) {
+                if (!widget.isPinned) {
+                    detectDragGestures(
+                        onDragEnd = {
+                            onDragEnd(offsetX, offsetY)
+                        },
+                        onDragCancel = {
+                            onDragEnd(offsetX, offsetY)
+                        }
+                    ) { change, dragAmount ->
+                        change.consume()
+
+                        val halfSize = CANVAS_SIZE / 2
+
+                        offsetX =
+                            (offsetX + dragAmount.x).coerceIn(-halfSize, halfSize - widget.width)
+                        offsetY =
+                            (offsetY + dragAmount.y).coerceIn(-halfSize, halfSize - widget.height)
                     }
-                ) { change, dragAmount ->
-                    change.consume()
-
-                    val halfSize = CANVAS_SIZE / 2
-
-                    offsetX = (offsetX + dragAmount.x).coerceIn(-halfSize, halfSize - widget.width)
-                    offsetY = (offsetY + dragAmount.y).coerceIn(-halfSize, halfSize - widget.height)
                 }
             }
             .padding(8.dp)
@@ -119,6 +131,7 @@ fun WidgetBlock(
                     onDismissRequest = { expandMenu = !expandMenu},
                     onItemClick = { item ->
                         when (item) {
+                            MenuOptions.PIN_UNPIN -> onTogglePin()
                             MenuOptions.EDIT -> onEdit()
                             MenuOptions.REMOVE -> onRemove()
                         }
@@ -165,6 +178,7 @@ fun extractEndpoint(url: String): String {
 }
 
 private enum class MenuOptions {
+    PIN_UNPIN,
     EDIT,
     REMOVE
 }
@@ -183,8 +197,9 @@ private fun WidgetBlockPreview() {
                     environmentId = 1L
                 ),
                 onDragEnd = { _, _ -> },
-                onEdit = { },
-                onRemove = { },
+                onTogglePin = {},
+                onEdit = {},
+                onRemove = {},
                 content = {}
             )
         }

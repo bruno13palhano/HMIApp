@@ -62,6 +62,14 @@ class WidgetManager(
         }
     }
 
+    fun updateWidgetPin(widget: Widget) = container.intent {
+        val newWidget = widget.copy(isPinned = !widget.isPinned)
+        widgetRepository.update(widget = newWidget)
+        loadWidgets(environmentId = state.value.environment.id)
+        clearCurrentWidget()
+        observeMessages()
+    }
+
     fun clearCurrentWidget() = container.intent {
         reduce { copy(id = "", label = "", endpoint = "") }
     }
