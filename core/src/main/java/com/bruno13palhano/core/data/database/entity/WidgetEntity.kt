@@ -17,6 +17,7 @@ internal data class WidgetEntity(
     val y: Float,
     val width: Float,
     val height: Float,
+    val isPinned: Boolean,
     val environmentId: Long
 )
 
@@ -35,6 +36,7 @@ internal fun WidgetEntity.toDomain(): Widget {
         y = y,
         width = width,
         height = height,
+        isPinned = isPinned,
         environmentId = environmentId
     )
 }
@@ -54,6 +56,7 @@ internal fun Widget.toEntity(): WidgetEntity {
         y = y,
         width = width,
         height = height,
+        isPinned = isPinned,
         environmentId = environmentId
     )
 }
