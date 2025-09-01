@@ -12,6 +12,7 @@ data class Widget(
     val width: Float = 160f,
     val height: Float = 160f,
     val value: String = "",
+    val isPinned: Boolean = false,
     val environmentId: Long
 )
 
