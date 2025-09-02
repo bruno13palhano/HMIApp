@@ -26,8 +26,8 @@ class WidgetManager(
     private val widgetValues = mutableMapOf<String, String>()
 
     fun addWidget() = container.intent(dispatcher = Dispatchers.IO) {
-        val environmentId = state.value.environment.id
         reduce { copy(isWidgetInputDialogVisible = false) }
+        val environmentId = state.value.environment.id.takeIf { it != 0L } ?: return@intent
 
         val widget = Widget(
             type = state.value.type,
@@ -37,37 +37,34 @@ class WidgetManager(
         )
 
         widgetRepository.insert(widget = widget)
-        loadWidgets(environmentId = environmentId)
+        refreshWidgets(environmentId = environmentId)
         clearCurrentWidget()
-        observeMessages()
     }
 
     fun editWidget() = container.intent(dispatcher = Dispatchers.IO) {
-        val environmentId = state.value.environment.id
         reduce { copy(isWidgetInputDialogVisible = false) }
 
-        val widgets = state.value.widgets.find { it.id == state.value.id }
+        val environmentId = state.value.environment.id.takeIf { it != 0L } ?: return@intent
+        val widget = state.value.widgets.find { it.id == state.value.id } ?: return@intent
 
-        widgets?.let {
-            val editWidget = it.copy(
-                type = state.value.type,
-                label = state.value.label,
-                dataSource = DataSource.MQTT(topic = state.value.endpoint)
-            )
+        val updated = widget.copy(
+            type = state.value.type,
+            label = state.value.label,
+            dataSource = DataSource.MQTT(topic = state.value.endpoint)
+        )
 
-            widgetRepository.update(widget = editWidget)
-            loadWidgets(environmentId = environmentId)
-            clearCurrentWidget()
-            observeMessages()
-        }
+        widgetRepository.update(widget = updated)
+        refreshWidgets(environmentId = environmentId)
+        clearCurrentWidget()
     }
 
-    fun updateWidgetPin(widget: Widget) = container.intent {
+    fun updateWidgetPin(widget: Widget) = container.intent(dispatcher = Dispatchers.IO) {
+        val environmentId = state.value.environment.id.takeIf { it != 0L } ?: return@intent
         val newWidget = widget.copy(isPinned = !widget.isPinned)
+
         widgetRepository.update(widget = newWidget)
-        loadWidgets(environmentId = state.value.environment.id)
+        refreshWidgets(environmentId = environmentId)
         clearCurrentWidget()
-        observeMessages()
     }
 
     fun clearCurrentWidget() = container.intent {
@@ -75,9 +72,10 @@ class WidgetManager(
     }
 
     fun removeWidget(id: String) = container.intent(dispatcher = Dispatchers.IO) {
+        val environmentId = state.value.environment.id.takeIf { it != 0L } ?: return@intent
         widgetValues.remove(key = id)
         widgetRepository.deleteById(id = id)
-        loadWidgets(environmentId = container.state.value.environment.id)
+        loadWidgets(environmentId = environmentId)
     }
 
     fun onWidgetDragEnd(id: String, x: Float, y: Float) =
@@ -154,35 +152,39 @@ class WidgetManager(
 
     fun publishWidgetEvent(widgetId: String, message: String) =
         container.intent(dispatcher = Dispatchers.IO) {
-            val widget = state.value.widgets.find { it.id == widgetId }
+            val widget = state.value.widgets.find { it.id == widgetId } ?: return@intent
 
-            widget?.let {
-                mqttClientRepository.publish(
-                    topic = (it.dataSource as DataSource.MQTT).topic,
-                    message = message
-                )
-            }
+            mqttClientRepository.publish(
+                topic = (widget.dataSource as DataSource.MQTT).topic,
+                message = message
+            )
         }
 
     fun exportWidgets(stream: OutputStream) =
         container.intent(dispatcher = Dispatchers.Default) {
-            environmentRepository.getLastEnvironmentId()?.let { environmentId ->
-                val environment = environmentRepository.getById(id = environmentId)!!
-                val widgets = widgetRepository.getWidgets(environmentId = environmentId)
-                    .map { it.toWidgetConfig() }
-                val layout = LayoutConfig(
-                    environment = environment.toEnvironmentConfig(),
-                    widgets = widgets
+            val environmentId = environmentRepository.getLastEnvironmentId()
+            if (environmentId == null) {
+                postSideEffect(
+                    effect = DashboardSideEffect.ShowInfo(info = DashboardInfo.EXPORT_FAILURE)
                 )
+                return@intent
+            }
 
-                try {
-                    val json = Json.encodeToString(value = layout)
-                    stream.bufferedWriter().use { it.write(json) }
-                } catch (_: Exception) {
-                    postSideEffect(
-                        effect = DashboardSideEffect.ShowInfo(info = DashboardInfo.EXPORT_FAILURE)
-                    )
-                }
+            val environment = environmentRepository.getById(id = environmentId) ?: return@intent
+            val widgets = widgetRepository.getWidgets(environmentId = environmentId)
+                .map { it.toWidgetConfig() }
+            val layout = LayoutConfig(
+                environment = environment.toEnvironmentConfig(),
+                widgets = widgets
+            )
+
+            try {
+                val json = Json.encodeToString(value = layout)
+                stream.bufferedWriter().use { it.write(json) }
+            } catch (_: Exception) {
+                postSideEffect(
+                    effect = DashboardSideEffect.ShowInfo(info = DashboardInfo.EXPORT_FAILURE)
+                )
             }
         }
 
@@ -202,8 +204,7 @@ class WidgetManager(
                 // This is necessary to load the data if the Activity isn't recreated
                 environmentRepository.getLast()?.let {
                     reduce { copy(environment = it) }
-                    loadWidgets(environmentId = it.id)
-                    observeMessages()
+                    refreshWidgets(environmentId = it.id)
                 }
             } catch (_: Exception) {
                 postSideEffect(
@@ -211,4 +212,9 @@ class WidgetManager(
                 )
             }
         }
+
+    fun refreshWidgets(environmentId: Long) {
+        loadWidgets(environmentId = environmentId)
+        observeMessages()
+    }
 }
