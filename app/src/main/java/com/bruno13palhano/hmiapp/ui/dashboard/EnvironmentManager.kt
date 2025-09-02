@@ -1,73 +1,41 @@
 package com.bruno13palhano.hmiapp.ui.dashboard
 
 import com.bruno13palhano.core.data.repository.EnvironmentRepository
-import com.bruno13palhano.hmiapp.ui.shared.Container
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.collectLatest
+import com.bruno13palhano.core.model.Environment
+import kotlinx.coroutines.flow.Flow
 
 class EnvironmentManager(
-    private val environmentRepository: EnvironmentRepository,
-    private val container: Container<DashboardState, DashboardSideEffect>
+    private val environmentRepository: EnvironmentRepository
 ) {
-    fun addEnvironment(onSuccess: (id: Long) -> Unit) = container.intent(dispatcher = Dispatchers.IO) {
-        reduce { copy(isEnvironmentDialogVisible = false) }
-
-        val environment = state.value.environment.copy(
-            id = 0L,
-            scale = 1f,
-            offsetX = 0f,
-            offsetY = 0f
-        )
-
-        environmentRepository.insert(environment)
-        environmentRepository.getLast()?.let {
-            reduce { copy(environment = it) }
-            onSuccess(it.id)
-        }
+    suspend fun addEnvironment(environment: Environment): Environment? {
+        environmentRepository.insert(environment = environment)
+        return environmentRepository.getLast()
     }
 
-    fun editEnvironment() = container.intent(dispatcher = Dispatchers.IO) {
-        reduce { copy(isEnvironmentDialogVisible = false) }
-        val environment = state.value.environment
+    suspend fun editEnvironment(environment: Environment) {
         environmentRepository.update(environment = environment)
     }
 
-    fun changeEnvironment(id: Long) = container.intent(Dispatchers.IO) {
-        environmentRepository.getById(id = id)?.let {
-            reduce { copy(environment = it) }
-            environmentRepository.setLastEnvironmentId(id = it.id)
-        }
+    suspend fun changeEnvironment(id: Long): Environment? {
+        val environment = environmentRepository.getById(id = id)
+        environment?.let { environmentRepository.setLastEnvironmentId(id = it.id) }
+        return environment
     }
 
-    fun loadEnvironments() = container.intent(dispatcher = Dispatchers.IO) {
-        environmentRepository.getAll().collectLatest {
-            reduce { copy(environments = it) }
-        }
+    fun loadEnvironments(): Flow<List<Environment>> {
+        return environmentRepository.getAll()
     }
 
-    fun loadPreviousEnvironment(
-        onLoadSuccess: (id: Long) -> Unit,
-        onFinish: () -> Unit
-    ) = container.intent(dispatcher = Dispatchers.IO) {
-        environmentRepository.getLastEnvironmentId()?.let { id ->
-            environmentRepository.getById(id = id)?.let {
-                reduce { copy(environment = it) }
+    suspend fun loadPreviousEnvironment(): Environment? {
+        val id = environmentRepository.getLastEnvironmentId()
+        if (id == null) return null
 
-                if (it.id != 0L) onLoadSuccess(it.id)
-            }
-        }
-        onFinish()
+        val environment = environmentRepository.getById(id = id)
+        return environment
     }
 
-    fun updateEnvironmentState(scale: Float, offsetX: Float, offsetY: Float) =
-        container.intent(dispatcher = Dispatchers.IO) {
-            val currentEnvironment = state.value.environment.copy(
-                scale = scale,
-                offsetX = offsetX,
-                offsetY = offsetY
-            )
-            if (currentEnvironment.id != 0L) {
-                environmentRepository.update(environment = currentEnvironment)
-            }
-        }
+    suspend fun updateEnvironmentState(environment: Environment) {
+        if (environment.id == 0L) return
+        environmentRepository.update(environment = environment)
+    }
 }

@@ -14,6 +14,7 @@ import com.bruno13palhano.hmiapp.ui.shared.Container
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collectLatest
 import java.io.InputStream
 import java.io.OutputStream
 
@@ -35,8 +36,7 @@ class DashboardViewModel @AssistedInject constructor(
         container = container
     )
     private val environmentManager = EnvironmentManager(
-        environmentRepository = environmentRepository,
-        container = container
+        environmentRepository = environmentRepository
     )
 
     fun onEvent(event: DashboardEvent) {
@@ -112,19 +112,33 @@ class DashboardViewModel @AssistedInject constructor(
         }
     }
 
-    private fun addEnvironment() {
-        environmentManager.addEnvironment { id ->
-            widgetManager.loadWidgets(environmentId = container.state.value.environment.id)
-        }
+    private fun addEnvironment() = container.intent(dispatcher = Dispatchers.IO) {
+        reduce { copy(isEnvironmentDialogVisible = false) }
+
+        val environment = state.value.environment.copy(
+            id = 0L,
+            scale = 1f,
+            offsetX = 0f,
+            offsetY = 0f
+        )
+        val newEnvironment = environmentManager.addEnvironment(environment = environment)
+        if (newEnvironment == null) return@intent
+
+        reduce { copy(environment = newEnvironment) }
+        widgetManager.loadWidgets(environmentId = environment.id)
     }
 
-    private fun editEnvironment() {
-        environmentManager.editEnvironment()
-        widgetManager.loadWidgets(environmentId = container.state.value.environment.id)
+    private fun editEnvironment() = container.intent(dispatcher = Dispatchers.IO) {
+        reduce { copy(isEnvironmentDialogVisible = false) }
+
+        val environment = state.value.environment
+        environmentManager.editEnvironment(environment = environment)
+        widgetManager.loadWidgets(environmentId = environment.id)
     }
 
-    private fun changeEnvironment(id: Long) {
-        environmentManager.changeEnvironment(id = id)
+    private fun changeEnvironment(id: Long) = container.intent(dispatcher = Dispatchers.IO) {
+        val updated = environmentManager.changeEnvironment(id = id)
+        updated?.let { reduce { copy(environment = it) } }
         widgetManager.loadWidgets(environmentId = id)
     }
 
@@ -193,7 +207,11 @@ class DashboardViewModel @AssistedInject constructor(
     private fun dashboardInit() {
         container.intent { reduce { copy(loading = true) } }
 
-        environmentManager.loadEnvironments()
+        container.intent(dispatcher = Dispatchers.IO) {
+            environmentManager.loadEnvironments().collectLatest {
+                reduce { copy(environments = it) }
+            }
+        }
 
         container.intent(dispatcher = Dispatchers.IO) {
             mqttClientRepository.isConnected().collect { isConnected ->
@@ -205,24 +223,27 @@ class DashboardViewModel @AssistedInject constructor(
             }
         }
 
-        environmentManager.loadPreviousEnvironment(
-            onLoadSuccess =  { id ->
-                widgetManager.loadWidgets(environmentId = id)
-                widgetManager.observeMessages()
-            },
-            onFinish = {
-                container.intent { reduce { copy(loading = false) } }
-            }
-        )
+        container.intent(dispatcher = Dispatchers.IO) {
+            val environment = environmentManager.loadPreviousEnvironment()
+
+            if (environment == null) return@intent
+
+            reduce { copy(environment = environment) }
+            widgetManager.loadWidgets(environmentId = environment.id)
+            widgetManager.observeMessages()
+            reduce { copy(loading = false) }
+        }
     }
 
-    private fun onUpdateCanvasState(scale: Float, offsetX: Float, offsetY: Float) {
-        environmentManager.updateEnvironmentState(
-            scale = scale,
-            offsetX = offsetX,
-            offsetY = offsetY
-        )
-    }
+    private fun onUpdateCanvasState(scale: Float, offsetX: Float, offsetY: Float) =
+        container.intent(dispatcher = Dispatchers.IO) {
+            val currentEnvironment = state.value.environment.copy(
+                scale = scale,
+                offsetX = offsetX,
+                offsetY = offsetY
+            )
+            environmentManager.updateEnvironmentState(environment = currentEnvironment)
+        }
 
     private fun exportWidgets(stream: OutputStream) = widgetManager.exportWidgets(stream = stream)
 
