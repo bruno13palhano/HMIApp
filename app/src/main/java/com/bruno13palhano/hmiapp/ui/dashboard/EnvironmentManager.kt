@@ -35,6 +35,7 @@ class EnvironmentManager(
     fun changeEnvironment(id: Long) = container.intent(Dispatchers.IO) {
         environmentRepository.getById(id = id)?.let {
             reduce { copy(environment = it) }
+            environmentRepository.setLastEnvironmentId(id = it.id)
         }
     }
 
