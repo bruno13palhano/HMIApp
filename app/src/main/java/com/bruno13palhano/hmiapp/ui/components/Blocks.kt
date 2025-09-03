@@ -60,41 +60,41 @@ fun WidgetRenderer(
     when (widget.type) {
         WidgetType.TEXT -> TextWidget(widget, onDragEnd, onTogglePin, onEdit, onRemove)
         WidgetType.BUTTON -> ButtonWidget(widget, onDragEnd, onTogglePin, onEdit, onRemove) {
-            onEvent(WidgetEvent.ButtonClicked(widget.id))
+            onEvent(WidgetEvent.ButtonClicked(widget))
         }
         WidgetType.SWITCH -> SwitchWidget(widget, onDragEnd, onTogglePin, onEdit, onRemove) { state ->
-            onEvent(WidgetEvent.SwitchToggled(widget.id, state))
+            onEvent(WidgetEvent.SwitchToggled(widget, state))
         }
         WidgetType.SLIDER -> SliderWidget(widget, onDragEnd, onTogglePin, onEdit, onRemove) { value ->
-            onEvent(WidgetEvent.SliderChanged(widget.id, value))
+            onEvent(WidgetEvent.SliderChanged(widget, value))
         }
         WidgetType.GAUGE -> GaugeWidget(widget, onDragEnd, onTogglePin, onEdit, onRemove)
         WidgetType.PROGRESS_BAR -> ProgressBarWidget(widget, onDragEnd, onTogglePin, onEdit, onRemove)
         WidgetType.IMAGE -> ImageWidget(widget, onDragEnd, onTogglePin, onEdit, onRemove)
         WidgetType.CHART -> ChartWidget(widget, onDragEnd, onTogglePin, onEdit, onRemove)
         WidgetType.TOGGLE_BUTTON -> ToggleButtonWidget(widget, onDragEnd, onTogglePin, onEdit, onRemove) { state ->
-            onEvent(WidgetEvent.ToggleButtonChanged(widget.id, state))
+            onEvent(WidgetEvent.ToggleButtonChanged(widget, state))
         }
         WidgetType.INPUT_FIELD -> InputFieldWidget(widget, onDragEnd, onTogglePin, onEdit, onRemove) { text ->
-            onEvent(WidgetEvent.InputSubmitted(widget.id, text))
+            onEvent(WidgetEvent.InputSubmitted(widget, text))
         }
         WidgetType.LED_INDICATOR -> LedIndicatorWidget(widget, onDragEnd, onTogglePin, onEdit, onRemove)
         WidgetType.DROPDOWN -> DropdownWidget(widget, onDragEnd, onTogglePin, onEdit, onRemove) { selected ->
-            onEvent(WidgetEvent.DropdownSelected(widget.id, selected))
+            onEvent(WidgetEvent.DropdownSelected(widget, selected))
         }
         WidgetType.COLOR_PICKER -> ColorPickerWidget(widget, onDragEnd, onTogglePin, onEdit, onRemove) { color ->
-            onEvent(WidgetEvent.ColorPicked(widget.id, color))
+            onEvent(WidgetEvent.ColorPicked(widget, color))
         }
     }
 }
 sealed class WidgetEvent {
-    data class ButtonClicked(val widgetId: String) : WidgetEvent()
-    data class SwitchToggled(val widgetId: String, val state: Boolean) : WidgetEvent()
-    data class SliderChanged(val widgetId: String, val value: Float) : WidgetEvent()
-    data class ToggleButtonChanged(val widgetId: String, val state: Boolean) : WidgetEvent()
-    data class InputSubmitted(val widgetId: String, val text: String) : WidgetEvent()
-    data class DropdownSelected(val widgetId: String, val selected: String) : WidgetEvent()
-    data class ColorPicked(val widgetId: String, val color: Color) : WidgetEvent()
+    data class ButtonClicked(val widget: Widget) : WidgetEvent()
+    data class SwitchToggled(val widget: Widget, val state: Boolean) : WidgetEvent()
+    data class SliderChanged(val widget: Widget, val value: Float) : WidgetEvent()
+    data class ToggleButtonChanged(val widget: Widget, val state: Boolean) : WidgetEvent()
+    data class InputSubmitted(val widget: Widget, val text: String) : WidgetEvent()
+    data class DropdownSelected(val widget: Widget, val selected: String) : WidgetEvent()
+    data class ColorPicked(val widget: Widget, val color: Color) : WidgetEvent()
 }
 
 @Composable
