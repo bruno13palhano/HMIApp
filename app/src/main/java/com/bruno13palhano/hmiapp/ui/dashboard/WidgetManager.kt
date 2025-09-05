@@ -6,19 +6,25 @@ import com.bruno13palhano.core.data.configuration.toEnvironmentConfig
 import com.bruno13palhano.core.data.configuration.toWidget
 import com.bruno13palhano.core.data.configuration.toWidgetConfig
 import com.bruno13palhano.core.data.repository.EnvironmentRepository
+import com.bruno13palhano.core.data.repository.MqttClientRepository
 import com.bruno13palhano.core.data.repository.WidgetRepository
-import com.bruno13palhano.core.model.Environment
+import com.bruno13palhano.core.model.DataSource
 import com.bruno13palhano.core.model.Widget
-import com.bruno13palhano.hmiapp.ui.components.WidgetEvent
-import kotlinx.serialization.json.Json
-import java.io.InputStream
-import java.io.OutputStream
+import com.bruno13palhano.core.model.WidgetType
+import kotlinx.coroutines.flow.Flow
 
 class WidgetManager(
     private val widgetRepository: WidgetRepository,
-    private val environmentRepository: EnvironmentRepository
+    private val environmentRepository: EnvironmentRepository,
+    private val mqttClientRepository: MqttClientRepository
 ) {
-    suspend fun addWidget(widget: Widget) {
+    suspend fun addWidget(environmentId: Long, type: WidgetType, label: String, endpoint: String) {
+        val widget = Widget(
+            type = type,
+            label = label,
+            dataSource = DataSource.MQTT(topic = endpoint),
+            environmentId = environmentId
+        )
         widgetRepository.insert(widget = widget)
     }
 
@@ -42,94 +48,34 @@ class WidgetManager(
         return widgetRepository.getWidgets(environmentId = environmentId)
     }
 
-    fun onWidgetEvent(
-        widgetEvent: WidgetEvent,
-        publishWidgetEvent: (widget: Widget, message: String) -> Unit
-    ) {
-        when (widgetEvent) {
-            is WidgetEvent.ButtonClicked -> publishWidgetEvent(widgetEvent.widget, "1")
-            is WidgetEvent.ColorPicked -> {
-//                publishWidgetEvent(
-//                    widgetEvent.widgetId,
-//                    widgetEvent.color
-//                )
-            }
-            is WidgetEvent.DropdownSelected -> {
-                publishWidgetEvent(widgetEvent.widget, widgetEvent.selected)
-            }
-            is WidgetEvent.InputSubmitted -> {
-                publishWidgetEvent(widgetEvent.widget, widgetEvent.text)
-            }
-            is WidgetEvent.SliderChanged -> {
-                publishWidgetEvent(widgetEvent.widget, widgetEvent.value.toString())
-            }
-            is WidgetEvent.SwitchToggled -> {
-                publishWidgetEvent(widgetEvent.widget, widgetEvent.state.toString())
-            }
-            is WidgetEvent.ToggleButtonChanged -> {
-                publishWidgetEvent(widgetEvent.widget, widgetEvent.state.toString())
-            }
+    fun observeMessages(): Flow<Pair<String, String>> {
+        return mqttClientRepository.incomingMessages()
+    }
+
+    suspend fun subscribeToTopics(topics: List<String>) {
+        topics.forEach { topic -> mqttClientRepository.subscribeToTopic(topic = topic) }
+    }
+
+    suspend fun publish(widget: Widget, message: String) {
+        (widget.dataSource as? DataSource.MQTT)?.let {
+            mqttClientRepository.publish(topic = it.topic, message)
         }
     }
 
-    suspend fun exportWidgets(
-        stream: OutputStream,
-        onFail: () -> Unit,
-        onSuccess: () -> Unit
-    ) {
-        val environmentId = environmentRepository.getLastEnvironmentId()
-        if (environmentId == null) {
-            onFail()
-            return
-        }
-
-        val environment = environmentRepository.getById(id = environmentId)
-        if (environment == null) {
-            onFail()
-            return
-        }
-
+    suspend fun exportLayout(environmentId: Long): LayoutConfig? {
+        val environment = environmentRepository.getById(id = environmentId) ?: return null
         val widgets = widgetRepository.getWidgets(environmentId = environmentId)
             .map { it.toWidgetConfig() }
-        val layout = LayoutConfig(
+        return LayoutConfig(
             environment = environment.toEnvironmentConfig(),
             widgets = widgets
         )
-
-        try {
-            val json = Json.encodeToString(value = layout)
-            stream.bufferedWriter().use { it.write(json) }
-            onSuccess()
-        } catch (_: Exception) {
-            onFail()
-        }
     }
 
-    suspend fun importWidgets(
-        stream: InputStream,
-        onFail: () -> Unit,
-        onSuccess: (environment: Environment) -> Unit,
-    ) {
-        try {
-            val json = stream.bufferedReader().use { it.readText() }
-            val layout = Json.decodeFromString<LayoutConfig>(string = json)
-
-            environmentRepository.insert(environment = layout.environment.toEnvironment())
-            layout.widgets
-                .map { it.toWidget() }
-                .forEach { widget ->
-                    widgetRepository.insert(widget = widget)
-                }
-
-            // This is necessary to load the data if the Activity isn't recreated
-            val importedEnv = environmentRepository.getLast()
-            if (importedEnv == null) {
-                onFail()
-                return
-            }
-            onSuccess(importedEnv)
-        } catch (_: Exception) {
-            onFail()
-        }
+    suspend fun importLayout(layout: LayoutConfig) {
+        environmentRepository.insert(environment = layout.environment.toEnvironment())
+        layout.widgets
+            .map { it.toWidget() }
+            .forEach { widgetRepository.insert(widget = it) }
     }
 }
