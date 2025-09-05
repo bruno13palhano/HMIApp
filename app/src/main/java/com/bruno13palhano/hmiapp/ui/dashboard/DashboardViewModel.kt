@@ -120,7 +120,6 @@ class DashboardViewModel @AssistedInject constructor(
 
             widgetManager.updateWidgetPin(widget = newWidget)
             refreshWidgets(environmentId = environmentId)
-//            clearCurrentWidget()
         }
     }
 
@@ -213,7 +212,6 @@ class DashboardViewModel @AssistedInject constructor(
         topics.forEach { topic -> mqttClientRepository.subscribeToTopic(topic = topic) }
     }
 
-    // fix: when dialog is dismissed the current widget continues with they values
     private fun openEditWidgetDialog(id: String) = container.intent {
         val state = state.value
         val widget = state.widgets.find { it.id == id }
@@ -327,18 +325,7 @@ class DashboardViewModel @AssistedInject constructor(
             if (environment == null) return@intent
 
             reduce { copy(environment = environment, loading = false) }
-            loadWidgets(environmentId = environment.id)
-
-            widgetManager.observeMessages().collect { (topic, message) ->
-                val updateWidgets = state.value.widgets.map { widget ->
-                    if ((widget.dataSource as DataSource.MQTT).topic == topic) {
-                        val updated = widget.copy(value = message)
-                        widgetValues[widget.id] = message
-                        updated
-                    } else widget
-                }
-                reduce { copy(widgets = updateWidgets) }
-            }
+            refreshWidgets(environmentId = environment.id)
         }
     }
 
