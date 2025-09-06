@@ -22,7 +22,7 @@ import com.bruno13palhano.core.data.database.entity.WidgetEntity
     version = 2,
     exportSchema = false
 )
-@TypeConverters(value = [SecureConverters::class])
+@TypeConverters(value = [SecureConverters::class, ExtrasConverters::class])
 internal abstract class AppDatabase : RoomDatabase() {
     abstract fun widgetDao(): WidgetDao
     abstract fun mqttConnectionConfigDao(): MqttConnectionConfigDao
