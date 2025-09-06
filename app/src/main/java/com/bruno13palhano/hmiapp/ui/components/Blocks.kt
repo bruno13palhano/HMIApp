@@ -72,7 +72,7 @@ fun WidgetRenderer(
         WidgetType.PROGRESS_BAR -> ProgressBarWidget(widget, onDragEnd, onTogglePin, onEdit, onRemove)
         WidgetType.IMAGE -> ImageWidget(widget, onDragEnd, onTogglePin, onEdit, onRemove)
         WidgetType.CHART -> ChartWidget(widget, onDragEnd, onTogglePin, onEdit, onRemove)
-        WidgetType.TOGGLE_BUTTON -> ToggleButtonWidget(widget, onDragEnd, onTogglePin, onEdit, onRemove) { state ->
+        WidgetType.TOGGLE_BUTTON -> ToggleButtonWidget(widget,onDragEnd, onTogglePin, onEdit, onRemove) { state ->
             onEvent(WidgetEvent.ToggleButtonChanged(widget, state))
         }
         WidgetType.INPUT_FIELD -> InputFieldWidget(widget, onDragEnd, onTogglePin, onEdit, onRemove) { text ->
@@ -158,7 +158,8 @@ fun SwitchWidget(
     onRemove: () -> Unit,
     onToggle: (Boolean) -> Unit
 ) {
-    var checked by remember { mutableStateOf(widget.value.lowercase() == "true") }
+    val initialValue = widget.extras?.firstOrNull() ?: "true"
+    var checked by remember { mutableStateOf(widget.value.lowercase() == initialValue) }
     WidgetBlock(
         widget = widget,
         onDragEnd = onDragEnd,
@@ -349,7 +350,8 @@ fun ToggleButtonWidget(
     onRemove: () -> Unit,
     onToggle: (Boolean) -> Unit
 ) {
-    var toggled by remember { mutableStateOf(widget.value == "true") }
+    val initialValue = widget.extras?.firstOrNull() ?: "true"
+    var toggled by remember { mutableStateOf(widget.value == initialValue) }
     WidgetBlock(
         widget = widget,
         onDragEnd = onDragEnd,
@@ -481,15 +483,17 @@ fun DropdownWidget(
             expanded = expanded,
             onDismissRequest = { expanded = false }
         ) {
-            listOf("Option 1", "Option 2", "Option 3").forEach { option ->
-                DropdownMenuItem(
-                    text = { Text(option) },
-                    onClick = {
-                        selected = option
-                        expanded = false
-                        onSelected(option)
-                    }
-                )
+            widget.extras?.let {
+                it.forEach { option ->
+                    DropdownMenuItem(
+                        text = { Text(option) },
+                        onClick = {
+                            selected = option
+                            expanded = false
+                            onSelected(option)
+                        }
+                    )
+                }
             }
         }
     }
