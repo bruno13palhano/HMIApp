@@ -324,9 +324,11 @@ class DashboardViewModel @AssistedInject constructor(
 
             if (environment == null) return@intent
 
-            reduce { copy(environment = environment, loading = false) }
+            reduce { copy(environment = environment) }
             refreshWidgets(environmentId = environment.id)
         }
+
+        container.intent { reduce { copy(loading = false) } }
     }
 
     private fun onUpdateCanvasState(scale: Float, offsetX: Float, offsetY: Float) =
