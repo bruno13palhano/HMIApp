@@ -17,6 +17,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -28,8 +30,11 @@ import com.bruno13palhano.hmiapp.R
 fun WidgetInputDialog(
     label: String,
     endpoint: String,
+    hasExtras: Boolean,
+    extras: List<String> = emptyList(),
     onLabelChange: (label: String) -> Unit,
     onEndpointChange: (endpoint: String) -> Unit,
+    onExtrasChange: (extras: List<String>) -> Unit,
     onConfirm: () -> Unit,
     onDismissRequest: () -> Unit
 ) {
@@ -63,7 +68,42 @@ fun WidgetInputDialog(
                     label = stringResource(id = R.string.endpoint),
                     placeholder = stringResource(id = R.string.enter_endpoint)
                 )
+                if (hasExtras) {
+                    val extrasList = remember { mutableStateListOf(*extras.toTypedArray()) }
 
+                    Text(
+                        text = "Extras",
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.padding(top = 16.dp, start = 8.dp)
+                    )
+
+                    extrasList.forEachIndexed { index, value ->
+                        CustomTextField(
+                            modifier = Modifier
+                                .padding(horizontal = 8.dp, vertical = 4.dp)
+                                .fillMaxWidth(),
+                            value = value,
+                            onValueChange = { newValue ->
+                                extrasList[index] = newValue
+                                onExtrasChange(extrasList.toList())
+                            },
+                            label = "Extra ${index + 1}",
+                            placeholder = "Enter value"
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Button(
+                        modifier = Modifier.align(Alignment.End),
+                        onClick = {
+                            extrasList.add("")
+                            onExtrasChange(extrasList.toList())
+                        }
+                    ) {
+                        Text(text = "+ ${"Add extra"}")
+                    }
+                }
                 Row(
                     modifier = Modifier
                         .padding(top = 16.dp, end = 8.dp)

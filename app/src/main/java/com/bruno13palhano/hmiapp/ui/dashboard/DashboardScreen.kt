@@ -46,6 +46,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.NavKey
 import com.bruno13palhano.core.model.Environment
+import com.bruno13palhano.core.model.WidgetType
 import com.bruno13palhano.hmiapp.R
 import com.bruno13palhano.hmiapp.ui.components.CircularProgress
 import com.bruno13palhano.hmiapp.ui.components.DrawerMenu
@@ -332,11 +333,16 @@ fun DashboardContent(
                         WidgetInputDialog(
                             label = state.label,
                             endpoint = state.endpoint,
+                            hasExtras = state.type == WidgetType.DROPDOWN,
+                            extras = state.extras,
                             onLabelChange = { label ->
                                 onEvent(DashboardEvent.UpdateLabel(label = label))
                             },
                             onEndpointChange = { endpoint ->
                                 onEvent(DashboardEvent.UpdateEndpoint(endpoint = endpoint))
+                            },
+                            onExtrasChange = { extras ->
+                                onEvent(DashboardEvent.UpdateExtras(extras = extras))
                             },
                             onConfirm = {
                                 if (state.id == "") {

@@ -18,12 +18,19 @@ class WidgetManager(
     private val environmentRepository: EnvironmentRepository,
     private val mqttClientRepository: MqttClientRepository
 ) {
-    suspend fun addWidget(environmentId: Long, type: WidgetType, label: String, endpoint: String) {
+    suspend fun addWidget(
+        environmentId: Long,
+        type: WidgetType,
+        label: String,
+        endpoint: String,
+        extras: List<String>?
+    ) {
         val widget = Widget(
             type = type,
             label = label,
             dataSource = DataSource.MQTT(topic = endpoint),
-            environmentId = environmentId
+            environmentId = environmentId,
+            extras = extras
         )
         widgetRepository.insert(widget = widget)
     }

@@ -73,6 +73,7 @@ class DashboardViewModel @AssistedInject constructor(
             is DashboardEvent.ShowWidgetDialog -> showWidgetDialog(type = event.type)
             is DashboardEvent.UpdateEndpoint -> updateEndpoint(endpoint = event.endpoint)
             is DashboardEvent.UpdateLabel -> updateLabel(label = event.label)
+            is DashboardEvent.UpdateExtras -> updateExtras(extras = event.extras)
             is DashboardEvent.UpdateEnvironmentName -> updateEnvironmentName(name = event.name)
             is DashboardEvent.NavigateTo -> navigateTo(key = event.destination)
             is DashboardEvent.ExportWidgetsConfig -> exportWidgets(stream = event.stream)
@@ -97,7 +98,15 @@ class DashboardViewModel @AssistedInject constructor(
     }
 
     private fun hideWidgetDialog() = container.intent {
-        reduce { copy(isWidgetInputDialogVisible = false, id = "", label = "", endpoint = "") }
+        reduce {
+            copy(
+                isWidgetInputDialogVisible = false,
+                id = "",
+                label = "",
+                endpoint = "",
+                extras = emptyList()
+            )
+        }
     }
 
     private fun updateEndpoint(endpoint: String) = container.intent {
@@ -106,6 +115,10 @@ class DashboardViewModel @AssistedInject constructor(
 
     private fun updateLabel(label: String) = container.intent {
         reduce { copy(label = label) }
+    }
+
+    private fun updateExtras(extras: List<String>) = container.intent {
+        reduce { copy(extras = extras) }
     }
 
     private fun updateEnvironmentName(name: String) = container.intent {
@@ -122,10 +135,10 @@ class DashboardViewModel @AssistedInject constructor(
             refreshWidgets(environmentId = environmentId)
         }
     }
-
-    private fun clearCurrentWidget() = container.intent {
-        reduce { copy(id = "", label = "", endpoint = "") }
-    }
+//
+//    private fun clearCurrentWidget() = container.intent {
+//        reduce { copy(id = "", label = "", endpoint = "", extras = emptyList()) }
+//    }
 
     private fun addEnvironment() = container.intent(dispatcher = Dispatchers.IO) {
         reduce { copy(isEnvironmentDialogVisible = false) }
@@ -165,17 +178,18 @@ class DashboardViewModel @AssistedInject constructor(
             environmentId = environmentId,
             type = state.value.type,
             label = state.value.label,
-            endpoint = state.value.endpoint
+            endpoint = state.value.endpoint,
+            extras = state.value.extras
         )
         val widgets = widgetManager.loadWidgets(environmentId = environmentId).map {
             it.copy(value = widgetValues[it.id] ?: "")
         }
-        reduce { copy(widgets = widgets, id = "", label = "", endpoint = "") }
+        reduce { copy(widgets = widgets, id = "", label = "", endpoint = "", extras = emptyList()) }
+
         widgetManager.subscribeToTopics(widgets.mapNotNull {
             (it.dataSource as? DataSource.MQTT)?.topic }
         )
         refreshWidgets(environmentId = environmentId)
-        clearCurrentWidget()
     }
 
     private fun editWidget() = container.intent(dispatcher = Dispatchers.IO) {
@@ -187,16 +201,16 @@ class DashboardViewModel @AssistedInject constructor(
         val updated = current.copy(
             type = state.value.type,
             label = state.value.label,
-            dataSource = DataSource.MQTT(topic = state.value.endpoint)
+            dataSource = DataSource.MQTT(topic = state.value.endpoint),
+            extras = state.value.extras
         )
 
         widgetManager.editWidget(widget = updated)
         val widgets = widgetManager.loadWidgets(environmentId = environmentId).map {
             it.copy(value = widgetValues[it.id] ?: "")
         }
-        reduce { copy(widgets = widgets, id = "", label = "", endpoint = "") }
+        reduce { copy(widgets = widgets, id = "", label = "", endpoint = "", extras = emptyList()) }
         refreshWidgets(environmentId = environmentId)
-        clearCurrentWidget()
     }
 
     private fun loadWidgets(environmentId: Long) = container.intent(Dispatchers.IO) {
@@ -226,7 +240,8 @@ class DashboardViewModel @AssistedInject constructor(
                     endpoint = when (val dataSource = it.dataSource) {
                         is DataSource.MQTT -> dataSource.topic
                         is DataSource.HTTP -> extractEndpoint(url = dataSource.url)
-                    }
+                    },
+                    extras = it.extras ?: emptyList()
                 )
             }
         }
