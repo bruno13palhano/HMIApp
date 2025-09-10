@@ -135,10 +135,6 @@ class DashboardViewModel @AssistedInject constructor(
             refreshWidgets(environmentId = environmentId)
         }
     }
-//
-//    private fun clearCurrentWidget() = container.intent {
-//        reduce { copy(id = "", label = "", endpoint = "", extras = emptyList()) }
-//    }
 
     private fun addEnvironment() = container.intent(dispatcher = Dispatchers.IO) {
         reduce { copy(isEnvironmentDialogVisible = false) }
