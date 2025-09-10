@@ -73,7 +73,8 @@ class DashboardViewModel @AssistedInject constructor(
             is DashboardEvent.ShowWidgetDialog -> showWidgetDialog(type = event.type)
             is DashboardEvent.UpdateEndpoint -> updateEndpoint(endpoint = event.endpoint)
             is DashboardEvent.UpdateLabel -> updateLabel(label = event.label)
-            is DashboardEvent.UpdateExtras -> updateExtras(extras = event.extras)
+            is DashboardEvent.UpdateExtra -> updateExtra(index = event.index, value = event.value)
+            DashboardEvent.AddExtra -> addExtra()
             is DashboardEvent.UpdateEnvironmentName -> updateEnvironmentName(name = event.name)
             is DashboardEvent.NavigateTo -> navigateTo(key = event.destination)
             is DashboardEvent.ExportWidgetsConfig -> exportWidgets(stream = event.stream)
@@ -117,8 +118,18 @@ class DashboardViewModel @AssistedInject constructor(
         reduce { copy(label = label) }
     }
 
-    private fun updateExtras(extras: List<String>) = container.intent {
-        reduce { copy(extras = extras) }
+    private fun updateExtra(index: Int, value: String) = container.intent {
+        val updated = state.value.extras.toMutableList()
+        if (index in updated.indices) {
+            updated[index] = value
+            reduce { copy(extras = updated) }
+        }
+    }
+
+    private fun addExtra() = container.intent {
+        val updated = state.value.extras.toMutableList()
+        updated.add("")
+        reduce { copy(extras = updated) }
     }
 
     private fun updateEnvironmentName(name: String) = container.intent {
@@ -166,6 +177,7 @@ class DashboardViewModel @AssistedInject constructor(
         loadWidgets(environmentId = id)
     }
 
+    // Extras não reseta como as outras propriedades.
     private fun addWidget() = container.intent(dispatcher = Dispatchers.IO) {
         reduce { copy(isWidgetInputDialogVisible = false) }
         val environmentId = state.value.environment.id
@@ -182,8 +194,10 @@ class DashboardViewModel @AssistedInject constructor(
         }
         reduce { copy(widgets = widgets, id = "", label = "", endpoint = "", extras = emptyList()) }
 
-        widgetManager.subscribeToTopics(widgets.mapNotNull {
-            (it.dataSource as? DataSource.MQTT)?.topic }
+        widgetManager.subscribeToTopics(
+            widgets.mapNotNull {
+                (it.dataSource as? DataSource.MQTT)?.topic
+            }
         )
         refreshWidgets(environmentId = environmentId)
     }

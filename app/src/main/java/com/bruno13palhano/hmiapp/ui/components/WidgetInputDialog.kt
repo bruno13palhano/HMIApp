@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
@@ -17,8 +19,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -34,7 +34,8 @@ fun WidgetInputDialog(
     extras: List<String> = emptyList(),
     onLabelChange: (label: String) -> Unit,
     onEndpointChange: (endpoint: String) -> Unit,
-    onExtrasChange: (extras: List<String>) -> Unit,
+    onExtraChange: (index: Int, value: String) -> Unit,
+    onAddExtra: () -> Unit,
     onConfirm: () -> Unit,
     onDismissRequest: () -> Unit
 ) {
@@ -44,7 +45,11 @@ fun WidgetInputDialog(
             shape = MaterialTheme.shapes.large,
             tonalElevation = AlertDialogDefaults.TonalElevation
         ) {
-            Column(modifier = Modifier.padding(16.dp)) {
+            Column(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .verticalScroll(rememberScrollState()),
+            ) {
                 Text(
                     modifier = Modifier.align(Alignment.CenterHorizontally),
                     text = stringResource(id = R.string.widget_configuration),
@@ -69,23 +74,20 @@ fun WidgetInputDialog(
                     placeholder = stringResource(id = R.string.enter_endpoint)
                 )
                 if (hasExtras) {
-                    val extrasList = remember { mutableStateListOf(*extras.toTypedArray()) }
-
                     Text(
                         text = "Extras",
                         style = MaterialTheme.typography.titleMedium,
                         modifier = Modifier.padding(top = 16.dp, start = 8.dp)
                     )
 
-                    extrasList.forEachIndexed { index, value ->
+                    extras.forEachIndexed { index, value ->
                         CustomTextField(
                             modifier = Modifier
-                                .padding(horizontal = 8.dp, vertical = 4.dp)
+                                .padding(horizontal = 8.dp)
                                 .fillMaxWidth(),
                             value = value,
                             onValueChange = { newValue ->
-                                extrasList[index] = newValue
-                                onExtrasChange(extrasList.toList())
+                                onExtraChange(index, newValue)
                             },
                             label = "Extra ${index + 1}",
                             placeholder = "Enter value"
@@ -95,11 +97,10 @@ fun WidgetInputDialog(
                     Spacer(modifier = Modifier.height(8.dp))
 
                     Button(
-                        modifier = Modifier.align(Alignment.End),
-                        onClick = {
-                            extrasList.add("")
-                            onExtrasChange(extrasList.toList())
-                        }
+                        modifier = Modifier
+                            .padding(horizontal = 8.dp)
+                            .align(Alignment.End),
+                        onClick = { onAddExtra() }
                     ) {
                         Text(text = "+ ${"Add extra"}")
                     }

@@ -341,9 +341,10 @@ fun DashboardContent(
                             onEndpointChange = { endpoint ->
                                 onEvent(DashboardEvent.UpdateEndpoint(endpoint = endpoint))
                             },
-                            onExtrasChange = { extras ->
-                                onEvent(DashboardEvent.UpdateExtras(extras = extras))
+                            onExtraChange = { index, value ->
+                                onEvent(DashboardEvent.UpdateExtra(index = index, value = value))
                             },
+                            onAddExtra = { onEvent(DashboardEvent.AddExtra) },
                             onConfirm = {
                                 if (state.id == "") {
                                     onEvent(DashboardEvent.AddWidget)

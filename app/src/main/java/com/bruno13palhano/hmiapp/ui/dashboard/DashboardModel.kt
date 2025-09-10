@@ -54,7 +54,8 @@ sealed interface DashboardEvent {
     ) : DashboardEvent
     data class UpdateLabel(val label: String) : DashboardEvent
     data class UpdateEndpoint(val endpoint: String) : DashboardEvent
-    data class UpdateExtras(val extras: List<String>) : DashboardEvent
+    data class UpdateExtra(val index: Int, val value: String) : DashboardEvent
+    data object AddExtra : DashboardEvent
     data class UpdateEnvironmentName(val name: String) : DashboardEvent
     data class OnToggleWidgetPin(val id: String) : DashboardEvent
     data object AddEnvironment : DashboardEvent
