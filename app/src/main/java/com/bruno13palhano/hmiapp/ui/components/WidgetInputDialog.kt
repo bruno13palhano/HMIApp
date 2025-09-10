@@ -75,7 +75,7 @@ fun WidgetInputDialog(
                 )
                 if (hasExtras) {
                     Text(
-                        text = "Extras",
+                        text = stringResource(id = R.string.extras),
                         style = MaterialTheme.typography.titleMedium,
                         modifier = Modifier.padding(top = 16.dp, start = 8.dp)
                     )
@@ -89,8 +89,8 @@ fun WidgetInputDialog(
                             onValueChange = { newValue ->
                                 onExtraChange(index, newValue)
                             },
-                            label = "Extra ${index + 1}",
-                            placeholder = "Enter value"
+                            label = stringResource(id = R.string.extra_tag, index + 1),
+                            placeholder = stringResource(id = R.string.extra_placeholder)
                         )
                     }
 
@@ -100,9 +100,9 @@ fun WidgetInputDialog(
                         modifier = Modifier
                             .padding(horizontal = 8.dp)
                             .align(Alignment.End),
-                        onClick = { onAddExtra() }
+                        onClick = onAddExtra
                     ) {
-                        Text(text = "+ ${"Add extra"}")
+                        Text(text = stringResource(id = R.string.add_extra))
                     }
                 }
                 Row(
