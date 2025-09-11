@@ -41,8 +41,7 @@ data class DashboardState(
 
 @Immutable
 sealed interface DashboardEvent {
-    data object AddWidget : DashboardEvent
-    data object EditWidget: DashboardEvent
+    data object ConfirmWidget : DashboardEvent
     data class RemoveWidget(val id: String) : DashboardEvent
     data class OnWidgetDragEnd(val id: String, val x: Float, val y: Float) : DashboardEvent
     data class OpenEditWidgetDialog(val id: String) : DashboardEvent

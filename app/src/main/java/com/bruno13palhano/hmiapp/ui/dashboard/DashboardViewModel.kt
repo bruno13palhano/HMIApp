@@ -45,7 +45,7 @@ class DashboardViewModel @AssistedInject constructor(
     fun onEvent(event: DashboardEvent) {
         when (event) {
             DashboardEvent.Init -> dashboardInit()
-            is DashboardEvent.AddWidget -> addWidget()
+            is DashboardEvent.ConfirmWidget -> confirmWidget()
             is DashboardEvent.RemoveWidget -> removeWidget(id = event.id)
             is DashboardEvent.OnWidgetDragEnd -> onWidgetDragEnd(
                 id = event.id,
@@ -53,7 +53,6 @@ class DashboardViewModel @AssistedInject constructor(
                 y = event.y
             )
             is DashboardEvent.OpenEditWidgetDialog -> openEditWidgetDialog(id = event.id)
-            is DashboardEvent.EditWidget -> editWidget()
             is DashboardEvent.OnUpdateCanvasState -> onUpdateCanvasState(
                 scale = event.scale,
                 offsetX = event.offsetX,
@@ -177,7 +176,14 @@ class DashboardViewModel @AssistedInject constructor(
         loadWidgets(environmentId = id)
     }
 
-    // Extras não reseta como as outras propriedades.
+    private fun confirmWidget() = container.intent {
+        if (state.value.id == "") {
+            addWidget()
+        } else {
+            editWidget()
+        }
+    }
+
     private fun addWidget() = container.intent(dispatcher = Dispatchers.IO) {
         reduce { copy(isWidgetInputDialogVisible = false) }
         val environmentId = state.value.environment.id

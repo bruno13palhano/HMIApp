@@ -345,13 +345,7 @@ fun DashboardContent(
                                 onEvent(DashboardEvent.UpdateExtra(index = index, value = value))
                             },
                             onAddExtra = { onEvent(DashboardEvent.AddExtra) },
-                            onConfirm = {
-                                if (state.id == "") {
-                                    onEvent(DashboardEvent.AddWidget)
-                                } else {
-                                    onEvent(DashboardEvent.EditWidget)
-                                }
-                            },
+                            onConfirm = { onEvent(DashboardEvent.ConfirmWidget) },
                             onDismissRequest = { onEvent(DashboardEvent.HideWidgetConfig) }
                         )
                     }
