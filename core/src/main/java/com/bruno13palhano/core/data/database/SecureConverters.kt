@@ -11,7 +11,7 @@ import javax.crypto.spec.GCMParameterSpec
 
 internal object SecureConverters {
     private const val AES_MODE = "AES/GCM/NoPadding"
-    private const val IV_SIZE = 12 // 96 bits, recomendado para GCM
+    private const val IV_SIZE = 12
     private const val TAG_SIZE_BITS = 128
 
     private fun getSecretKey() = KeyStoreManager.getOrCreateSecretKey()
