@@ -186,6 +186,7 @@ class DashboardViewModel @AssistedInject constructor(
 
     private fun addWidget() = container.intent(dispatcher = Dispatchers.IO) {
         reduce { copy(isWidgetInputDialogVisible = false) }
+
         val environmentId = state.value.environment.id
 
         widgetManager.addWidget(
@@ -406,6 +407,10 @@ class DashboardViewModel @AssistedInject constructor(
 
                 val json = Json.encodeToString(layout)
                 stream.bufferedWriter().use { it.write(json) }
+
+                postSideEffect(
+                    effect = DashboardSideEffect.ShowInfo(info = DashboardInfo.EXPORT_SUCCESS)
+                )
             } catch (_: Exception) {
                 postSideEffect(
                     effect = DashboardSideEffect.ShowInfo(info = DashboardInfo.EXPORT_FAILURE)
@@ -428,6 +433,10 @@ class DashboardViewModel @AssistedInject constructor(
                 reduce { copy(widgets = widgets) }
                 widgetManager.subscribeToTopics(
                     topics = widgets.mapNotNull { (it.dataSource as? DataSource.MQTT)?.topic }
+                )
+
+                postSideEffect(
+                    effect = DashboardSideEffect.ShowInfo(info = DashboardInfo.IMPORT_SUCCESS)
                 )
             }
         } catch (_: Exception) {

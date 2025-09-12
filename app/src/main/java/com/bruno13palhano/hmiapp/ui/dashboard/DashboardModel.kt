@@ -86,6 +86,8 @@ sealed interface DashboardSideEffect {
 
 enum class DashboardInfo {
     DISCONNECTED,
+    EXPORT_SUCCESS,
+    IMPORT_SUCCESS,
     EXPORT_FAILURE,
     IMPORT_FAILURE
 }

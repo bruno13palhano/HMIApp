@@ -376,7 +376,9 @@ fun DashboardContent(
 private fun getDashboardInfo(): Map<DashboardInfo, String> {
     return mapOf(
         DashboardInfo.DISCONNECTED to stringResource(id = R.string.disconnect_info),
+        DashboardInfo.EXPORT_SUCCESS to stringResource(id = R.string.export_config_success),
         DashboardInfo.EXPORT_FAILURE to stringResource(id = R.string.export_config_error),
+        DashboardInfo.IMPORT_SUCCESS to stringResource(id = R.string.import_config_success),
         DashboardInfo.IMPORT_FAILURE to stringResource(id = R.string.import_config_error)
     )
 }

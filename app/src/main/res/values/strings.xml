@@ -44,8 +44,10 @@
     <string name="hide_widget_toolbox">Hide widget toolbox</string>
     <string name="export_config">Export configuration</string>
     <string name="import_config">Import configuration</string>
-    <string name="export_config_error">Failed to export widgets configuration</string>
-    <string name="import_config_error">Failed to import widgets configuration</string>
+    <string name="export_config_success">Layout configuration exported successfully</string>
+    <string name="export_config_error">Failed to export layout configuration</string>
+    <string name="import_config_success">Layout configuration imported successfully</string>
+    <string name="import_config_error">Failed to import layout configuration</string>
     <string name="widget_text">Text</string>
     <string name="widget_button">Button</string>
     <string name="widget_switch">Switch</string>
