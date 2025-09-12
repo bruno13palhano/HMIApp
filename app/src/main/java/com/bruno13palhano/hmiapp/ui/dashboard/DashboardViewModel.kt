@@ -283,9 +283,6 @@ class DashboardViewModel @AssistedInject constructor(
             is WidgetEvent.ButtonClicked -> {
                 widgetManager.publish(widget = widgetEvent.widget, message = "1")
             }
-            is WidgetEvent.ColorPicked -> {
-//                widgetManager.publish(widget = widgetEvent.widget, message = widgetEvent.color)
-            }
             is WidgetEvent.DropdownSelected -> {
                 widgetManager.publish(widget = widgetEvent.widget, message = widgetEvent.selected)
             }

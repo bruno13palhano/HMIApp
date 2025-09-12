@@ -4,9 +4,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -70,7 +68,6 @@ fun WidgetRenderer(
         }
         WidgetType.GAUGE -> GaugeWidget(widget, onDragEnd, onTogglePin, onEdit, onRemove)
         WidgetType.PROGRESS_BAR -> ProgressBarWidget(widget, onDragEnd, onTogglePin, onEdit, onRemove)
-        WidgetType.IMAGE -> ImageWidget(widget, onDragEnd, onTogglePin, onEdit, onRemove)
         WidgetType.CHART -> ChartWidget(widget, onDragEnd, onTogglePin, onEdit, onRemove)
         WidgetType.TOGGLE_BUTTON -> ToggleButtonWidget(widget,onDragEnd, onTogglePin, onEdit, onRemove) { state ->
             onEvent(WidgetEvent.ToggleButtonChanged(widget, state))
@@ -82,9 +79,6 @@ fun WidgetRenderer(
         WidgetType.DROPDOWN -> DropdownWidget(widget, onDragEnd, onTogglePin, onEdit, onRemove) { selected ->
             onEvent(WidgetEvent.DropdownSelected(widget, selected))
         }
-        WidgetType.COLOR_PICKER -> ColorPickerWidget(widget, onDragEnd, onTogglePin, onEdit, onRemove) { color ->
-            onEvent(WidgetEvent.ColorPicked(widget, color))
-        }
     }
 }
 sealed class WidgetEvent {
@@ -94,7 +88,6 @@ sealed class WidgetEvent {
     data class ToggleButtonChanged(val widget: Widget, val state: Boolean) : WidgetEvent()
     data class InputSubmitted(val widget: Widget, val text: String) : WidgetEvent()
     data class DropdownSelected(val widget: Widget, val selected: String) : WidgetEvent()
-    data class ColorPicked(val widget: Widget, val color: Color) : WidgetEvent()
 }
 
 @Composable
@@ -292,32 +285,6 @@ fun ProgressBarWidget(
 }
 
 @Composable
-fun ImageWidget(
-    widget: Widget,
-    onDragEnd: (x: Float, y: Float) -> Unit,
-    onTogglePin: () -> Unit,
-    onEdit: () -> Unit,
-    onRemove: () -> Unit,
-) {
-    WidgetBlock(
-        widget = widget,
-        onDragEnd = onDragEnd,
-        onTogglePin = onTogglePin,
-        onEdit = onEdit,
-        onRemove = onRemove
-    ) {
-//    AsyncImage(
-//        model = widget.value,
-//        contentDescription = widget.label,
-//        modifier = Modifier
-//            .width(widget.width.dp)
-//            .height(widget.height.dp),
-//        contentScale = ContentScale.Crop
-//    )
-    }
-}
-
-@Composable
 fun ChartWidget(
     widget: Widget,
     onDragEnd: (x: Float, y: Float) -> Unit,
@@ -494,39 +461,6 @@ fun DropdownWidget(
                         }
                     )
                 }
-            }
-        }
-    }
-}
-
-@Composable
-fun ColorPickerWidget(
-    widget: Widget,
-    onDragEnd: (x: Float, y: Float) -> Unit,
-    onTogglePin: () -> Unit,
-    onEdit: () -> Unit,
-    onRemove: () -> Unit,
-    onPick: (Color) -> Unit
-) {
-    val colors = listOf(Color.Red, Color.Green, Color.Blue, Color.Yellow, Color.Magenta)
-    WidgetBlock(
-        widget = widget,
-        onDragEnd = onDragEnd,
-        onTogglePin = onTogglePin,
-        onEdit = onEdit,
-        onRemove = onRemove
-    ) {
-        Row(
-            modifier = Modifier.padding(8.dp),
-            horizontalArrangement = Arrangement.SpaceEvenly
-        ) {
-            colors.forEach { c ->
-                Box(
-                    modifier = Modifier
-                        .size(32.dp)
-                        .background(c, shape = CircleShape)
-                        .clickable { onPick(c) }
-                )
             }
         }
     }

@@ -24,11 +24,9 @@ enum class WidgetType {
     SLIDER,       // Adjusts a value in a range (MQTT: publish, HTTP: POST)
     GAUGE,        // Shows a value on a gauge (MQTT: subscribe, HTTP: GET)
     PROGRESS_BAR, // Displays progress/percentage (MQTT: subscribe, HTTP: GET)
-    IMAGE,        // Shows an image (MQTT: subscribe, HTTP: GET)
     CHART,        // Visualizes data over time (MQTT: subscribe, HTTP: GET)
     TOGGLE_BUTTON,// Maintains a pressed/unpressed state (MQTT: publish, HTTP: POST)
     INPUT_FIELD,  // Allows text/number input (MQTT: publish, HTTP: POST)
     LED_INDICATOR,// Shows status with a colored indicator (MQTT: subscribe, HTTP: GET)
     DROPDOWN,     // Selects from options (MQTT: publish, HTTP: POST)
-    COLOR_PICKER  // Selects a color (MQTT: publish, HTTP: POST)
 }
