@@ -374,7 +374,7 @@ class DashboardViewModel @AssistedInject constructor(
         }
 
     private fun observeMessages() = container.intent(dispatcher = Dispatchers.IO) {
-        mqttClientRepository.incomingMessages().collect { (topic, message) ->
+        widgetManager.observeMessages().collect { (topic, message) ->
             val updateWidgets = state.value.widgets.map { widget ->
                 if ((widget.dataSource as DataSource.MQTT).topic == topic) {
                     val updated = widget.copy(value = message)
