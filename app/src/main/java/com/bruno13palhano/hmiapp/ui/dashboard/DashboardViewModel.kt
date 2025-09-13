@@ -92,7 +92,8 @@ class DashboardViewModel @AssistedInject constructor(
             copy(
                 isToolboxExpanded = false,
                 isWidgetInputDialogVisible = true,
-                type = type
+                type = type,
+                hasExtras = type == WidgetType.DROPDOWN
             )
         }
     }
@@ -104,7 +105,8 @@ class DashboardViewModel @AssistedInject constructor(
                 id = "",
                 label = "",
                 endpoint = "",
-                extras = emptyList()
+                extras = emptyList(),
+                hasExtras = false
             )
         }
     }

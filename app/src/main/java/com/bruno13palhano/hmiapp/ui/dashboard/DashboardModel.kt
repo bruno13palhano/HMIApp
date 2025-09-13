@@ -26,6 +26,7 @@ data class DashboardState(
     val id: String = "",
     val label: String = "",
     val endpoint: String = "",
+    val hasExtras: Boolean = false,
     val extras: List<String> = emptyList(),
     val type: WidgetType = WidgetType.TEXT,
     val isPinned: Boolean = false,
