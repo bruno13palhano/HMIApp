@@ -97,13 +97,11 @@ fun getWidgetTypeName(widgetType: WidgetType): String {
         WidgetType.SLIDER -> stringResource(id = R.string.widget_slider)
         WidgetType.GAUGE -> stringResource(id = R.string.widget_gauge)
         WidgetType.PROGRESS_BAR -> stringResource(id = R.string.widget_progress_bar)
-        WidgetType.IMAGE -> stringResource(id = R.string.widget_image)
         WidgetType.CHART -> stringResource(id = R.string.widget_chart)
         WidgetType.TOGGLE_BUTTON -> stringResource(id = R.string.widget_toggle_button)
         WidgetType.INPUT_FIELD -> stringResource(id = R.string.widget_input_field)
         WidgetType.LED_INDICATOR -> stringResource(id = R.string.widget_led_indicator)
         WidgetType.DROPDOWN -> stringResource(id = R.string.widget_dropdown)
-        WidgetType.COLOR_PICKER -> stringResource(id = R.string.widget_color_picker)
     }
 }
 
