@@ -15,6 +15,7 @@ import com.bruno13palhano.hmiapp.ui.shared.Container
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.serialization.json.Json
 import java.io.InputStream
@@ -99,9 +100,10 @@ class DashboardViewModel @AssistedInject constructor(
     }
 
     private fun hideWidgetDialog() = container.intent {
+        reduce { copy(isWidgetInputDialogVisible = false) }
+        delay(450)
         reduce {
             copy(
-                isWidgetInputDialogVisible = false,
                 id = "",
                 label = "",
                 endpoint = "",
@@ -188,6 +190,7 @@ class DashboardViewModel @AssistedInject constructor(
 
     private fun addWidget() = container.intent(dispatcher = Dispatchers.IO) {
         reduce { copy(isWidgetInputDialogVisible = false) }
+        delay(450)
 
         val environmentId = state.value.environment.id
 
@@ -213,6 +216,7 @@ class DashboardViewModel @AssistedInject constructor(
 
     private fun editWidget() = container.intent(dispatcher = Dispatchers.IO) {
         reduce { copy(isWidgetInputDialogVisible = false) }
+        delay(450)
 
         val environmentId = state.value.environment.id.takeIf { it != 0L } ?: return@intent
         val current = state.value.widgets.find { it.id == state.value.id } ?: return@intent
@@ -341,16 +345,6 @@ class DashboardViewModel @AssistedInject constructor(
         }
 
         container.intent(dispatcher = Dispatchers.IO) {
-            mqttClientRepository.isConnected().collect { isConnected ->
-                if (!isConnected) {
-                    postSideEffect(
-                        effect = DashboardSideEffect.ShowInfo(info = DashboardInfo.DISCONNECTED)
-                    )
-                }
-            }
-        }
-
-        container.intent(dispatcher = Dispatchers.IO) {
             val environment = environmentManager.loadPreviousEnvironment()
 
             if (environment == null) return@intent
@@ -359,7 +353,18 @@ class DashboardViewModel @AssistedInject constructor(
             refreshWidgets(environmentId = environment.id)
         }
 
-        container.intent { reduce { copy(loading = false) } }
+        container.intent(dispatcher = Dispatchers.IO) {
+            delay(250)
+            reduce { copy(loading = false) }
+
+            mqttClientRepository.isConnected().collect { isConnected ->
+                if (!isConnected) {
+                    postSideEffect(
+                        effect = DashboardSideEffect.ShowInfo(info = DashboardInfo.DISCONNECTED)
+                    )
+                }
+            }
+        }
     }
 
     private fun onUpdateCanvasState(scale: Float, offsetX: Float, offsetY: Float) =
