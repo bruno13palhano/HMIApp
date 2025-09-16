@@ -108,6 +108,7 @@ fun DashboardScreen(
 
     LaunchedEffect(Unit) {
         sideEffect.collect { effect ->
+            println("EFFECT: $effect")
             when (effect) {
                 DashboardSideEffect.ToggleMenu -> {
                     scope.launch {
@@ -302,6 +303,17 @@ fun DashboardContent(
                                 )
                             }
                         )
+                    } else {
+                        ExtendedFloatingActionButton(
+                            modifier = Modifier.align(Alignment.Center),
+                            onClick = { onEvent(DashboardEvent.OpenEnvironmentInputDialog(isEdit = false)) }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.Add,
+                                contentDescription = stringResource(id = R.string.add_environment_button)
+                            )
+                            Text(text = stringResource(id = R.string.environment))
+                        }
                     }
 
                     Box(
@@ -313,19 +325,6 @@ fun DashboardContent(
                             onExpandedClick = { onEvent(DashboardEvent.ToggleIsToolboxExpanded) },
                             onAdd = { type -> onEvent(DashboardEvent.ShowWidgetDialog(type = type)) }
                         )
-                    }
-
-                    if (state.environment.id == 0L) {
-                        ExtendedFloatingActionButton(
-                            modifier = Modifier.align(Alignment.Center),
-                            onClick = { onEvent(DashboardEvent.OpenEnvironmentInputDialog(isEdit = false)) }
-                        ) {
-                            Icon(
-                                imageVector = Icons.Outlined.Add,
-                                contentDescription = stringResource(id = R.string.add_environment_button)
-                            )
-                            Text(text = stringResource(id = R.string.environment))
-                        }
                     }
 
                     AnimatedVisibility(visible = state.isWidgetInputDialogVisible) {
