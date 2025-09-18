@@ -22,6 +22,10 @@ appcompat = "1.7.1"
 material = "1.13.0"
 slf4jNop = "2.0.17"
 materialIconsExtended = "1.7.8"
+coroutinesVersion = "1.10.2"
+truthVersion = "1.4.4"
+mockkVersion = "1.14.5"
+turbineVerson = "1.2.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -57,6 +61,10 @@ androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 slf4j-nop = { module = "org.slf4j:slf4j-nop", version.ref = "slf4jNop" }
 androidx-material-icons-extended = { module = "androidx.compose.material:material-icons-extended", version.ref = "materialIconsExtended" }
+coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutinesVersion" }
+truth = { module = "com.google.truth:truth", version.ref = "truthVersion" }
+mockk = { module = "io.mockk:mockk", version.ref = "mockkVersion" }
+turbine = { module = "app.cash.turbine:turbine", version.ref = "turbineVerson" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
