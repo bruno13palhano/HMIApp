@@ -1,10 +1,14 @@
 package com.bruno13palhano.hmiapp
 
+import app.cash.turbine.test
 import com.bruno13palhano.core.data.repository.EnvironmentRepository
 import com.bruno13palhano.core.data.repository.MqttClientRepository
 import com.bruno13palhano.core.data.repository.WidgetRepository
+import com.bruno13palhano.hmiapp.ui.dashboard.DashboardEvent
+import com.bruno13palhano.hmiapp.ui.dashboard.DashboardSideEffect
 import com.bruno13palhano.hmiapp.ui.dashboard.DashboardState
 import com.bruno13palhano.hmiapp.ui.dashboard.DashboardViewModel
+import com.bruno13palhano.hmiapp.ui.navigation.Dashboard
 import com.google.common.truth.Truth.assertThat
 import io.mockk.MockKAnnotations
 import io.mockk.impl.annotations.MockK
@@ -54,5 +58,81 @@ class DashboardViewModelTest {
     fun `Initial state should have defaults`() = runTest {
         val state = viewModel.container.state.value
         assertThat(state).isEqualTo(initialState)
+    }
+
+    @Test
+    fun `UpdateEndpoint should update state correctly`() = runTest {
+        val expected = "endpoint"
+
+        viewModel.container.state.test {
+            skipItems(1)
+            viewModel.onEvent(event = DashboardEvent.UpdateEndpoint(endpoint = expected))
+            assertThat(awaitItem().endpoint).isEqualTo(expected)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `UpdateLabel should update state correctly`() = runTest {
+        val expected = "label"
+
+        viewModel.container.state.test {
+            skipItems(1)
+            viewModel.onEvent(event = DashboardEvent.UpdateLabel(label = expected))
+            assertThat(awaitItem().label).isEqualTo(expected)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `UpdateExtra should update state correctly`() = runTest {
+        val index = 0
+        val expected = "extra"
+
+        viewModel.container.state.test {
+            skipItems(1)
+            viewModel.onEvent(event = DashboardEvent.AddExtra)
+            skipItems(1)
+            viewModel.onEvent(event = DashboardEvent.UpdateExtra(index = index, value = expected))
+            assertThat(awaitItem().extras[index]).isEqualTo(expected)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `UpdateEnvironmentName should update state correctly`() = runTest {
+        val expected = "name"
+
+        viewModel.container.state.test {
+            skipItems(1)
+            viewModel.onEvent(event = DashboardEvent.UpdateEnvironmentName(name = expected))
+            assertThat(awaitItem().environment.name).isEqualTo(expected)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `ToggleVertMenu should toggle state correctly`() = runTest {
+        val expected = true
+
+        viewModel.container.state.test {
+            skipItems(1)
+            viewModel.onEvent(event = DashboardEvent.ToggleVertMenu)
+            assertThat(awaitItem().isVertMenuVisible).isEqualTo(expected)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `NavigateTo triggers correct side effect`() = runTest {
+        viewModel.container.sideEffect.test {
+            viewModel.onEvent(
+                event = DashboardEvent.NavigateTo(destination = Dashboard)
+            )
+            assertThat(
+                awaitItem()
+            ).isEqualTo(DashboardSideEffect.NavigateTo(destination = Dashboard))
+            cancelAndIgnoreRemainingEvents()
+        }
     }
 }
