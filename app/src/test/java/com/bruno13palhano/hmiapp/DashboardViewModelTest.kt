@@ -4,6 +4,10 @@ import app.cash.turbine.test
 import com.bruno13palhano.core.data.repository.EnvironmentRepository
 import com.bruno13palhano.core.data.repository.MqttClientRepository
 import com.bruno13palhano.core.data.repository.WidgetRepository
+import com.bruno13palhano.core.model.DataSource
+import com.bruno13palhano.core.model.Environment
+import com.bruno13palhano.core.model.Widget
+import com.bruno13palhano.core.model.WidgetType
 import com.bruno13palhano.hmiapp.ui.dashboard.DashboardEvent
 import com.bruno13palhano.hmiapp.ui.dashboard.DashboardSideEffect
 import com.bruno13palhano.hmiapp.ui.dashboard.DashboardState
@@ -11,9 +15,13 @@ import com.bruno13palhano.hmiapp.ui.dashboard.DashboardViewModel
 import com.bruno13palhano.hmiapp.ui.navigation.Dashboard
 import com.google.common.truth.Truth.assertThat
 import io.mockk.MockKAnnotations
+import io.mockk.coEvery
+import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -132,6 +140,33 @@ class DashboardViewModelTest {
             assertThat(
                 awaitItem()
             ).isEqualTo(DashboardSideEffect.NavigateTo(destination = Dashboard))
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `ConfirmWidget add`() = runTest {
+
+        val environment = Environment(1L, "test", 1f, 0f, 0f)
+        val widget = Widget(
+            type = WidgetType.BUTTON,
+            dataSource = DataSource.MQTT(topic = "topic"),
+            label = "label",
+            environmentId = environment.id
+        )
+        val expected = listOf(widget)
+
+        coEvery { widgetRepository.insert(any()) } returns Unit
+        coEvery { widgetRepository.getWidgets(any()) } returns expected
+        coEvery { mqttClientRepository.subscribeToTopic(any()) } returns Result.success(Unit)
+        coEvery { mqttClientRepository.incomingMessages() } returns MutableSharedFlow()
+
+        viewModel.container.state.test {
+            skipItems(1)
+            viewModel.onEvent(event = DashboardEvent.ConfirmWidget)
+            val state = awaitItem()
+            assertThat(state.isWidgetInputDialogVisible).isFalse()
+            assertThat(state.widgets).isEqualTo(expected)
             cancelAndIgnoreRemainingEvents()
         }
     }
