@@ -22,7 +22,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.test.StandardTestDispatcher
-import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -163,21 +162,39 @@ class DashboardViewModelTest {
     //
     @Test
     fun `HideWidgetDialog should clear widget config after delay`() = runTest {
+        val mainDispatcher = StandardTestDispatcher(testScheduler)
+        Dispatchers.setMain(mainDispatcher)
+
+        val viewModel = DashboardViewModel(
+            widgetRepository = widgetRepository,
+            mqttClientRepository = mqttClientRepository,
+            environmentRepository = environmentRepository,
+            initialState = DashboardState(
+                id = "id1",
+                label = "lab",
+                endpoint = "ep",
+                isWidgetInputDialogVisible = true,
+                extras = listOf("a"),
+                hasExtras = true
+            )
+        )
+
         viewModel.container.state.test {
             skipItems(1)
-            viewModel.onEvent(event = DashboardEvent.HideWidgetConfig)
 
+            viewModel.onEvent(DashboardEvent.HideWidgetConfig)
 
             val afterClose = awaitItem()
             assertThat(afterClose.isWidgetInputDialogVisible).isFalse()
 
-            advanceTimeBy(500)
-
             val afterClear = awaitItem()
             assertThat(afterClear.id).isEmpty()
             assertThat(afterClear.label).isEmpty()
-            assertThat(afterClear.label).isEmpty()
             assertThat(afterClear.endpoint).isEmpty()
+            assertThat(afterClear.extras).isEmpty()
+            assertThat(afterClear.hasExtras).isFalse()
+            assertThat(afterClear.isWidgetInputDialogVisible).isFalse()
+
             cancelAndIgnoreRemainingEvents()
         }
     }
