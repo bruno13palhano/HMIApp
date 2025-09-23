@@ -1,6 +1,8 @@
 package com.bruno13palhano.hmiapp
 
 import app.cash.turbine.test
+import com.bruno13palhano.core.data.configuration.LayoutConfig
+import com.bruno13palhano.core.data.configuration.toEnvironmentConfig
 import com.bruno13palhano.core.data.repository.EnvironmentRepository
 import com.bruno13palhano.core.data.repository.MqttClientRepository
 import com.bruno13palhano.core.data.repository.WidgetRepository
@@ -17,21 +19,35 @@ import com.bruno13palhano.hmiapp.ui.navigation.Dashboard
 import com.google.common.truth.Truth.assertThat
 import io.mockk.MockKAnnotations
 import io.mockk.coEvery
+import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
+import kotlinx.serialization.json.Json
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class DashboardViewModelTest {
+    private val env = Environment(1L, "env", 1f, 0f, 0f)
+    private val wid = Widget(
+        id = "w1",
+        type = WidgetType.BUTTON,
+        dataSource = DataSource.MQTT(topic = "t"),
+        label = "lab",
+        environmentId = 1L
+    )
+
     private lateinit var viewModel: DashboardViewModel
 
     @MockK
@@ -202,7 +218,6 @@ class DashboardViewModelTest {
     //
     // Repository integration
     //
-
     @Test
     fun `ConfirmWidget should insert widget and update state`() = runTest {
         val environment = Environment(1L, "test", 1f, 0f, 0f)
@@ -231,26 +246,18 @@ class DashboardViewModelTest {
 
     @Test
     fun `EditWidget should update widget and refresh state`() = runTest {
-        val environment = Environment(1L, "env", 1f, 0f, 0f)
-        val widget = Widget(
-            id = "w1",
-            type = WidgetType.BUTTON,
-            dataSource = DataSource.MQTT(topic = "oldTopic"),
-            label = "oldLabel",
-            environmentId = environment.id
-        )
-        val updateWidget = widget.copy(
+        val updateWidget = wid.copy(
             type = WidgetType.SWITCH,
             label = "newLabel",
             dataSource = DataSource.MQTT(topic = "newTopic")
         )
 
         coEvery { widgetRepository.update(any()) } returns Unit
-        coEvery { widgetRepository.getWidgets(environment.id) } returns listOf(updateWidget)
+        coEvery { widgetRepository.getWidgets(env.id) } returns listOf(updateWidget)
         coEvery { mqttClientRepository.subscribeToTopic(any()) } returns Result.success(Unit)
 
         viewModel.container.intentSync {
-            reduce { copy(environment = environment, widgets = listOf(widget), id =  widget.id, label = "newLabel", endpoint = "newTopic", type = WidgetType.SWITCH) }
+            reduce { copy(environment = env, widgets = listOf(wid), id =  wid.id, label = "newLabel", endpoint = "newTopic", type = WidgetType.SWITCH) }
         }
 
         viewModel.container.state.test {
@@ -264,22 +271,139 @@ class DashboardViewModelTest {
     }
 
     //
+    // Export / Import
+    //
+    @Test
+    fun `ExportWidgetsConfig success`() = runTest {
+        val mainDispatcher = StandardTestDispatcher(testScheduler)
+        Dispatchers.setMain(mainDispatcher)
+
+        viewModel = DashboardViewModel(
+            widgetRepository = widgetRepository,
+            mqttClientRepository = mqttClientRepository,
+            environmentRepository = environmentRepository,
+            initialState = DashboardState(environment = env)
+        )
+
+        coEvery { environmentRepository.getLastEnvironmentId() } returns env.id
+        coEvery { environmentRepository.getById(env.id) } returns env
+        coEvery { widgetRepository.getWidgets(env.id) } returns emptyList()
+
+        val out = ByteArrayOutputStream()
+        viewModel.container.sideEffect.test {
+            viewModel.onEvent(DashboardEvent.ExportWidgetsConfig(out))
+            advanceUntilIdle()
+            val eff = awaitItem()
+            assertThat(eff).isEqualTo(DashboardSideEffect.ShowInfo(DashboardInfo.EXPORT_SUCCESS))
+            assertThat(out.toString()).contains("environment")
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `ExportWidgetsConfig failure`() = runTest {
+        val mainDispatcher = StandardTestDispatcher(testScheduler)
+        Dispatchers.setMain(mainDispatcher)
+
+        viewModel = DashboardViewModel(
+            widgetRepository = widgetRepository,
+            mqttClientRepository = mqttClientRepository,
+            environmentRepository = environmentRepository,
+            initialState = DashboardState(environment = env)
+        )
+
+        coEvery { environmentRepository.getLastEnvironmentId() } returns null
+        val out = ByteArrayOutputStream()
+        viewModel.container.sideEffect.test {
+            viewModel.onEvent(DashboardEvent.ExportWidgetsConfig(out))
+            advanceUntilIdle()
+            val eff = awaitItem()
+            assertThat(eff).isEqualTo(DashboardSideEffect.ShowInfo(DashboardInfo.EXPORT_FAILURE))
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `ImportWidgetsConfig success`() = runTest {
+        val mainDispatcher = StandardTestDispatcher(testScheduler)
+        Dispatchers.setMain(mainDispatcher)
+
+        viewModel = DashboardViewModel(
+            widgetRepository = widgetRepository,
+            mqttClientRepository = mqttClientRepository,
+            environmentRepository = environmentRepository,
+            initialState = DashboardState(environment = env)
+        )
+
+        val layout = LayoutConfig(env.toEnvironmentConfig(), emptyList())
+        val json = Json.encodeToString(LayoutConfig.serializer(), layout)
+        val input = ByteArrayInputStream(json.toByteArray())
+
+        coEvery { widgetRepository.insert(any()) } returns Unit
+        coEvery { environmentRepository.insert(any()) } returns Unit
+        coEvery { environmentRepository.getLast() } returns env
+        coEvery { widgetRepository.getWidgets(env.id) } returns emptyList()
+        coEvery { mqttClientRepository.subscribeToTopic(any()) } returns Result.success(Unit)
+
+        viewModel.container.sideEffect.test {
+            viewModel.onEvent(DashboardEvent.ImportWidgetsConfig(input))
+            advanceUntilIdle()
+            val eff = awaitItem()
+            assertThat(eff).isEqualTo(DashboardSideEffect.ShowInfo(DashboardInfo.IMPORT_SUCCESS))
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `ImportWidgetsConfig failure`() = runTest {
+        val mainDispatcher = StandardTestDispatcher(testScheduler)
+        Dispatchers.setMain(mainDispatcher)
+
+        viewModel = DashboardViewModel(
+            widgetRepository = widgetRepository,
+            mqttClientRepository = mqttClientRepository,
+            environmentRepository = environmentRepository,
+            initialState = DashboardState(environment = env)
+        )
+
+        val input = ByteArrayInputStream("not-json".toByteArray())
+        viewModel.container.sideEffect.test {
+            viewModel.onEvent(DashboardEvent.ImportWidgetsConfig(input))
+            advanceUntilIdle()
+            val eff = awaitItem()
+            assertThat(eff).isEqualTo(DashboardSideEffect.ShowInfo(DashboardInfo.IMPORT_FAILURE))
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    //
     // Flows and Init
     //
     @Test
     fun `DashboardInit should emit ShowInfo when disconnected`() = runTest {
-        val env = Environment(1L, "test", 1f, 0f, 0f)
+        val mainDispatcher = StandardTestDispatcher(testScheduler)
+        Dispatchers.setMain(mainDispatcher)
 
+        viewModel = DashboardViewModel(
+            widgetRepository = widgetRepository,
+            mqttClientRepository = mqttClientRepository,
+            environmentRepository = environmentRepository,
+            initialState = DashboardState(environment = env)
+        )
+
+        coEvery { environmentRepository.getById(any()) } returns env
         coEvery { environmentRepository.getLast() } returns env
-        coEvery { widgetRepository.getWidgets(env.id) } returns emptyList()
-        coEvery { mqttClientRepository.isConnected() } returns MutableSharedFlow<Boolean>(1).apply { tryEmit(false) }
+        coEvery { environmentRepository.getLastEnvironmentId() } returns env.id
+        coEvery { widgetRepository.getWidgets(env.id) } returns listOf(wid)
+        every { environmentRepository.getAll() } returns flowOf(listOf(env))
+        every { mqttClientRepository.isConnected() } returns flowOf(false)
+        coEvery { mqttClientRepository.subscribeToTopic(any()) } returns Result.success(Unit)
 
         viewModel.container.sideEffect.test {
             viewModel.onEvent(DashboardEvent.Init)
             advanceUntilIdle()
-            assertThat(awaitItem()).isEqualTo(
-                DashboardSideEffect.ShowInfo(DashboardInfo.DISCONNECTED)
-            )
+            val eff = awaitItem()
+            assertThat(eff).isEqualTo(DashboardSideEffect.ShowInfo(DashboardInfo.DISCONNECTED))
             cancelAndIgnoreRemainingEvents()
         }
     }
