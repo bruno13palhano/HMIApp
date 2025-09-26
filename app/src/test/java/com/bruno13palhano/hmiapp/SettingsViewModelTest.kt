@@ -2,14 +2,18 @@ package com.bruno13palhano.hmiapp
 
 import app.cash.turbine.test
 import com.bruno13palhano.core.data.repository.MqttClientRepository
+import com.bruno13palhano.hmiapp.ui.navigation.Dashboard
 import com.bruno13palhano.hmiapp.ui.settings.SettingsEvent
+import com.bruno13palhano.hmiapp.ui.settings.SettingsSideEffect
 import com.bruno13palhano.hmiapp.ui.settings.SettingsState
 import com.bruno13palhano.hmiapp.ui.settings.SettingsViewModel
 import com.google.common.truth.Truth.assertThat
 import io.mockk.MockKAnnotations
+import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -132,6 +136,7 @@ class SettingsViewModelTest {
     @Test
     fun `ToggleCredentialDialog should invert visibility`() = runTest {
         viewModel.container.state.test {
+            skipItems(1)
             viewModel.onEvent(event = SettingsEvent.ToggleCredentialDialog)
             assertThat(awaitItem().isCredentialDialogOpen).isTrue()
             cancelAndIgnoreRemainingEvents()
@@ -140,41 +145,95 @@ class SettingsViewModelTest {
 
     @Test
     fun `ToggleMenu should emit ToggleMenu side effect`() = runTest {
-
+        viewModel.container.sideEffect.test {
+            viewModel.onEvent(event = SettingsEvent.ToggleMenu)
+            assertThat(awaitItem()).isEqualTo(SettingsSideEffect.ToggleMenu)
+            cancelAndIgnoreRemainingEvents()
+        }
     }
 
     @Test
     fun `HideKeyboardAndClearFocus should emit HideKeyboardAndClearFocus side effect`() =  runTest {
-
+        viewModel.container.sideEffect.test {
+            viewModel.onEvent(event = SettingsEvent.HideKeyboardAndClearFocus)
+            assertThat(awaitItem()).isEqualTo(SettingsSideEffect.HideKeyboardAndClearFocus)
+            cancelAndIgnoreRemainingEvents()
+        }
     }
 
     @Test
     fun `NavigateTo should emit NavigateTo side effect`() = runTest {
+        viewModel.container.sideEffect.test {
+            viewModel.onEvent(event = SettingsEvent.NavigateTo(destination = Dashboard))
+            assertThat(
+                awaitItem()
+            ).isEqualTo(SettingsSideEffect.NavigateTo(destination = Dashboard))
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `CheckConnection success should update isConnected to true`() = runTest {
+        val mainDispatcher = StandardTestDispatcher(testScheduler)
+        Dispatchers.setMain(mainDispatcher)
+
+        viewModel = SettingsViewModel(
+            mqttClientRepository = mqttClientRepository,
+            initialState = initialState
+        )
+
+        every { mqttClientRepository.isConnected() } returns flowOf(true)
+
+        viewModel.container.state.test {
+            skipItems(1)
+            viewModel.onEvent(event = SettingsEvent.CheckConnection)
+            assertThat(awaitItem().isConnected).isTrue()
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `CheckConnection failure  should update isConnected to false`() = runTest {
 
     }
 
     @Test
-    fun `CheckConnection`() = runTest {
+    fun `ConnectMqtt success should emit ShowInfo CONNECT_SUCCESS`() = runTest {
 
     }
 
     @Test
-    fun `ConnectMqtt`() = runTest {
+    fun `ConnectMqtt failure should emit ShowInfo CONNECT_FAILURE`() = runTest {
 
     }
 
     @Test
-    fun `DisconnectMqtt`() = runTest {
+    fun `DisconnectMqtt success`() = runTest {
 
     }
 
     @Test
-    fun `LoadCA`() = runTest {
+    fun `DisconnectMqtt failure`() = runTest {
 
     }
 
     @Test
-    fun `LoadClientCert`() = runTest {
+    fun `LoadCA success`() = runTest {
+
+    }
+
+    @Test
+    fun `LoadCA failure`() = runTest {
+
+    }
+
+    @Test
+    fun `LoadClientCert success`() = runTest {
+
+    }
+
+    @Test
+    fun `LoadClientCert failure`() = runTest {
 
     }
 }
