@@ -193,8 +193,23 @@ class SettingsViewModelTest {
     }
 
     @Test
-    fun `CheckConnection failure  should update isConnected to false`() = runTest {
+    fun `CheckConnection failure should update isConnected to false`() = runTest {
+        val mainDispatcher = StandardTestDispatcher(testScheduler)
+        Dispatchers.setMain(mainDispatcher)
 
+        viewModel = SettingsViewModel(
+            mqttClientRepository = mqttClientRepository,
+            initialState = initialState.copy(isConnected = true)
+        )
+
+        every { mqttClientRepository.isConnected() } returns flowOf(false)
+
+        viewModel.container.state.test {
+            skipItems(1)
+            viewModel.onEvent(event = SettingsEvent.CheckConnection)
+            assertThat(awaitItem().isConnected).isFalse()
+            cancelAndIgnoreRemainingEvents()
+        }
     }
 
     @Test
