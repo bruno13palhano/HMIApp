@@ -4,17 +4,20 @@ import app.cash.turbine.test
 import com.bruno13palhano.core.data.repository.MqttClientRepository
 import com.bruno13palhano.hmiapp.ui.navigation.Dashboard
 import com.bruno13palhano.hmiapp.ui.settings.SettingsEvent
+import com.bruno13palhano.hmiapp.ui.settings.SettingsInfo
 import com.bruno13palhano.hmiapp.ui.settings.SettingsSideEffect
 import com.bruno13palhano.hmiapp.ui.settings.SettingsState
 import com.bruno13palhano.hmiapp.ui.settings.SettingsViewModel
 import com.google.common.truth.Truth.assertThat
 import io.mockk.MockKAnnotations
+import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
@@ -174,14 +177,6 @@ class SettingsViewModelTest {
 
     @Test
     fun `CheckConnection success should update isConnected to true`() = runTest {
-        val mainDispatcher = StandardTestDispatcher(testScheduler)
-        Dispatchers.setMain(mainDispatcher)
-
-        viewModel = SettingsViewModel(
-            mqttClientRepository = mqttClientRepository,
-            initialState = initialState
-        )
-
         every { mqttClientRepository.isConnected() } returns flowOf(true)
 
         viewModel.container.state.test {
@@ -194,9 +189,6 @@ class SettingsViewModelTest {
 
     @Test
     fun `CheckConnection failure should update isConnected to false`() = runTest {
-        val mainDispatcher = StandardTestDispatcher(testScheduler)
-        Dispatchers.setMain(mainDispatcher)
-
         viewModel = SettingsViewModel(
             mqttClientRepository = mqttClientRepository,
             initialState = initialState.copy(isConnected = true)
@@ -214,22 +206,93 @@ class SettingsViewModelTest {
 
     @Test
     fun `ConnectMqtt success should emit ShowInfo CONNECT_SUCCESS`() = runTest {
+        val mainDispatcher = StandardTestDispatcher(testScheduler)
+        Dispatchers.setMain(mainDispatcher)
 
+        viewModel = SettingsViewModel(
+            mqttClientRepository = mqttClientRepository,
+            initialState = initialState.copy(
+                clientId = "client",
+                host = "192.168.1.101",
+                port = "8883",
+                username = "username",
+                password = "password",
+                p12Password = "p12Password"
+            )
+        )
+
+        coEvery { mqttClientRepository.connectMqtt(any()) } returns Result.success(Unit)
+
+        viewModel.container.sideEffect.test {
+            viewModel.container.state.test {
+                skipItems(1)
+                viewModel.onEvent(event = SettingsEvent.ConnectMqtt)
+                assertThat(awaitItem().isLoading).isTrue()
+
+                testScheduler.advanceUntilIdle()
+                assertThat(awaitItem().isLoading).isFalse()
+            }
+
+            assertThat(awaitItem()).isEqualTo(SettingsSideEffect.ShowSettingsInfo(info = SettingsInfo.CONNECT_SUCCESS))
+            cancelAndIgnoreRemainingEvents()
+        }
     }
 
     @Test
     fun `ConnectMqtt failure should emit ShowInfo CONNECT_FAILURE`() = runTest {
+        viewModel = SettingsViewModel(
+            mqttClientRepository = mqttClientRepository,
+            initialState = initialState.copy(
+                clientId = "client",
+                host = "192.168.1.101",
+                port = "8883",
+                username = "username",
+                password = "password",
+                p12Password = "p12Password"
+            )
+        )
 
+        coEvery { mqttClientRepository.connectMqtt(any()) } returns Result.failure(exception = Exception())
+
+        viewModel.container.sideEffect.test {
+            viewModel.container.state.test {
+                skipItems(1)
+                viewModel.onEvent(event = SettingsEvent.ConnectMqtt)
+                assertThat(awaitItem().isLoading).isTrue()
+
+                testScheduler.advanceUntilIdle()
+                assertThat(awaitItem().isLoading).isFalse()
+            }
+
+            assertThat(awaitItem()).isEqualTo(SettingsSideEffect.ShowSettingsInfo(info = SettingsInfo.CONNECT_FAILURE))
+            cancelAndIgnoreRemainingEvents()
+        }
     }
 
     @Test
-    fun `DisconnectMqtt success`() = runTest {
+    fun `DisconnectMqtt success should emit ShowInfo DISCONNECT_SUCCESS`() = runTest {
+        coEvery { mqttClientRepository.disconnect() } returns Result.success(Unit)
 
+        viewModel.container.sideEffect.test {
+            viewModel.onEvent(event = SettingsEvent.DisconnectMqtt)
+            assertThat(
+                awaitItem()
+            ).isEqualTo(SettingsSideEffect.ShowSettingsInfo(info = SettingsInfo.DISCONNECT_SUCCESS))
+            cancelAndIgnoreRemainingEvents()
+        }
     }
 
     @Test
-    fun `DisconnectMqtt failure`() = runTest {
+    fun `DisconnectMqtt failure should emit ShowInfo DISCONNECT_FAILURE`() = runTest {
+        coEvery { mqttClientRepository.disconnect() } returns Result.failure(exception = Exception())
 
+        viewModel.container.sideEffect.test {
+            viewModel.onEvent(event = SettingsEvent.DisconnectMqtt)
+            assertThat(
+                awaitItem()
+            ).isEqualTo(SettingsSideEffect.ShowSettingsInfo(info = SettingsInfo.DISCONNECT_FAILURE))
+            cancelAndIgnoreRemainingEvents()
+        }
     }
 
     @Test
