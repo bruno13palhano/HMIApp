@@ -17,7 +17,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.StandardTestDispatcher
-import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
@@ -112,6 +111,30 @@ class SettingsViewModelTest {
             skipItems(1)
             viewModel.onEvent(event = SettingsEvent.UpdateP12Password(p12Password = expected))
             assertThat(awaitItem().p12Password).isEqualTo(expected)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `LoadCA should update state`() = runTest {
+        val expected = byteArrayOf(1)
+
+        viewModel.container.state.test {
+            skipItems(1)
+            viewModel.onEvent(event = SettingsEvent.LoadCA(caCert = expected))
+            assertThat(awaitItem().caCert).isEqualTo(expected)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `LoadClientCert should update state`() = runTest {
+        val expected = byteArrayOf(1)
+
+        viewModel.container.state.test {
+            skipItems(1)
+            viewModel.onEvent(event = SettingsEvent.LoadClientCert(clientCert = expected))
+            assertThat(awaitItem().clientP12).isEqualTo(expected)
             cancelAndIgnoreRemainingEvents()
         }
     }
@@ -293,25 +316,5 @@ class SettingsViewModelTest {
             ).isEqualTo(SettingsSideEffect.ShowSettingsInfo(info = SettingsInfo.DISCONNECT_FAILURE))
             cancelAndIgnoreRemainingEvents()
         }
-    }
-
-    @Test
-    fun `LoadCA success`() = runTest {
-
-    }
-
-    @Test
-    fun `LoadCA failure`() = runTest {
-
-    }
-
-    @Test
-    fun `LoadClientCert success`() = runTest {
-
-    }
-
-    @Test
-    fun `LoadClientCert failure`() = runTest {
-
     }
 }
