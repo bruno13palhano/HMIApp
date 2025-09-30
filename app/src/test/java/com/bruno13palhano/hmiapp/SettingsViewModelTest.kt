@@ -80,6 +80,18 @@ class SettingsViewModelTest {
     }
 
     @Test
+    fun `UpdatePort should update state`() = runTest {
+        val expected = "8883"
+
+        viewModel.container.state.test {
+            skipItems(1)
+            viewModel.onEvent(event = SettingsEvent.UpdatePort(port = expected))
+            assertThat(awaitItem().port).isEqualTo(expected)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
     fun `UpdateUsername should update state`() = runTest {
         val expected = "username"
 
