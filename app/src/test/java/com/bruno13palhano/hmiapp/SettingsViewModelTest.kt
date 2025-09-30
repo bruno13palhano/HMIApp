@@ -11,6 +11,7 @@ import com.bruno13palhano.hmiapp.ui.settings.SettingsViewModel
 import com.google.common.truth.Truth.assertThat
 import io.mockk.MockKAnnotations
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import kotlinx.coroutines.Dispatchers
@@ -68,6 +69,18 @@ class SettingsViewModelTest {
     }
 
     @Test
+    fun `UpdateClientId with empty string should mark invalid`() = runTest {
+        viewModel.container.state.test {
+            skipItems(1)
+            viewModel.onEvent(event = SettingsEvent.UpdateClientId(clientId = ""))
+            val state = awaitItem()
+            assertThat(state.clientId).isEmpty()
+            assertThat(state.isClientIdInvalid).isTrue()
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
     fun `UpdateHost should update state`() = runTest {
         val expected = "host"
 
@@ -80,6 +93,18 @@ class SettingsViewModelTest {
     }
 
     @Test
+    fun `UpdateHost with empty sting should mark invalid`() = runTest {
+        viewModel.container.state.test  {
+            skipItems(1)
+            viewModel.onEvent(event = SettingsEvent.UpdateHost(host = ""))
+            val state = awaitItem()
+            assertThat(state.host).isEmpty()
+            assertThat(state.isHostInvalid).isTrue()
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
     fun `UpdatePort should update state`() = runTest {
         val expected = "8883"
 
@@ -87,6 +112,18 @@ class SettingsViewModelTest {
             skipItems(1)
             viewModel.onEvent(event = SettingsEvent.UpdatePort(port = expected))
             assertThat(awaitItem().port).isEqualTo(expected)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `UpdatePort with empty string should mark invalid`() = runTest {
+        viewModel.container.state.test {
+            skipItems(1)
+            viewModel.onEvent(event = SettingsEvent.UpdatePort(port = ""))
+            val state = awaitItem()
+            assertThat(state.port).isEmpty()
+            assertThat(state.isPortInvalid).isTrue()
             cancelAndIgnoreRemainingEvents()
         }
     }
@@ -208,6 +245,27 @@ class SettingsViewModelTest {
             ).isEqualTo(SettingsSideEffect.NavigateTo(destination = Dashboard))
             cancelAndIgnoreRemainingEvents()
         }
+    }
+
+    @Test
+    fun `ConnectMqtt should not attempt connection when required fields are missing`() = runTest {
+        viewModel = SettingsViewModel(
+            mqttClientRepository = mqttClientRepository,
+            initialState = initialState.copy(
+                clientId = "",
+                host = "",
+                port = ""
+            )
+        )
+
+        viewModel.container.state.test {
+            skipItems(1)
+            viewModel.onEvent(event = SettingsEvent.ConnectMqtt)
+            expectNoEvents()
+            cancelAndIgnoreRemainingEvents()
+        }
+
+        coVerify(exactly = 0) { mqttClientRepository.connectMqtt(any()) }
     }
 
     @Test
