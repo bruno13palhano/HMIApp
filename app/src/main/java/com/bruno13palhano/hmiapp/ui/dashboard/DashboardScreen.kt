@@ -108,7 +108,6 @@ fun DashboardScreen(
 
     LaunchedEffect(Unit) {
         sideEffect.collect { effect ->
-            println("EFFECT: $effect")
             when (effect) {
                 DashboardSideEffect.ToggleMenu -> {
                     scope.launch {
