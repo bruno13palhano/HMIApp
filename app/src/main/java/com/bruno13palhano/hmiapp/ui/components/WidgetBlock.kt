@@ -50,6 +50,7 @@ fun WidgetBlock(
     widget: Widget,
     onDragEnd: (x: Float, y: Float) -> Unit,
     onTogglePin: () -> Unit,
+    onNotify: () -> Unit,
     onEdit: () -> Unit,
     onRemove: () -> Unit,
     content: @Composable ColumnScope.() -> Unit
@@ -132,6 +133,7 @@ fun WidgetBlock(
                     onItemClick = { item ->
                         when (item) {
                             MenuOptions.PIN_UNPIN -> onTogglePin()
+                            MenuOptions.NOTIFY -> onNotify()
                             MenuOptions.EDIT -> onEdit()
                             MenuOptions.REMOVE -> onRemove()
                         }
@@ -179,6 +181,7 @@ fun extractEndpoint(url: String): String {
 
 private enum class MenuOptions {
     PIN_UNPIN,
+    NOTIFY,
     EDIT,
     REMOVE
 }
@@ -198,6 +201,7 @@ private fun WidgetBlockPreview() {
                 ),
                 onDragEnd = { _, _ -> },
                 onTogglePin = {},
+                onNotify = {},
                 onEdit = {},
                 onRemove = {},
                 content = {}

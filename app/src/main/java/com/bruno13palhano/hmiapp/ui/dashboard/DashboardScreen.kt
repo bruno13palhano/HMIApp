@@ -287,6 +287,7 @@ fun DashboardContent(
                                 )
                             },
                             onTogglePin = { id -> onEvent(DashboardEvent.OnToggleWidgetPin(id = id)) },
+                            onNotify = { id -> /* onEvent(DashboardEvent.OnNotify(id = id)**/ },
                             onEdit = { id -> onEvent(DashboardEvent.OpenEditWidgetDialog(id = id)) },
                             onRemove = { id -> onEvent(DashboardEvent.RemoveWidget(id = id)) },
                             onEvent = { widgetEvent ->
