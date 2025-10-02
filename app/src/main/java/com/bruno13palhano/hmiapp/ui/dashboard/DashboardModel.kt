@@ -29,6 +29,7 @@ data class DashboardState(
     val hasExtras: Boolean = false,
     val extras: List<String> = emptyList(),
     val type: WidgetType = WidgetType.TEXT,
+    val limit: String? = null,
     val isPinned: Boolean = false,
     val currentDestination: NavKey = Dashboard,
     val isEditEnvironmentName: Boolean = false,
@@ -58,7 +59,6 @@ sealed interface DashboardEvent {
     data object AddExtra : DashboardEvent
     data class UpdateEnvironmentName(val name: String) : DashboardEvent
     data class OnToggleWidgetPin(val id: String) : DashboardEvent
-    data class OnNotify(val id: String) : DashboardEvent
     data object AddEnvironment : DashboardEvent
     data object EditEnvironment : DashboardEvent
     data class ChangeEnvironment(val id: Long) : DashboardEvent

@@ -32,9 +32,11 @@ fun WidgetInputDialog(
     endpoint: String,
     hasExtras: Boolean,
     extras: List<String> = emptyList(),
+    limit: String? = null,
     onLabelChange: (label: String) -> Unit,
     onEndpointChange: (endpoint: String) -> Unit,
     onExtraChange: (index: Int, value: String) -> Unit,
+    onLimitChange: (limit: String) -> Unit,
     onAddExtra: () -> Unit,
     onConfirm: () -> Unit,
     onDismissRequest: () -> Unit
@@ -72,6 +74,15 @@ fun WidgetInputDialog(
                     onValueChange = onEndpointChange,
                     label = stringResource(id = R.string.endpoint),
                     placeholder = stringResource(id = R.string.enter_endpoint)
+                )
+                CustomTextField(
+                    modifier = Modifier
+                        .padding(horizontal = 8.dp)
+                        .fillMaxWidth(),
+                    value = limit ?: "",
+                    onValueChange = onLimitChange,
+                    label = "Limit",
+                    placeholder = "Enter the limit to trigger the notifications"
                 )
                 if (hasExtras) {
                     Text(

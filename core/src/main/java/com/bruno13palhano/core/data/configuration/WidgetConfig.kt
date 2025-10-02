@@ -17,6 +17,7 @@ data class WidgetConfig(
     val height: Float,
     val extras: List<String>?,
     val value: String,
+    val limit: String?,
     val environmentId: Long
 )
 
@@ -42,6 +43,7 @@ fun Widget.toWidgetConfig(): WidgetConfig = WidgetConfig(
     height = height,
     extras = extras,
     value = value,
+    limit = limit,
     environmentId = environmentId
 )
 
@@ -57,6 +59,7 @@ fun WidgetConfig.toWidget(): Widget = Widget(
     y = y,
     width = width,
     height = height,
+    limit = limit,
     extras = extras,
     value = value,
     environmentId = environmentId

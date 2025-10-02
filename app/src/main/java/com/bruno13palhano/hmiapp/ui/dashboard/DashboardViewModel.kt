@@ -199,6 +199,7 @@ class DashboardViewModel @AssistedInject constructor(
             type = state.value.type,
             label = state.value.label,
             endpoint = state.value.endpoint,
+            limit = state.value.limit,
             extras = state.value.extras
         )
         val widgets = widgetManager.loadWidgets(environmentId = environmentId).map {

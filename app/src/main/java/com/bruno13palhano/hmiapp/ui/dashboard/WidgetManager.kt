@@ -23,6 +23,7 @@ class WidgetManager(
         type: WidgetType,
         label: String,
         endpoint: String,
+        limit: String?,
         extras: List<String>?
     ) {
         val widget = Widget(
@@ -30,6 +31,7 @@ class WidgetManager(
             label = label,
             dataSource = DataSource.MQTT(topic = endpoint),
             environmentId = environmentId,
+            limit = limit,
             extras = extras
         )
         widgetRepository.insert(widget = widget)
