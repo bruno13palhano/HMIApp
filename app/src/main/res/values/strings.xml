@@ -69,6 +69,8 @@
     <string name="name_placeholder">Enter name</string>
     <string name="load_ca">Load CA</string>
     <string name="load_client_p12">Load ClientP12</string>
+    <string name="limit">Limit</string>
+    <string name="limit_placeholder">Enter the limit to trigger the notification</string>
     <string name="pin">Pin</string>
     <string name="unpin">Unpin</string>
     <string name="extras">Extras</string>
