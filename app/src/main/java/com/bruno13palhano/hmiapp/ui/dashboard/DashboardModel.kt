@@ -29,6 +29,8 @@ data class DashboardState(
     val hasExtras: Boolean = false,
     val extras: List<String> = emptyList(),
     val type: WidgetType = WidgetType.TEXT,
+    val isWidgetWithLimit: Boolean = false,
+    val enableLimit: Boolean = false,
     val limit: String? = null,
     val isPinned: Boolean = false,
     val currentDestination: NavKey = Dashboard,
@@ -56,6 +58,7 @@ sealed interface DashboardEvent {
     data class UpdateLabel(val label: String) : DashboardEvent
     data class UpdateEndpoint(val endpoint: String) : DashboardEvent
     data class UpdateExtra(val index: Int, val value: String) : DashboardEvent
+    data class UpdateLimit(val limit: String) : DashboardEvent
     data object AddExtra : DashboardEvent
     data class UpdateEnvironmentName(val name: String) : DashboardEvent
     data class OnToggleWidgetPin(val id: String) : DashboardEvent

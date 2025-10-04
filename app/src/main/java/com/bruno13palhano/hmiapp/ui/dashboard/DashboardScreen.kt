@@ -332,6 +332,8 @@ fun DashboardContent(
                             endpoint = state.endpoint,
                             hasExtras = state.hasExtras,
                             extras = state.extras,
+                            hasLimit = state.isWidgetWithLimit,
+                            limit = state.limit,
                             onLabelChange = { label ->
                                 onEvent(DashboardEvent.UpdateLabel(label = label))
                             },
@@ -340,6 +342,9 @@ fun DashboardContent(
                             },
                             onExtraChange = { index, value ->
                                 onEvent(DashboardEvent.UpdateExtra(index = index, value = value))
+                            },
+                            onLimitChange = { limit ->
+                                onEvent(DashboardEvent.UpdateLimit(limit = limit))
                             },
                             onAddExtra = { onEvent(DashboardEvent.AddExtra) },
                             onConfirm = { onEvent(DashboardEvent.ConfirmWidget) },
@@ -362,10 +367,6 @@ fun DashboardContent(
                             },
                             onDismissRequest = { onEvent(DashboardEvent.CloseEnvironmentInputDialog) }
                         )
-                    }
-
-                    AnimatedVisibility(visible = state.isNotifyDialogVisible) {
-
                     }
                 }
             }

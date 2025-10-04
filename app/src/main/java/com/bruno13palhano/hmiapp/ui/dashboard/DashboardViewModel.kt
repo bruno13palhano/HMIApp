@@ -74,6 +74,7 @@ class DashboardViewModel @AssistedInject constructor(
             is DashboardEvent.UpdateEndpoint -> updateEndpoint(endpoint = event.endpoint)
             is DashboardEvent.UpdateLabel -> updateLabel(label = event.label)
             is DashboardEvent.UpdateExtra -> updateExtra(index = event.index, value = event.value)
+            is DashboardEvent.UpdateLimit -> updateLimit(limit = event.limit)
             DashboardEvent.AddExtra -> addExtra()
             is DashboardEvent.UpdateEnvironmentName -> updateEnvironmentName(name = event.name)
             is DashboardEvent.NavigateTo -> navigateTo(key = event.destination)
@@ -94,8 +95,20 @@ class DashboardViewModel @AssistedInject constructor(
                 isToolboxExpanded = false,
                 isWidgetInputDialogVisible = true,
                 type = type,
-                hasExtras = type == WidgetType.DROPDOWN
+                hasExtras = type == WidgetType.DROPDOWN,
+                isWidgetWithLimit = hasLimit(type = type)
             )
+        }
+    }
+
+    private fun hasLimit(type: WidgetType): Boolean {
+        return when(type) {
+            WidgetType.TEXT -> true
+            WidgetType.GAUGE -> true
+            WidgetType.PROGRESS_BAR -> true
+            WidgetType.CHART -> true
+            WidgetType.LED_INDICATOR -> true
+            else -> false
         }
     }
 
@@ -108,7 +121,8 @@ class DashboardViewModel @AssistedInject constructor(
                 label = "",
                 endpoint = "",
                 extras = emptyList(),
-                hasExtras = false
+                hasExtras = false,
+                isWidgetWithLimit = false
             )
         }
     }
@@ -127,6 +141,10 @@ class DashboardViewModel @AssistedInject constructor(
             updated[index] = value
             reduce { copy(extras = updated) }
         }
+    }
+
+    private fun updateLimit(limit: String) = container.intent {
+        reduce { copy(limit = limit) }
     }
 
     private fun addExtra() = container.intent {
@@ -265,7 +283,8 @@ class DashboardViewModel @AssistedInject constructor(
                         is DataSource.MQTT -> dataSource.topic
                         is DataSource.HTTP -> extractEndpoint(url = dataSource.url)
                     },
-                    extras = it.extras ?: emptyList()
+                    extras = it.extras ?: emptyList(),
+                    limit = it.limit
                 )
             }
         }
