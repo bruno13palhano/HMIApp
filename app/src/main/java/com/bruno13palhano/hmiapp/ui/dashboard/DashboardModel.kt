@@ -87,6 +87,7 @@ sealed interface DashboardSideEffect {
     data class NavigateTo(val destination: NavKey) : DashboardSideEffect
     data object LaunchExportWidgetsConfig : DashboardSideEffect
     data object LaunchImportWidgetsConfig : DashboardSideEffect
+    data class NotifyLimitExceeded(val widgetLabel: String, val currentValue: String, val limit: String) : DashboardSideEffect
 }
 
 enum class DashboardInfo {

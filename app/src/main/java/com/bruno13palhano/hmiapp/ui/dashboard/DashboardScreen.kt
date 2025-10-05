@@ -136,6 +136,15 @@ fun DashboardScreen(
                 DashboardSideEffect.LaunchImportWidgetsConfig -> {
                     importLauncher.launch(arrayOf("application/json"))
                 }
+
+                is DashboardSideEffect.NotifyLimitExceeded -> {
+                    scope.launch {
+                        snackbarHostState.showSnackbar(
+                            message = "The limit: ${effect.limit} off widget:${effect.widgetLabel} had been passed. Current value: ${effect.currentValue}",
+                            withDismissAction = true
+                        )
+                    }
+                }
             }
         }
     }

@@ -403,6 +403,19 @@ class DashboardViewModel @AssistedInject constructor(
                 if ((widget.dataSource as DataSource.MQTT).topic == topic) {
                     val updated = widget.copy(value = message)
                     widgetValues[widget.id] = message
+
+                    val limit = widget.limit?.toFloatOrNull()
+                    val current = message.toFloatOrNull()
+                    if (limit != null && current != null && current > limit) {
+                        postSideEffect(
+                            effect = DashboardSideEffect.NotifyLimitExceeded(
+                                widgetLabel = widget.label,
+                                currentValue = current.toString(),
+                                limit = limit.toString()
+                            )
+                        )
+                    }
+
                     updated
                 } else widget
             }
