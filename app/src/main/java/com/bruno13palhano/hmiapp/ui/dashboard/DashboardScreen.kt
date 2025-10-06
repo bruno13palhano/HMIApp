@@ -79,6 +79,7 @@ fun DashboardScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     val messagesInfo = getDashboardInfo()
+    val limitExceededMessage = stringResource(id = R.string.limit_exceeded_message)
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val context = LocalContext.current
 
@@ -140,7 +141,8 @@ fun DashboardScreen(
                 is DashboardSideEffect.NotifyLimitExceeded -> {
                     scope.launch {
                         snackbarHostState.showSnackbar(
-                            message = "The limit: ${effect.limit} off widget:${effect.widgetLabel} had been passed. Current value: ${effect.currentValue}",
+                            message = "${effect.widgetLabel} $limitExceededMessage " +
+                                    "${effect.currentValue}/${effect.limit}",
                             withDismissAction = true
                         )
                     }

@@ -77,4 +77,5 @@
     <string name="extra_tag">Extra %d</string>
     <string name="extra_placeholder">Enter value</string>
     <string name="add_extra">+ Add extra</string>
+    <string name="limit_exceeded_message">exceeded the</string>
 </resources>
