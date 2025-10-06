@@ -112,6 +112,18 @@ class DashboardViewModelTest {
     }
 
     @Test
+    fun `UpdateLimit should update state`() = runTest {
+        val expected = "limit"
+
+        viewModel.container.state.test {
+            skipItems(1)
+            viewModel.onEvent(event = DashboardEvent.UpdateLimit(limit = expected))
+            assertThat(awaitItem().limit).isEqualTo(expected)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
     fun `AddExtra and UpdateExtra should update extras`() = runTest {
         val index = 0
         val expected = "extra"
