@@ -59,9 +59,11 @@ fun WidgetBlock(
 
     var expandMenu by remember { mutableStateOf(false) }
 
+    var borderColor = MaterialTheme.colorScheme.secondary
     val pinUnpin = if (!widget.isPinned) {
         stringResource(id = R.string.pin)
     } else {
+        borderColor = MaterialTheme.colorScheme.error
         stringResource(id = R.string.unpin)
     }
     val items = mapOf(
@@ -100,7 +102,7 @@ fun WidgetBlock(
                 color = MaterialTheme.colorScheme.background,
                 shape = RoundedCornerShape(8.dp)
             )
-            .border(1.dp, MaterialTheme.colorScheme.secondary),
+            .border(1.dp, borderColor, RoundedCornerShape(8.dp)),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Row (
@@ -194,7 +196,8 @@ private fun WidgetBlockPreview() {
                     label = "M1",
                     dataSource = DataSource.MQTT(topic = "test/topic"),
                     value = "ON",
-                    environmentId = 1L
+                    environmentId = 1L,
+                    isPinned = true
                 ),
                 onDragEnd = { _, _ -> },
                 onTogglePin = {},
