@@ -3,9 +3,9 @@
 
     <!-- Item with insets to reduce the icon -->
     <item
-        android:left="124dp"
-        android:top="124dp"
-        android:right="124dp"
-        android:bottom="124dp"
+        android:left="132dp"
+        android:top="132dp"
+        android:right="132dp"
+        android:bottom="132dp"
         android:drawable="@drawable/ic_launcher" />
 </layer-list>
