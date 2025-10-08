@@ -1,2 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources></resources>
+<resources>
+    <style name="Theme.HMIApp.Splash" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_splash</item>
+        <item name="windowSplashScreenBackground">@color/md_theme_dark_background</item>
+        <item name="postSplashScreenTheme">@style/Theme.HMIApp</item>
+    </style>
+</resources>
