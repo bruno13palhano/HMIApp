@@ -13,7 +13,7 @@ android {
 
     defaultConfig {
         applicationId = "com.bruno13palhano.hmiapp"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
@@ -85,4 +85,5 @@ dependencies {
     implementation(libs.hilt.android)
     implementation(project(":core"))
     implementation(libs.androidx.material.icons.extended)
+    implementation("androidx.core:core-splashscreen:1.0.1")
 }
