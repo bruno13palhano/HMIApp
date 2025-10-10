@@ -26,6 +26,7 @@ coroutinesVersion = "1.10.2"
 truthVersion = "1.4.4"
 mockkVersion = "1.14.5"
 turbineVerson = "1.2.0"
+ktlintVersion = "13.1.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -74,4 +75,5 @@ jetbrains-kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serializati
 android-library = { id = "com.android.library", version.ref = "agp" }
 dagger-hilt = { id = "com.google.dagger.hilt.android", version.ref = "hiltAndroidCompiler"}
 ksp = { id = "com.google.devtools.ksp", version.ref = "kspVersion" }
+ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlintVersion" }
 
