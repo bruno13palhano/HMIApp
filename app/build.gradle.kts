@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.jetbrains.kotlin.serialization)
     alias(libs.plugins.ksp)
     alias(libs.plugins.dagger.hilt)
+    alias(libs.plugins.ktlint)
 }
 
 android {
