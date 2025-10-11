@@ -12,7 +12,7 @@ import dagger.hilt.android.EntryPointAccessors
 inline fun <reified VM : ViewModel, S : Any, EP : Any> assistedViewModel(
     state: S,
     entryPoint: Class<EP>,
-    crossinline factorySelector: (EP, S) -> VM
+    crossinline factorySelector: (EP, S) -> VM,
 ): VM {
     val context = LocalContext.current.applicationContext
     val viewModelStoreOwner = checkNotNull(LocalViewModelStoreOwner.current)
@@ -23,11 +23,9 @@ inline fun <reified VM : ViewModel, S : Any, EP : Any> assistedViewModel(
 
         val factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
-            override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                return viewModel as T
-            }
+            override fun <T : ViewModel> create(modelClass: Class<T>): T = viewModel as T
         }
 
-        ViewModelProvider(viewModelStoreOwner,factory)[VM::class.java]
+        ViewModelProvider(viewModelStoreOwner, factory)[VM::class.java]
     }
 }

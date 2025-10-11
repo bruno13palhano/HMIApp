@@ -21,6 +21,8 @@ import io.mockk.MockKAnnotations
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -34,8 +36,6 @@ import kotlinx.serialization.json.Json
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
-import java.io.ByteArrayInputStream
-import java.io.ByteArrayOutputStream
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class DashboardViewModelTest {
@@ -45,7 +45,7 @@ class DashboardViewModelTest {
         type = WidgetType.BUTTON,
         dataSource = DataSource.MQTT(topic = "t"),
         label = "lab",
-        environmentId = 1L
+        environmentId = 1L,
     )
 
     private lateinit var viewModel: DashboardViewModel
@@ -69,7 +69,7 @@ class DashboardViewModelTest {
             widgetRepository = widgetRepository,
             mqttClientRepository = mqttClientRepository,
             environmentRepository = environmentRepository,
-            initialState = initialState
+            initialState = initialState,
         )
     }
 
@@ -161,16 +161,16 @@ class DashboardViewModelTest {
     }
 
     //
-    //Side effects
+    // Side effects
     //
     @Test
     fun `NavigateTo should emit NavigateTo side effect`() = runTest {
         viewModel.container.sideEffect.test {
             viewModel.onEvent(
-                event = DashboardEvent.NavigateTo(destination = Dashboard)
+                event = DashboardEvent.NavigateTo(destination = Dashboard),
             )
             assertThat(
-                awaitItem()
+                awaitItem(),
             ).isEqualTo(DashboardSideEffect.NavigateTo(destination = Dashboard))
             cancelAndIgnoreRemainingEvents()
         }
@@ -203,8 +203,8 @@ class DashboardViewModelTest {
                 endpoint = "ep",
                 isWidgetInputDialogVisible = true,
                 extras = listOf("a"),
-                hasExtras = true
-            )
+                hasExtras = true,
+            ),
         )
 
         viewModel.container.state.test {
@@ -237,7 +237,7 @@ class DashboardViewModelTest {
             type = WidgetType.BUTTON,
             dataSource = DataSource.MQTT(topic = "topic"),
             label = "label",
-            environmentId = environment.id
+            environmentId = environment.id,
         )
         val expected = listOf(widget)
 
@@ -261,7 +261,7 @@ class DashboardViewModelTest {
         val updateWidget = wid.copy(
             type = WidgetType.SWITCH,
             label = "newLabel",
-            dataSource = DataSource.MQTT(topic = "newTopic")
+            dataSource = DataSource.MQTT(topic = "newTopic"),
         )
 
         coEvery { widgetRepository.update(any()) } returns Unit
@@ -269,7 +269,16 @@ class DashboardViewModelTest {
         coEvery { mqttClientRepository.subscribeToTopic(any()) } returns Result.success(Unit)
 
         viewModel.container.intentSync {
-            reduce { copy(environment = env, widgets = listOf(wid), id =  wid.id, label = "newLabel", endpoint = "newTopic", type = WidgetType.SWITCH) }
+            reduce {
+                copy(
+                    environment = env,
+                    widgets = listOf(wid),
+                    id = wid.id,
+                    label = "newLabel",
+                    endpoint = "newTopic",
+                    type = WidgetType.SWITCH,
+                )
+            }
         }
 
         viewModel.container.state.test {
@@ -294,7 +303,7 @@ class DashboardViewModelTest {
             widgetRepository = widgetRepository,
             mqttClientRepository = mqttClientRepository,
             environmentRepository = environmentRepository,
-            initialState = DashboardState(environment = env)
+            initialState = DashboardState(environment = env),
         )
 
         coEvery { environmentRepository.getLastEnvironmentId() } returns env.id
@@ -321,7 +330,7 @@ class DashboardViewModelTest {
             widgetRepository = widgetRepository,
             mqttClientRepository = mqttClientRepository,
             environmentRepository = environmentRepository,
-            initialState = DashboardState(environment = env)
+            initialState = DashboardState(environment = env),
         )
 
         coEvery { environmentRepository.getLastEnvironmentId() } returns null
@@ -344,7 +353,7 @@ class DashboardViewModelTest {
             widgetRepository = widgetRepository,
             mqttClientRepository = mqttClientRepository,
             environmentRepository = environmentRepository,
-            initialState = DashboardState(environment = env)
+            initialState = DashboardState(environment = env),
         )
 
         val layout = LayoutConfig(env.toEnvironmentConfig(), emptyList())
@@ -375,7 +384,7 @@ class DashboardViewModelTest {
             widgetRepository = widgetRepository,
             mqttClientRepository = mqttClientRepository,
             environmentRepository = environmentRepository,
-            initialState = DashboardState(environment = env)
+            initialState = DashboardState(environment = env),
         )
 
         val input = ByteArrayInputStream("not-json".toByteArray())
@@ -400,7 +409,7 @@ class DashboardViewModelTest {
             widgetRepository = widgetRepository,
             mqttClientRepository = mqttClientRepository,
             environmentRepository = environmentRepository,
-            initialState = DashboardState(environment = env)
+            initialState = DashboardState(environment = env),
         )
 
         coEvery { environmentRepository.getById(any()) } returns env

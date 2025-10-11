@@ -41,7 +41,7 @@ class SettingsViewModelTest {
         Dispatchers.setMain(StandardTestDispatcher())
         viewModel = SettingsViewModel(
             mqttClientRepository = mqttClientRepository,
-            initialState = initialState
+            initialState = initialState,
         )
     }
 
@@ -94,7 +94,7 @@ class SettingsViewModelTest {
 
     @Test
     fun `UpdateHost with empty sting should mark invalid`() = runTest {
-        viewModel.container.state.test  {
+        viewModel.container.state.test {
             skipItems(1)
             viewModel.onEvent(event = SettingsEvent.UpdateHost(host = ""))
             val state = awaitItem()
@@ -228,7 +228,7 @@ class SettingsViewModelTest {
     }
 
     @Test
-    fun `HideKeyboardAndClearFocus should emit HideKeyboardAndClearFocus side effect`() =  runTest {
+    fun `HideKeyboardAndClearFocus should emit HideKeyboardAndClearFocus side effect`() = runTest {
         viewModel.container.sideEffect.test {
             viewModel.onEvent(event = SettingsEvent.HideKeyboardAndClearFocus)
             assertThat(awaitItem()).isEqualTo(SettingsSideEffect.HideKeyboardAndClearFocus)
@@ -241,7 +241,7 @@ class SettingsViewModelTest {
         viewModel.container.sideEffect.test {
             viewModel.onEvent(event = SettingsEvent.NavigateTo(destination = Dashboard))
             assertThat(
-                awaitItem()
+                awaitItem(),
             ).isEqualTo(SettingsSideEffect.NavigateTo(destination = Dashboard))
             cancelAndIgnoreRemainingEvents()
         }
@@ -254,8 +254,8 @@ class SettingsViewModelTest {
             initialState = initialState.copy(
                 clientId = "",
                 host = "",
-                port = ""
-            )
+                port = "",
+            ),
         )
 
         viewModel.container.state.test {
@@ -284,7 +284,7 @@ class SettingsViewModelTest {
     fun `CheckConnection failure should update isConnected to false`() = runTest {
         viewModel = SettingsViewModel(
             mqttClientRepository = mqttClientRepository,
-            initialState = initialState.copy(isConnected = true)
+            initialState = initialState.copy(isConnected = true),
         )
 
         every { mqttClientRepository.isConnected() } returns flowOf(false)
@@ -310,8 +310,8 @@ class SettingsViewModelTest {
                 port = "8883",
                 username = "username",
                 password = "password",
-                p12Password = "p12Password"
-            )
+                p12Password = "p12Password",
+            ),
         )
 
         coEvery { mqttClientRepository.connectMqtt(any()) } returns Result.success(Unit)
@@ -326,7 +326,9 @@ class SettingsViewModelTest {
                 assertThat(awaitItem().isLoading).isFalse()
             }
 
-            assertThat(awaitItem()).isEqualTo(SettingsSideEffect.ShowSettingsInfo(info = SettingsInfo.CONNECT_SUCCESS))
+            assertThat(
+                awaitItem(),
+            ).isEqualTo(SettingsSideEffect.ShowSettingsInfo(info = SettingsInfo.CONNECT_SUCCESS))
             cancelAndIgnoreRemainingEvents()
         }
     }
@@ -341,11 +343,12 @@ class SettingsViewModelTest {
                 port = "8883",
                 username = "username",
                 password = "password",
-                p12Password = "p12Password"
-            )
+                p12Password = "p12Password",
+            ),
         )
 
-        coEvery { mqttClientRepository.connectMqtt(any()) } returns Result.failure(exception = Exception())
+        coEvery { mqttClientRepository.connectMqtt(any()) } returns
+            Result.failure(exception = Exception())
 
         viewModel.container.sideEffect.test {
             viewModel.container.state.test {
@@ -357,7 +360,9 @@ class SettingsViewModelTest {
                 assertThat(awaitItem().isLoading).isFalse()
             }
 
-            assertThat(awaitItem()).isEqualTo(SettingsSideEffect.ShowSettingsInfo(info = SettingsInfo.CONNECT_FAILURE))
+            assertThat(
+                awaitItem(),
+            ).isEqualTo(SettingsSideEffect.ShowSettingsInfo(info = SettingsInfo.CONNECT_FAILURE))
             cancelAndIgnoreRemainingEvents()
         }
     }
@@ -369,7 +374,7 @@ class SettingsViewModelTest {
         viewModel.container.sideEffect.test {
             viewModel.onEvent(event = SettingsEvent.DisconnectMqtt)
             assertThat(
-                awaitItem()
+                awaitItem(),
             ).isEqualTo(SettingsSideEffect.ShowSettingsInfo(info = SettingsInfo.DISCONNECT_SUCCESS))
             cancelAndIgnoreRemainingEvents()
         }
@@ -377,12 +382,13 @@ class SettingsViewModelTest {
 
     @Test
     fun `DisconnectMqtt failure should emit ShowInfo DISCONNECT_FAILURE`() = runTest {
-        coEvery { mqttClientRepository.disconnect() } returns Result.failure(exception = Exception())
+        coEvery { mqttClientRepository.disconnect() } returns
+            Result.failure(exception = Exception())
 
         viewModel.container.sideEffect.test {
             viewModel.onEvent(event = SettingsEvent.DisconnectMqtt)
             assertThat(
-                awaitItem()
+                awaitItem(),
             ).isEqualTo(SettingsSideEffect.ShowSettingsInfo(info = SettingsInfo.DISCONNECT_FAILURE))
             cancelAndIgnoreRemainingEvents()
         }

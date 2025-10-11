@@ -18,13 +18,14 @@ data class WidgetConfig(
     val extras: List<String>?,
     val value: String,
     val limit: String?,
-    val environmentId: Long
+    val environmentId: Long,
 )
 
 @Serializable
 sealed class DataSourceConfig {
     @Serializable
     data class MQTT(val topic: String) : DataSourceConfig()
+
     @Serializable
     data class HTTP(val url: String, val method: String = "GET") : DataSourceConfig()
 }
@@ -44,7 +45,7 @@ fun Widget.toWidgetConfig(): WidgetConfig = WidgetConfig(
     extras = extras,
     value = value,
     limit = limit,
-    environmentId = environmentId
+    environmentId = environmentId,
 )
 
 fun WidgetConfig.toWidget(): Widget = Widget(
@@ -62,5 +63,5 @@ fun WidgetConfig.toWidget(): Widget = Widget(
     limit = limit,
     extras = extras,
     value = value,
-    environmentId = environmentId
+    environmentId = environmentId,
 )

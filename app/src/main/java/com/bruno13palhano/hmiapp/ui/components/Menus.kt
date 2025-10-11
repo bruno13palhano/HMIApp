@@ -49,7 +49,7 @@ fun DrawerMenu(
     drawerState: DrawerState,
     navigateTo: (key: NavKey) -> Unit,
     gesturesEnabled: Boolean = true,
-    content: @Composable () -> Unit
+    content: @Composable () -> Unit,
 ) {
     val orientation = LocalConfiguration.current.orientation
     val items = listOf(Screen.DashboardScreen, Screen.SettingsScreen)
@@ -70,7 +70,6 @@ fun DrawerMenu(
                     modifier
                         .fillMaxHeight()
                         .consumeWindowInsets(WindowInsets.safeDrawing)
-
                 },
             ) {
                 Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
@@ -95,7 +94,7 @@ fun DrawerMenu(
                 }
             }
         },
-        content = content
+        content = content,
     )
 }
 
@@ -108,7 +107,7 @@ fun <T> VertMenu(
 ) {
     DropdownMenu(
         expanded = expanded,
-        onDismissRequest = onDismissRequest
+        onDismissRequest = onDismissRequest,
     ) {
         items.forEach { item ->
             DropdownMenuItem(
@@ -116,7 +115,7 @@ fun <T> VertMenu(
                 onClick = {
                     onItemClick(item.key)
                     onDismissRequest()
-                }
+                },
             )
         }
     }
@@ -126,25 +125,25 @@ fun <T> VertMenu(
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun DrawerPreview() {
-        Scaffold(
-            modifier = Modifier.fillMaxSize(),
-            topBar = {
-                TopAppBar(
-                    title = { Text(text = "Test") },
-                    navigationIcon = {
-                        IconButton(onClick = {}) {
-                            Icon(imageVector = Icons.Outlined.Menu, contentDescription = null)
-                        }
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        topBar = {
+            TopAppBar(
+                title = { Text(text = "Test") },
+                navigationIcon = {
+                    IconButton(onClick = {}) {
+                        Icon(imageVector = Icons.Outlined.Menu, contentDescription = null)
                     }
-                )
-            }
-        ) {
-            DrawerMenu(
-                modifier = Modifier.padding(it),
-                currentKey = Dashboard,
-                drawerState = DrawerState(DrawerValue.Open),
-                navigateTo = {},
-                gesturesEnabled = true
-            ) {}
-        }
+                },
+            )
+        },
+    ) {
+        DrawerMenu(
+            modifier = Modifier.padding(it),
+            currentKey = Dashboard,
+            drawerState = DrawerState(DrawerValue.Open),
+            navigateTo = {},
+            gesturesEnabled = true,
+        ) {}
+    }
 }

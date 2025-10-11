@@ -44,7 +44,7 @@ fun WidgetCanvas(
     onEdit: (id: String) -> Unit,
     onRemove: (id: String) -> Unit,
     onEvent: (event: WidgetEvent) -> Unit,
-    onTransformChange: (scale: Float, offset: Offset) -> Unit
+    onTransformChange: (scale: Float, offset: Offset) -> Unit,
 ) {
     var scale by remember { mutableFloatStateOf(initialScale) }
     var offset by remember { mutableStateOf(initialOffset) }
@@ -83,7 +83,7 @@ fun WidgetCanvas(
                     offset = if (maxTranslationX > 0 && maxTranslationY > 0) {
                         Offset(
                             x = newOffset.x.coerceIn(-maxTranslationX, maxTranslationX),
-                            y = newOffset.y.coerceIn(-maxTranslationY, maxTranslationY)
+                            y = newOffset.y.coerceIn(-maxTranslationY, maxTranslationY),
                         )
                     } else {
                         Offset.Zero
@@ -92,7 +92,7 @@ fun WidgetCanvas(
                     scale = newScale
                 }
             }
-            .onSizeChanged { screenSize = it }
+            .onSizeChanged { screenSize = it },
     ) {
         Canvas(
             modifier = Modifier
@@ -100,9 +100,9 @@ fun WidgetCanvas(
                     scaleX = scale,
                     scaleY = scale,
                     translationX = offset.x,
-                    translationY = offset.y
+                    translationY = offset.y,
                 )
-                .fillMaxSize()
+                .fillMaxSize(),
         ) {
             val step = 100f
             val gridColor = Color.Red.copy(alpha = 0.25f)
@@ -111,12 +111,12 @@ fun WidgetCanvas(
 
             // Drawn vertical lines (from -halfSize to halfSize)
             var x = -halfSize
-            while (x <=  halfSize) {
+            while (x <= halfSize) {
                 drawLine(
                     color = gridColor,
                     start = Offset(x, -halfSize),
                     end = Offset(x, halfSize),
-                    strokeWidth = 1f
+                    strokeWidth = 1f,
                 )
                 x += step
             }
@@ -128,7 +128,7 @@ fun WidgetCanvas(
                     color = gridColor,
                     start = Offset(-halfSize, y),
                     end = Offset(halfSize, y),
-                    strokeWidth = 1f
+                    strokeWidth = 1f,
                 )
                 y += step
             }
@@ -140,9 +140,9 @@ fun WidgetCanvas(
                     scaleX = scale,
                     scaleY = scale,
                     translationX = offset.x,
-                    translationY = offset.y
+                    translationY = offset.y,
                 )
-                .fillMaxSize()
+                .fillMaxSize(),
         ) {
             widgets.forEach { widget ->
                 key(widget.id) {
@@ -173,7 +173,7 @@ private fun WidgetCanvasPreview() {
                     value = "200",
                     x = 20f,
                     y = 20f,
-                    environmentId = 1L
+                    environmentId = 1L,
                 ),
                 Widget(
                     type = WidgetType.TEXT,
@@ -182,7 +182,7 @@ private fun WidgetCanvasPreview() {
                     value = "Hello word",
                     x = 580f,
                     y = 20f,
-                    environmentId = 1L
+                    environmentId = 1L,
                 ),
                 Widget(
                     type = WidgetType.SWITCH,
@@ -191,7 +191,7 @@ private fun WidgetCanvasPreview() {
                     value = "true",
                     x = 20f,
                     y = 500f,
-                    environmentId = 1L
+                    environmentId = 1L,
                 ),
                 Widget(
                     type = WidgetType.BUTTON,
@@ -200,7 +200,7 @@ private fun WidgetCanvasPreview() {
                     value = "",
                     x = 580f,
                     y = 500f,
-                    environmentId = 1L
+                    environmentId = 1L,
                 ),
                 Widget(
                     type = WidgetType.PROGRESS_BAR,
@@ -209,7 +209,7 @@ private fun WidgetCanvasPreview() {
                     value = ".63",
                     x = 20f,
                     y = 1000f,
-                    environmentId = 1L
+                    environmentId = 1L,
                 ),
                 Widget(
                     type = WidgetType.SLIDER,
@@ -218,7 +218,7 @@ private fun WidgetCanvasPreview() {
                     value = "40.7",
                     x = 580f,
                     y = 1000f,
-                    environmentId = 1L
+                    environmentId = 1L,
                 ),
                 Widget(
                     type = WidgetType.LED_INDICATOR,
@@ -227,7 +227,7 @@ private fun WidgetCanvasPreview() {
                     value = "WARN",
                     x = 20f,
                     y = 1500f,
-                    environmentId = 1L
+                    environmentId = 1L,
                 ),
                 Widget(
                     type = WidgetType.INPUT_FIELD,
@@ -236,8 +236,8 @@ private fun WidgetCanvasPreview() {
                     value = "ON",
                     x = 580f,
                     y = 1500f,
-                    environmentId = 1L
-                )
+                    environmentId = 1L,
+                ),
             ),
             onDragEnd = { _, _, _ -> },
             onTogglePin = {},

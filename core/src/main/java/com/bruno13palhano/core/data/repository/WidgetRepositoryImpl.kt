@@ -6,12 +6,10 @@ import com.bruno13palhano.core.data.database.entity.toEntity
 import com.bruno13palhano.core.model.Widget
 import javax.inject.Inject
 
-internal class WidgetRepositoryImpl @Inject constructor(
-    private val dao: WidgetDao
-) : WidgetRepository {
-    override suspend fun getWidgets(environmentId: Long): List<Widget> {
-        return dao.getWidgets(environmentId = environmentId).map { it.toDomain() }
-    }
+internal class WidgetRepositoryImpl @Inject constructor(private val dao: WidgetDao) :
+    WidgetRepository {
+    override suspend fun getWidgets(environmentId: Long): List<Widget> =
+        dao.getWidgets(environmentId = environmentId).map { it.toDomain() }
 
     override suspend fun insert(widget: Widget) {
         dao.insert(entity = widget.toEntity())

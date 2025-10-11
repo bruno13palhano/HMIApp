@@ -20,7 +20,7 @@ internal data class WidgetEntity(
     val limit: String? = null,
     val extras: List<String>?,
     val isPinned: Boolean,
-    val environmentId: Long
+    val environmentId: Long,
 )
 
 internal fun WidgetEntity.toDomain(): Widget {
@@ -41,7 +41,7 @@ internal fun WidgetEntity.toDomain(): Widget {
         limit = limit,
         extras = extras,
         isPinned = isPinned,
-        environmentId = environmentId
+        environmentId = environmentId,
     )
 }
 
@@ -60,9 +60,9 @@ internal fun Widget.toEntity(): WidgetEntity {
         y = y,
         width = width,
         height = height,
-        limit =  limit,
+        limit = limit,
         extras = extras,
         isPinned = isPinned,
-        environmentId = environmentId
+        environmentId = environmentId,
     )
 }

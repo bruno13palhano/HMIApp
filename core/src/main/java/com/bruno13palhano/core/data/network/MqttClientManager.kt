@@ -3,6 +3,15 @@ package com.bruno13palhano.core.data.network
 import com.hivemq.client.mqtt.MqttClient
 import com.hivemq.client.mqtt.MqttClientSslConfig
 import com.hivemq.client.mqtt.mqtt5.Mqtt5AsyncClient
+import java.io.ByteArrayInputStream
+import java.nio.charset.StandardCharsets
+import java.security.KeyStore
+import java.security.cert.CertificateFactory
+import java.util.concurrent.CompletableFuture
+import javax.inject.Inject
+import javax.inject.Singleton
+import javax.net.ssl.KeyManagerFactory
+import javax.net.ssl.TrustManagerFactory
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.delay
@@ -13,15 +22,6 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.withContext
-import java.io.ByteArrayInputStream
-import java.nio.charset.StandardCharsets
-import java.security.KeyStore
-import java.security.cert.CertificateFactory
-import java.util.concurrent.CompletableFuture
-import javax.inject.Inject
-import javax.inject.Singleton
-import javax.net.ssl.KeyManagerFactory
-import javax.net.ssl.TrustManagerFactory
 
 @Singleton
 internal class MqttClientManager @Inject constructor() {
@@ -30,7 +30,7 @@ internal class MqttClientManager @Inject constructor() {
     private val _incomingMessages = MutableSharedFlow<Pair<String, String>>(
         replay = 0,
         extraBufferCapacity = 12,
-        onBufferOverflow = BufferOverflow.DROP_OLDEST
+        onBufferOverflow = BufferOverflow.DROP_OLDEST,
     )
     val incomingMessages: SharedFlow<Pair<String, String>> = _incomingMessages.asSharedFlow()
 
@@ -40,7 +40,7 @@ internal class MqttClientManager @Inject constructor() {
                 .topicFilter(topic)
                 .callback { publish ->
                     val message = String(publish.payloadAsBytes)
-                        _incomingMessages.tryEmit(topic to message)
+                    _incomingMessages.tryEmit(topic to message)
                 }
                 .send()
                 .await()
@@ -64,18 +64,16 @@ internal class MqttClientManager @Inject constructor() {
             }
         }
 
-    fun isConnected(): Flow<Boolean> {
-        return flow {
-            while (true) {
-                try {
-                    emit(client.state.isConnected)
-                } catch (_: Exception) {
-                    emit(false)
-                }
-                delay(250)
+    fun isConnected(): Flow<Boolean> = flow {
+        while (true) {
+            try {
+                emit(client.state.isConnected)
+            } catch (_: Exception) {
+                emit(false)
             }
-        }.distinctUntilChanged()
-    }
+            delay(250)
+        }
+    }.distinctUntilChanged()
 
     suspend fun disconnect(): Result<Unit> = withContext(Dispatchers.IO) {
         try {
@@ -97,12 +95,12 @@ internal class MqttClientManager @Inject constructor() {
     suspend fun connect(mqttConnectionConfig: MqttConnectionConfig): Result<Unit> =
         withContext(Dispatchers.IO) {
             try {
-                if (mqttConnectionConfig.caBytes == null
-                    || mqttConnectionConfig.caBytes.isEmpty()
+                if (mqttConnectionConfig.caBytes == null ||
+                    mqttConnectionConfig.caBytes.isEmpty()
                 ) {
                     try {
                         return@withContext connectWithoutSsl(
-                            mqttConnectionConfig = mqttConnectionConfig
+                            mqttConnectionConfig = mqttConnectionConfig,
                         )
                     } catch (e: Exception) {
                         e.printStackTrace()
@@ -117,20 +115,20 @@ internal class MqttClientManager @Inject constructor() {
                 ) {
                     if (mqttConnectionConfig.clientP12Bytes.isEmpty()) {
                         return@withContext Result.failure(
-                            IllegalArgumentException("Client P12 bytes are empty")
+                            IllegalArgumentException("Client P12 bytes are empty"),
                         )
                     }
 
                     try {
                         val kmf = loadKeyManagerFactoryFromP12Bytes(
                             p12Bytes = mqttConnectionConfig.clientP12Bytes,
-                            p12Password = mqttConnectionConfig.p12Password
+                            p12Password = mqttConnectionConfig.p12Password,
                         )
                         val sslConfig = buildSslConfig(tmf = tmf, kmf = kmf)
 
                         return@withContext connectWithMutualTls(
                             mqttConnectionConfig = mqttConnectionConfig,
-                            sslConfig = sslConfig
+                            sslConfig = sslConfig,
                         )
                     } catch (e: Exception) {
                         e.printStackTrace()
@@ -141,7 +139,7 @@ internal class MqttClientManager @Inject constructor() {
 
                 connectWithCredentialsOrAnonymous(
                     mqttConnectionConfig = mqttConnectionConfig,
-                    sslConfig = sslConfig
+                    sslConfig = sslConfig,
                 )
             } catch (e: Exception) {
                 Result.failure(e)
@@ -150,20 +148,18 @@ internal class MqttClientManager @Inject constructor() {
 
     private fun buildMqttClient(
         mqttConnectionConfig: MqttConnectionConfig,
-        sslConfig: MqttClientSslConfig? = null
-    ): Mqtt5AsyncClient {
-        return MqttClient.builder()
-            .identifier(mqttConnectionConfig.clientId)
-            .serverHost(mqttConnectionConfig.host)
-            .serverPort(mqttConnectionConfig.port)
-            .sslConfig(sslConfig)
-            .useMqttVersion5()
-            .buildAsync()
-    }
+        sslConfig: MqttClientSslConfig? = null,
+    ): Mqtt5AsyncClient = MqttClient.builder()
+        .identifier(mqttConnectionConfig.clientId)
+        .serverHost(mqttConnectionConfig.host)
+        .serverPort(mqttConnectionConfig.port)
+        .sslConfig(sslConfig)
+        .useMqttVersion5()
+        .buildAsync()
 
     @Throws(Exception::class)
     private suspend fun connectWithoutSsl(
-        mqttConnectionConfig: MqttConnectionConfig
+        mqttConnectionConfig: MqttConnectionConfig,
     ): Result<Unit> {
         client = buildMqttClient(mqttConnectionConfig = mqttConnectionConfig)
 
@@ -175,7 +171,7 @@ internal class MqttClientManager @Inject constructor() {
                 .username(mqttConnectionConfig.username)
                 .password(
                     mqttConnectionConfig.password
-                        .toByteArray(StandardCharsets.UTF_8)
+                        .toByteArray(StandardCharsets.UTF_8),
                 )
                 .applySimpleAuth()
         }
@@ -187,11 +183,11 @@ internal class MqttClientManager @Inject constructor() {
     @Throws(Exception::class)
     private suspend fun connectWithMutualTls(
         mqttConnectionConfig: MqttConnectionConfig,
-        sslConfig: MqttClientSslConfig
+        sslConfig: MqttClientSslConfig,
     ): Result<Unit> {
         client = buildMqttClient(
             mqttConnectionConfig = mqttConnectionConfig,
-            sslConfig = sslConfig
+            sslConfig = sslConfig,
         )
 
         if (mqttConnectionConfig.username != null && mqttConnectionConfig.password != null) {
@@ -201,7 +197,7 @@ internal class MqttClientManager @Inject constructor() {
                 .username(mqttConnectionConfig.username)
                 .password(
                     mqttConnectionConfig.password
-                        .toByteArray(StandardCharsets.UTF_8)
+                        .toByteArray(StandardCharsets.UTF_8),
                 )
                 .applySimpleAuth()
         }
@@ -214,11 +210,11 @@ internal class MqttClientManager @Inject constructor() {
     @Throws(Exception::class)
     suspend fun connectWithCredentialsOrAnonymous(
         mqttConnectionConfig: MqttConnectionConfig,
-        sslConfig: MqttClientSslConfig
+        sslConfig: MqttClientSslConfig,
     ): Result<Unit> {
         client = buildMqttClient(
             mqttConnectionConfig = mqttConnectionConfig,
-            sslConfig = sslConfig
+            sslConfig = sslConfig,
         )
 
         val connectBuilder = client.connectWith()
@@ -229,7 +225,7 @@ internal class MqttClientManager @Inject constructor() {
                 .username(mqttConnectionConfig.username)
                 .password(
                     mqttConnectionConfig.password
-                        .toByteArray(StandardCharsets.UTF_8)
+                        .toByteArray(StandardCharsets.UTF_8),
                 )
                 .applySimpleAuth()
         }
@@ -264,7 +260,7 @@ internal class MqttClientManager @Inject constructor() {
     @Throws(Exception::class)
     private fun loadKeyManagerFactoryFromP12Bytes(
         p12Bytes: ByteArray,
-        p12Password: String
+        p12Password: String,
     ): KeyManagerFactory {
         // PKCS12 keystore that contains client cert + private key
         val keyStore = KeyStore.getInstance("PKCS12")
@@ -278,7 +274,7 @@ internal class MqttClientManager @Inject constructor() {
 
     private fun buildSslConfig(
         tmf: TrustManagerFactory,
-        kmf: KeyManagerFactory?
+        kmf: KeyManagerFactory?,
     ): MqttClientSslConfig {
         val builder = MqttClientSslConfig.builder()
             .trustManagerFactory(tmf)
@@ -286,7 +282,7 @@ internal class MqttClientManager @Inject constructor() {
 
         return builder
             // For development, accepts any hostname
-            //.hostnameVerifier { _, _ -> true }
+            // .hostnameVerifier { _, _ -> true }
             .build()
     }
 }

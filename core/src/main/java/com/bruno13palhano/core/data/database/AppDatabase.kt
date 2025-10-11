@@ -17,10 +17,10 @@ import com.bruno13palhano.core.data.database.entity.WidgetEntity
         WidgetEntity::class,
         MqttConnectionConfigEntity::class,
         EnvironmentEntity::class,
-        PreferencesEntity::class
+        PreferencesEntity::class,
     ],
     version = 2,
-    exportSchema = false
+    exportSchema = false,
 )
 @TypeConverters(value = [SecureConverters::class, ExtrasConverters::class])
 internal abstract class AppDatabase : RoomDatabase() {

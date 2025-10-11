@@ -9,25 +9,21 @@ data class EnvironmentConfig(
     val name: String,
     val scale: Float,
     val offsetX: Float,
-    val offsetY: Float
+    val offsetY: Float,
 )
 
-fun Environment.toEnvironmentConfig(): EnvironmentConfig {
-    return EnvironmentConfig(
-        id = id,
-        name = name,
-        scale = scale,
-        offsetX = offsetX,
-        offsetY = offsetY
-    )
-}
+fun Environment.toEnvironmentConfig(): EnvironmentConfig = EnvironmentConfig(
+    id = id,
+    name = name,
+    scale = scale,
+    offsetX = offsetX,
+    offsetY = offsetY,
+)
 
-fun EnvironmentConfig.toEnvironment(): Environment {
-    return Environment(
-        id = id,
-        name = name,
-        scale = scale,
-        offsetX = offsetX,
-        offsetY = offsetY
-    )
-}
+fun EnvironmentConfig.toEnvironment(): Environment = Environment(
+    id = id,
+    name = name,
+    scale = scale,
+    offsetX = offsetX,
+    offsetY = offsetY,
+)

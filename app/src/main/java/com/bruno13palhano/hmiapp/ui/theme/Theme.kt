@@ -29,7 +29,7 @@ private val LightColorScheme = lightColorScheme(
     onSurface = md_theme_light_onSurface,
     error = md_theme_light_error,
     onError = md_theme_light_onError,
-    outline = md_theme_light_outline
+    outline = md_theme_light_outline,
 )
 
 private val DarkColorScheme = darkColorScheme(
@@ -51,7 +51,7 @@ private val DarkColorScheme = darkColorScheme(
     onSurface = md_theme_dark_onSurface,
     error = md_theme_dark_error,
     onError = md_theme_dark_onError,
-    outline = md_theme_dark_outline
+    outline = md_theme_dark_outline,
 )
 
 @Composable
@@ -59,7 +59,7 @@ fun HMIAppTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     // Dynamic color is available on Android 12+
     dynamicColor: Boolean = true,
-    content: @Composable () -> Unit
+    content: @Composable () -> Unit,
 ) {
     val colorScheme = when {
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
@@ -74,6 +74,6 @@ fun HMIAppTheme(
     MaterialTheme(
         colorScheme = colorScheme,
         typography = Typography,
-        content = content
+        content = content,
     )
 }

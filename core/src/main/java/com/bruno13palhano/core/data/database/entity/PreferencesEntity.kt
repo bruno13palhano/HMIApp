@@ -8,13 +8,11 @@ import com.bruno13palhano.core.model.Preferences
 internal data class PreferencesEntity(
     @PrimaryKey
     var id: Long = 1L,
-    val lastEnvironmentId: Long
+    val lastEnvironmentId: Long,
 )
 
-internal fun PreferencesEntity.toDomain(): Preferences {
-    return Preferences(lastEnvironmentId = lastEnvironmentId)
-}
+internal fun PreferencesEntity.toDomain(): Preferences =
+    Preferences(lastEnvironmentId = lastEnvironmentId)
 
-internal fun Preferences.toEntity(): PreferencesEntity {
-    return PreferencesEntity(lastEnvironmentId = lastEnvironmentId)
-}
+internal fun Preferences.toEntity(): PreferencesEntity =
+    PreferencesEntity(lastEnvironmentId = lastEnvironmentId)

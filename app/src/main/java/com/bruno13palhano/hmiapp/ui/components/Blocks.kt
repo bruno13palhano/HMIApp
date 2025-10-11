@@ -60,23 +60,65 @@ fun WidgetRenderer(
         WidgetType.BUTTON -> ButtonWidget(widget, onDragEnd, onTogglePin, onEdit, onRemove) {
             onEvent(WidgetEvent.ButtonClicked(widget))
         }
-        WidgetType.SWITCH -> SwitchWidget(widget, onDragEnd, onTogglePin, onEdit, onRemove) { state ->
+        WidgetType.SWITCH -> SwitchWidget(
+            widget,
+            onDragEnd,
+            onTogglePin,
+            onEdit,
+            onRemove,
+        ) { state ->
             onEvent(WidgetEvent.SwitchToggled(widget, state))
         }
-        WidgetType.SLIDER -> SliderWidget(widget, onDragEnd, onTogglePin, onEdit, onRemove) { value ->
+        WidgetType.SLIDER -> SliderWidget(
+            widget,
+            onDragEnd,
+            onTogglePin,
+            onEdit,
+            onRemove,
+        ) { value ->
             onEvent(WidgetEvent.SliderChanged(widget, value))
         }
         WidgetType.GAUGE -> GaugeWidget(widget, onDragEnd, onTogglePin, onEdit, onRemove)
-        WidgetType.PROGRESS_BAR -> ProgressBarWidget(widget, onDragEnd, onTogglePin, onEdit, onRemove)
+        WidgetType.PROGRESS_BAR -> ProgressBarWidget(
+            widget,
+            onDragEnd,
+            onTogglePin,
+            onEdit,
+            onRemove,
+        )
         WidgetType.CHART -> ChartWidget(widget, onDragEnd, onTogglePin, onEdit, onRemove)
-        WidgetType.TOGGLE_BUTTON -> ToggleButtonWidget(widget,onDragEnd, onTogglePin, onEdit, onRemove) { state ->
+        WidgetType.TOGGLE_BUTTON -> ToggleButtonWidget(
+            widget,
+            onDragEnd,
+            onTogglePin,
+            onEdit,
+            onRemove,
+        ) { state ->
             onEvent(WidgetEvent.ToggleButtonChanged(widget, state))
         }
-        WidgetType.INPUT_FIELD -> InputFieldWidget(widget, onDragEnd, onTogglePin, onEdit, onRemove) { text ->
+        WidgetType.INPUT_FIELD -> InputFieldWidget(
+            widget,
+            onDragEnd,
+            onTogglePin,
+            onEdit,
+            onRemove,
+        ) { text ->
             onEvent(WidgetEvent.InputSubmitted(widget, text))
         }
-        WidgetType.LED_INDICATOR -> LedIndicatorWidget(widget, onDragEnd, onTogglePin, onEdit, onRemove)
-        WidgetType.DROPDOWN -> DropdownWidget(widget, onDragEnd, onTogglePin, onEdit, onRemove) { selected ->
+        WidgetType.LED_INDICATOR -> LedIndicatorWidget(
+            widget,
+            onDragEnd,
+            onTogglePin,
+            onEdit,
+            onRemove,
+        )
+        WidgetType.DROPDOWN -> DropdownWidget(
+            widget,
+            onDragEnd,
+            onTogglePin,
+            onEdit,
+            onRemove,
+        ) { selected ->
             onEvent(WidgetEvent.DropdownSelected(widget, selected))
         }
     }
@@ -96,14 +138,14 @@ fun TextWidget(
     onDragEnd: (x: Float, y: Float) -> Unit,
     onTogglePin: () -> Unit,
     onEdit: () -> Unit,
-    onRemove: () -> Unit
+    onRemove: () -> Unit,
 ) {
     WidgetBlock(
         widget = widget,
         onDragEnd = onDragEnd,
         onTogglePin = onTogglePin,
         onEdit = onEdit,
-        onRemove = onRemove
+        onRemove = onRemove,
     ) {
         Text(
             modifier = Modifier
@@ -112,7 +154,7 @@ fun TextWidget(
             textAlign = TextAlign.Center,
             style = MaterialTheme.typography.titleMedium,
             maxLines = 2,
-            overflow = TextOverflow.Ellipsis
+            overflow = TextOverflow.Ellipsis,
         )
     }
 }
@@ -124,20 +166,20 @@ fun ButtonWidget(
     onTogglePin: () -> Unit,
     onEdit: () -> Unit,
     onRemove: () -> Unit,
-    onClick: () -> Unit
+    onClick: () -> Unit,
 ) {
     WidgetBlock(
         widget = widget,
         onDragEnd = onDragEnd,
         onTogglePin = onTogglePin,
         onEdit = onEdit,
-        onRemove = onRemove
+        onRemove = onRemove,
     ) {
         Button(
             onClick = onClick,
             modifier = Modifier
                 .width((widget.width / 2).dp)
-                .height((widget.width / 2).dp)
+                .height((widget.width / 2).dp),
         ) {}
     }
 }
@@ -149,7 +191,7 @@ fun SwitchWidget(
     onTogglePin: () -> Unit,
     onEdit: () -> Unit,
     onRemove: () -> Unit,
-    onToggle: (Boolean) -> Unit
+    onToggle: (Boolean) -> Unit,
 ) {
     val initialValue = widget.extras?.firstOrNull() ?: "true"
     var checked by remember { mutableStateOf(widget.value.lowercase() == initialValue) }
@@ -158,7 +200,7 @@ fun SwitchWidget(
         onDragEnd = onDragEnd,
         onTogglePin = onTogglePin,
         onEdit = onEdit,
-        onRemove = onRemove
+        onRemove = onRemove,
     ) {
         Switch(
             modifier = Modifier,
@@ -166,7 +208,7 @@ fun SwitchWidget(
             onCheckedChange = {
                 checked = it
                 onToggle(it)
-            }
+            },
         )
     }
 }
@@ -178,7 +220,7 @@ fun SliderWidget(
     onTogglePin: () -> Unit,
     onEdit: () -> Unit,
     onRemove: () -> Unit,
-    onValueChange: (Float) -> Unit
+    onValueChange: (Float) -> Unit,
 ) {
     var sliderValue by remember { mutableFloatStateOf(widget.value.toFloatOrNull() ?: 0f) }
     WidgetBlock(
@@ -186,11 +228,11 @@ fun SliderWidget(
         onDragEnd = onDragEnd,
         onTogglePin = onTogglePin,
         onEdit = onEdit,
-        onRemove = onRemove
+        onRemove = onRemove,
     ) {
         Text(
             text = sliderValue.toString(),
-            style = MaterialTheme.typography.titleMedium
+            style = MaterialTheme.typography.titleMedium,
         )
         Box {
             Slider(
@@ -202,7 +244,7 @@ fun SliderWidget(
                 valueRange = 0f..100f,
                 modifier = Modifier
                     .padding(horizontal = 8.dp)
-                    .width(widget.width.dp)
+                    .width(widget.width.dp),
             )
         }
     }
@@ -222,25 +264,25 @@ fun GaugeWidget(
         onDragEnd = onDragEnd,
         onTogglePin = onTogglePin,
         onEdit = onEdit,
-        onRemove = onRemove
+        onRemove = onRemove,
     ) {
         Box {
             Canvas(
                 modifier = Modifier
-                    .size((widget.width / 1.75).dp)
+                    .size((widget.width / 1.75).dp),
             ) {
                 drawArc(
                     color = Color.Green,
                     startAngle = 180f,
                     sweepAngle = value * 1.8f,
                     useCenter = false,
-                    style = Stroke(width = 8f)
+                    style = Stroke(width = 8f),
                 )
             }
             Text(
                 modifier = Modifier.align(Alignment.Center),
                 text = value.toString(),
-                style = MaterialTheme.typography.titleMedium
+                style = MaterialTheme.typography.titleMedium,
             )
         }
     }
@@ -257,7 +299,7 @@ fun ProgressBarWidget(
     val progress = widget.value.toFloatOrNull() ?: 0f
     val animatedProgress by animateFloatAsState(
         targetValue = progress,
-        animationSpec = ProgressIndicatorDefaults.ProgressAnimationSpec
+        animationSpec = ProgressIndicatorDefaults.ProgressAnimationSpec,
     )
 
     WidgetBlock(
@@ -265,20 +307,20 @@ fun ProgressBarWidget(
         onDragEnd = onDragEnd,
         onTogglePin = onTogglePin,
         onEdit = onEdit,
-        onRemove = onRemove
+        onRemove = onRemove,
     ) {
         Box(modifier = Modifier.fillMaxHeight()) {
             Text(
                 modifier = Modifier.align(Alignment.TopCenter),
                 text = (progress * 100).toString(),
-                style = MaterialTheme.typography.titleMedium
+                style = MaterialTheme.typography.titleMedium,
             )
             LinearProgressIndicator(
                 modifier = Modifier
                     .width(widget.width.dp)
                     .padding(8.dp)
                     .align(Alignment.Center),
-                progress = { animatedProgress }
+                progress = { animatedProgress },
             )
         }
     }
@@ -297,11 +339,11 @@ fun ChartWidget(
         onDragEnd = onDragEnd,
         onTogglePin = onTogglePin,
         onEdit = onEdit,
-        onRemove = onRemove
+        onRemove = onRemove,
     ) {
         Box(
             modifier = Modifier.background(Color.LightGray),
-            contentAlignment = Alignment.Center
+            contentAlignment = Alignment.Center,
         ) {
             Text("Chart")
         }
@@ -315,7 +357,7 @@ fun ToggleButtonWidget(
     onTogglePin: () -> Unit,
     onEdit: () -> Unit,
     onRemove: () -> Unit,
-    onToggle: (Boolean) -> Unit
+    onToggle: (Boolean) -> Unit,
 ) {
     val initialValue = widget.extras?.firstOrNull() ?: "true"
     var toggled by remember { mutableStateOf(widget.value == initialValue) }
@@ -324,7 +366,7 @@ fun ToggleButtonWidget(
         onDragEnd = onDragEnd,
         onTogglePin = onTogglePin,
         onEdit = onEdit,
-        onRemove = onRemove
+        onRemove = onRemove,
     ) {
         Button(
             onClick = {
@@ -332,16 +374,16 @@ fun ToggleButtonWidget(
                 onToggle(toggled)
             },
             colors = ButtonDefaults.buttonColors(
-                containerColor = if (toggled) Color.Green else Color.Red
+                containerColor = if (toggled) Color.Green else Color.Red,
             ),
             modifier = Modifier
                 .width((widget.width / 2).dp)
-                .height((widget.width / 2).dp)
+                .height((widget.width / 2).dp),
         ) {
             val text = if (toggled) "ON" else "OFF"
             Text(
                 text = text,
-                style = MaterialTheme.typography.titleMedium
+                style = MaterialTheme.typography.titleMedium,
             )
         }
     }
@@ -354,7 +396,7 @@ fun InputFieldWidget(
     onTogglePin: () -> Unit,
     onEdit: () -> Unit,
     onRemove: () -> Unit,
-    onSubmit: (String) -> Unit
+    onSubmit: (String) -> Unit,
 ) {
     var text by remember { mutableStateOf(widget.value) }
     WidgetBlock(
@@ -362,7 +404,7 @@ fun InputFieldWidget(
         onDragEnd = onDragEnd,
         onTogglePin = onTogglePin,
         onEdit = onEdit,
-        onRemove = onRemove
+        onRemove = onRemove,
     ) {
         OutlinedTextField(
             value = text,
@@ -377,7 +419,7 @@ fun InputFieldWidget(
             },
             singleLine = true,
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-            keyboardActions = KeyboardActions(onDone = { defaultKeyboardAction(ImeAction.Done) })
+            keyboardActions = KeyboardActions(onDone = { defaultKeyboardAction(ImeAction.Done) }),
         )
     }
 }
@@ -401,20 +443,20 @@ fun LedIndicatorWidget(
         onDragEnd = onDragEnd,
         onTogglePin = onTogglePin,
         onEdit = onEdit,
-        onRemove = onRemove
+        onRemove = onRemove,
     ) {
         Box(modifier = Modifier.fillMaxHeight()) {
             Text(
                 modifier = Modifier.align(Alignment.TopCenter),
                 text = widget.value,
-                style = MaterialTheme.typography.titleMedium
+                style = MaterialTheme.typography.titleMedium,
             )
             Box(
                 modifier = Modifier
                     .padding(top = 16.dp)
                     .size((widget.width / 3).dp)
                     .background(color, shape = CircleShape)
-                    .align(Alignment.Center)
+                    .align(Alignment.Center),
 
             )
         }
@@ -428,7 +470,7 @@ fun DropdownWidget(
     onTogglePin: () -> Unit,
     onEdit: () -> Unit,
     onRemove: () -> Unit,
-    onSelected: (String) -> Unit
+    onSelected: (String) -> Unit,
 ) {
     var expanded by remember { mutableStateOf(false) }
     var selected by remember { mutableStateOf(widget.value) }
@@ -437,18 +479,18 @@ fun DropdownWidget(
         onDragEnd = onDragEnd,
         onTogglePin = onTogglePin,
         onEdit = onEdit,
-        onRemove = onRemove
+        onRemove = onRemove,
     ) {
         Text(
             text = selected,
             modifier = Modifier
                 .clickable { expanded = true }
                 .padding(8.dp),
-            style = MaterialTheme.typography.titleMedium
+            style = MaterialTheme.typography.titleMedium,
         )
         DropdownMenu(
             expanded = expanded,
-            onDismissRequest = { expanded = false }
+            onDismissRequest = { expanded = false },
         ) {
             widget.extras?.let {
                 it.forEach { option ->
@@ -458,7 +500,7 @@ fun DropdownWidget(
                             selected = option
                             expanded = false
                             onSelected(option)
-                        }
+                        },
                     )
                 }
             }

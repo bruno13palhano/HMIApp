@@ -4,9 +4,7 @@ import com.bruno13palhano.core.data.repository.EnvironmentRepository
 import com.bruno13palhano.core.model.Environment
 import kotlinx.coroutines.flow.Flow
 
-class EnvironmentManager(
-    private val environmentRepository: EnvironmentRepository
-) {
+class EnvironmentManager(private val environmentRepository: EnvironmentRepository) {
     suspend fun addEnvironment(environment: Environment): Environment? {
         environmentRepository.insert(environment = environment)
         return environmentRepository.getLast()
@@ -22,9 +20,7 @@ class EnvironmentManager(
         return environment
     }
 
-    fun loadEnvironments(): Flow<List<Environment>> {
-        return environmentRepository.getAll()
-    }
+    fun loadEnvironments(): Flow<List<Environment>> = environmentRepository.getAll()
 
     suspend fun loadPreviousEnvironment(): Environment? {
         val id = environmentRepository.getLastEnvironmentId()

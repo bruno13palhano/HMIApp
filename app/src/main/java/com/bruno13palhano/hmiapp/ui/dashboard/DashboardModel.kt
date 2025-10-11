@@ -21,7 +21,7 @@ data class DashboardState(
             "",
             1f,
             0f,
-            0f
+            0f,
         ),
     val id: String = "",
     val label: String = "",
@@ -50,11 +50,8 @@ sealed interface DashboardEvent {
     data class OnWidgetDragEnd(val id: String, val x: Float, val y: Float) : DashboardEvent
     data class OpenEditWidgetDialog(val id: String) : DashboardEvent
     data class OnWidgetEvent(val widgetEvent: WidgetEvent) : DashboardEvent
-    data class OnUpdateCanvasState(
-        val scale: Float,
-        val offsetX: Float,
-        val offsetY: Float
-    ) : DashboardEvent
+    data class OnUpdateCanvasState(val scale: Float, val offsetX: Float, val offsetY: Float) :
+        DashboardEvent
     data class UpdateLabel(val label: String) : DashboardEvent
     data class UpdateEndpoint(val endpoint: String) : DashboardEvent
     data class UpdateExtra(val index: Int, val value: String) : DashboardEvent
@@ -87,7 +84,11 @@ sealed interface DashboardSideEffect {
     data class NavigateTo(val destination: NavKey) : DashboardSideEffect
     data object LaunchExportWidgetsConfig : DashboardSideEffect
     data object LaunchImportWidgetsConfig : DashboardSideEffect
-    data class NotifyLimitExceeded(val widgetLabel: String, val currentValue: String, val limit: String) : DashboardSideEffect
+    data class NotifyLimitExceeded(
+        val widgetLabel: String,
+        val currentValue: String,
+        val limit: String,
+    ) : DashboardSideEffect
 }
 
 enum class DashboardInfo {
@@ -95,10 +96,10 @@ enum class DashboardInfo {
     EXPORT_SUCCESS,
     IMPORT_SUCCESS,
     EXPORT_FAILURE,
-    IMPORT_FAILURE
+    IMPORT_FAILURE,
 }
 
 enum class ConfigurationOptions {
     EXPORT,
-    IMPORT
+    IMPORT,
 }

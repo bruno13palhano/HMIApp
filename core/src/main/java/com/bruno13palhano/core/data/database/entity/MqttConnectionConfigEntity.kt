@@ -16,7 +16,7 @@ internal data class MqttConnectionConfigEntity(
     val password: EncryptedString? = null,
     val caBytes: EncryptedBytes? = null,
     val clientP12Bytes: EncryptedBytes? = null,
-    val p12Password: EncryptedString? = null
+    val p12Password: EncryptedString? = null,
 )
 
 internal fun MqttConnectionConfigEntity.toDomain(): MqttConnectionConfig = MqttConnectionConfig(
@@ -27,7 +27,7 @@ internal fun MqttConnectionConfigEntity.toDomain(): MqttConnectionConfig = MqttC
     password = password?.value,
     caBytes = caBytes?.value,
     clientP12Bytes = clientP12Bytes?.value,
-    p12Password = p12Password?.value
+    p12Password = p12Password?.value,
 )
 
 internal fun MqttConnectionConfig.toEntity(): MqttConnectionConfigEntity =
@@ -40,5 +40,5 @@ internal fun MqttConnectionConfig.toEntity(): MqttConnectionConfigEntity =
         password = EncryptedString(value = password),
         caBytes = EncryptedBytes(value = caBytes),
         clientP12Bytes = EncryptedBytes(value = clientP12Bytes),
-        p12Password = EncryptedString(value = p12Password)
+        p12Password = EncryptedString(value = p12Password),
     )

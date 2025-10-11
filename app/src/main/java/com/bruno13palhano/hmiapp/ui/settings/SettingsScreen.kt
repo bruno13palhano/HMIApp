@@ -62,8 +62,8 @@ fun SettingsScreen(
         entryPoint = ViewModelFactoryEntryPoint::class.java,
         factorySelector = { entryPoint, state ->
             entryPoint.settingsViewModelFactory().create(state = state)
-        }
-    )
+        },
+    ),
 ) {
     val state by viewModel.container.state.collectAsStateWithLifecycle()
     val sideEffect = rememberFlowWithLifecycle(flow = viewModel.container.sideEffect)
@@ -85,8 +85,11 @@ fun SettingsScreen(
             when (effect) {
                 SettingsSideEffect.ToggleMenu -> {
                     scope.launch {
-                        if (drawerState.isOpen) drawerState.close()
-                        else drawerState.open()
+                        if (drawerState.isOpen) {
+                            drawerState.close()
+                        } else {
+                            drawerState.open()
+                        }
                     }
                 }
 
@@ -100,7 +103,7 @@ fun SettingsScreen(
                     scope.launch {
                         snackbarHostState.showSnackbar(
                             message = currentInfo,
-                            withDismissAction = true
+                            withDismissAction = true,
                         )
                     }
                 }
@@ -114,7 +117,7 @@ fun SettingsScreen(
         drawerState = drawerState,
         snackbarHostState = snackbarHostState,
         state = state,
-        onEvent = viewModel::onEvent
+        onEvent = viewModel::onEvent,
     )
 }
 
@@ -124,12 +127,12 @@ private fun SettingsContent(
     drawerState: DrawerState,
     snackbarHostState: SnackbarHostState,
     state: SettingsState,
-    onEvent: (event: SettingsEvent) -> Unit
+    onEvent: (event: SettingsEvent) -> Unit,
 ) {
     val content = LocalContext.current
 
     val pickCaLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.OpenDocument()
+        contract = ActivityResultContracts.OpenDocument(),
     ) { uri ->
         uri?.let {
             onEvent(SettingsEvent.LoadCA(caCert = content.uriToByteArray(uri = it)))
@@ -137,11 +140,11 @@ private fun SettingsContent(
     }
 
     val pickClientLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.OpenDocument()
+        contract = ActivityResultContracts.OpenDocument(),
     ) { uri ->
         uri?.let {
             onEvent(
-                SettingsEvent.LoadClientCert(clientCert = content.uriToByteArray(uri = it))
+                SettingsEvent.LoadClientCert(clientCert = content.uriToByteArray(uri = it)),
             )
         }
     }
@@ -161,7 +164,7 @@ private fun SettingsContent(
                     IconButton(onClick = { onEvent(SettingsEvent.ToggleMenu) }) {
                         Icon(
                             imageVector = Icons.Outlined.Menu,
-                            contentDescription = stringResource(id = R.string.menu_button)
+                            contentDescription = stringResource(id = R.string.menu_button),
                         )
                     }
                 },
@@ -169,7 +172,7 @@ private fun SettingsContent(
                     IconButton(onClick = { onEvent(SettingsEvent.ToggleCredentialDialog) }) {
                         Icon(
                             imageVector = Icons.Outlined.MoreVert,
-                            contentDescription = null
+                            contentDescription = null,
                         )
 
                         VertMenu(
@@ -185,13 +188,13 @@ private fun SettingsContent(
                                         pickClientLauncher.launch(arrayOf("*/*"))
                                     }
                                 }
-                            }
+                            },
                         )
                     }
-                }
+                },
             )
         },
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
     ) {
         DrawerMenu(
             modifier = Modifier.padding(it),
@@ -204,14 +207,14 @@ private fun SettingsContent(
                 CircularProgress(
                     modifier = Modifier
                         .padding(it)
-                        .fillMaxSize()
+                        .fillMaxSize(),
                 )
             } else {
                 Column(
                     modifier = Modifier
                         .padding(it)
                         .fillMaxSize()
-                        .verticalScroll(rememberScrollState())
+                        .verticalScroll(rememberScrollState()),
                 ) {
                     CustomTextField(
                         modifier = Modifier
@@ -224,7 +227,7 @@ private fun SettingsContent(
                         enabled = !state.isConnected,
                         label = stringResource(id = R.string.client_id),
                         placeholder = stringResource(id = R.string.client_id_placeholder),
-                        isError = state.isClientIdInvalid
+                        isError = state.isClientIdInvalid,
                     )
 
                     CustomTextField(
@@ -238,7 +241,7 @@ private fun SettingsContent(
                         enabled = !state.isConnected,
                         label = stringResource(id = R.string.host),
                         placeholder = stringResource(id = R.string.host_placeholder),
-                        isError = state.isHostInvalid
+                        isError = state.isHostInvalid,
                     )
 
                     CustomIntegerField(
@@ -252,7 +255,7 @@ private fun SettingsContent(
                         enabled = !state.isConnected,
                         label = stringResource(id = R.string.port),
                         placeholder = stringResource(id = R.string.port_placeholder),
-                        isError = state.isPortInvalid
+                        isError = state.isPortInvalid,
                     )
 
                     CustomTextField(
@@ -277,7 +280,9 @@ private fun SettingsContent(
                         onValueChange = { password ->
                             onEvent(SettingsEvent.UpdatePassword(password = password))
                         },
-                        togglePasswordVisibility = { onEvent(SettingsEvent.TogglePasswordVisibility) },
+                        togglePasswordVisibility = {
+                            onEvent(SettingsEvent.TogglePasswordVisibility)
+                        },
                         enabled = !state.isConnected,
                         label = stringResource(id = R.string.password),
                         placeholder = stringResource(id = R.string.password_placeholder),
@@ -292,7 +297,9 @@ private fun SettingsContent(
                         onValueChange = { p12Password ->
                             onEvent(SettingsEvent.UpdateP12Password(p12Password = p12Password))
                         },
-                        togglePasswordVisibility = { onEvent(SettingsEvent.ToggleP12PasswordVisibility) },
+                        togglePasswordVisibility = {
+                            onEvent(SettingsEvent.ToggleP12PasswordVisibility)
+                        },
                         enabled = !state.isConnected,
                         label = stringResource(id = R.string.p12_password),
                         placeholder = stringResource(id = R.string.p12_password_placeholder),
@@ -303,14 +310,14 @@ private fun SettingsContent(
                             .padding(vertical = 32.dp)
                             .fillMaxWidth()
                             .weight(1f),
-                        verticalArrangement = Arrangement.Bottom
+                        verticalArrangement = Arrangement.Bottom,
                     ) {
                         Button(
                             modifier = Modifier
                                 .padding(horizontal = 8.dp)
                                 .fillMaxWidth(),
                             onClick = { onEvent(SettingsEvent.ConnectMqtt) },
-                            enabled = !state.isConnected
+                            enabled = !state.isConnected,
                         ) {
                             Text(text = stringResource(id = R.string.connect))
                         }
@@ -320,7 +327,7 @@ private fun SettingsContent(
                                 .padding(horizontal = 8.dp)
                                 .fillMaxWidth(),
                             onClick = { onEvent(SettingsEvent.DisconnectMqtt) },
-                            enabled = state.isConnected
+                            enabled = state.isConnected,
                         ) {
                             Text(text = stringResource(id = R.string.disconnect))
                         }
@@ -333,30 +340,26 @@ private fun SettingsContent(
 
 enum class CredentialOptions {
     CA,
-    P12
+    P12,
 }
 
-fun Context.uriToByteArray(uri: Uri): ByteArray? {
-    return contentResolver.openInputStream(uri)?.use { inputStream ->
+fun Context.uriToByteArray(uri: Uri): ByteArray? =
+    contentResolver.openInputStream(uri)?.use { inputStream ->
         inputStream.readBytes()
     }
-}
 
 @Composable
-private fun getSettingInfo(): Map<SettingsInfo, String> {
-    return mapOf(
-        SettingsInfo.CLIENT_ID to stringResource(R.string.client_id_error),
-        SettingsInfo.HOST to stringResource(R.string.host_error),
-        SettingsInfo.PORT to stringResource(R.string.port_error),
-        SettingsInfo.USERNAME to stringResource(R.string.username_error),
-        SettingsInfo.PASSWORD to stringResource(R.string.password_error),
-        SettingsInfo.CONNECT_SUCCESS to stringResource(R.string.connect_success),
-        SettingsInfo.CONNECT_FAILURE to stringResource(R.string.connect_error),
-        SettingsInfo.DISCONNECT_SUCCESS to stringResource(R.string.disconnect_success),
-        SettingsInfo.DISCONNECT_FAILURE to stringResource(R.string.disconnect_error),
-    )
-}
-
+private fun getSettingInfo(): Map<SettingsInfo, String> = mapOf(
+    SettingsInfo.CLIENT_ID to stringResource(R.string.client_id_error),
+    SettingsInfo.HOST to stringResource(R.string.host_error),
+    SettingsInfo.PORT to stringResource(R.string.port_error),
+    SettingsInfo.USERNAME to stringResource(R.string.username_error),
+    SettingsInfo.PASSWORD to stringResource(R.string.password_error),
+    SettingsInfo.CONNECT_SUCCESS to stringResource(R.string.connect_success),
+    SettingsInfo.CONNECT_FAILURE to stringResource(R.string.connect_error),
+    SettingsInfo.DISCONNECT_SUCCESS to stringResource(R.string.disconnect_success),
+    SettingsInfo.DISCONNECT_FAILURE to stringResource(R.string.disconnect_error),
+)
 
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
@@ -366,7 +369,7 @@ private fun SettingsPreview() {
             drawerState = DrawerState(initialValue = DrawerValue.Closed),
             snackbarHostState = SnackbarHostState(),
             state = SettingsState(),
-            onEvent = {}
+            onEvent = {},
         )
     }
 }

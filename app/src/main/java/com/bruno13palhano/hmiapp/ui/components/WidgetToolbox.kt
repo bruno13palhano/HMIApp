@@ -33,11 +33,7 @@ import com.bruno13palhano.hmiapp.ui.theme.HMIAppTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun WidgetToolbox(
-    expanded: Boolean,
-    onAdd: (WidgetType) -> Unit,
-    onExpandedClick: () -> Unit
-) {
+fun WidgetToolbox(expanded: Boolean, onAdd: (WidgetType) -> Unit, onExpandedClick: () -> Unit) {
     if (expanded) {
         Column {
             Box(modifier = Modifier.fillMaxWidth()) {
@@ -45,7 +41,7 @@ fun WidgetToolbox(
                     onClick = onExpandedClick,
                     modifier = Modifier
                         .padding(bottom = 16.dp)
-                        .align(Alignment.Center)
+                        .align(Alignment.Center),
                 ) {
                     var contentDescription = stringResource(id = R.string.hide_widget_toolbox)
                     var icon = Icons.Outlined.ExpandLess
@@ -58,7 +54,7 @@ fun WidgetToolbox(
                     Icon(
                         imageVector = icon,
                         contentDescription = contentDescription,
-                        tint = MaterialTheme.colorScheme.onSecondary
+                        tint = MaterialTheme.colorScheme.onSecondary,
                     )
                 }
             }
@@ -68,17 +64,17 @@ fun WidgetToolbox(
                     .padding(16.dp)
                     .background(
                         MaterialTheme.colorScheme.background,
-                        RoundedCornerShape(5)
+                        RoundedCornerShape(5),
                     )
                     .border(1.dp, MaterialTheme.colorScheme.secondary, RoundedCornerShape(5))
                     .padding(8.dp)
                     .sizeIn(maxHeight = 400.dp)
-                    .verticalScroll(rememberScrollState())
+                    .verticalScroll(rememberScrollState()),
             ) {
                 WidgetType.entries.forEach { type ->
                     Button(
                         onClick = { onAdd(type) },
-                        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
                     ) {
                         Text(text = "+ ${getWidgetTypeName(widgetType = type)}")
                     }
@@ -89,20 +85,18 @@ fun WidgetToolbox(
 }
 
 @Composable
-fun getWidgetTypeName(widgetType: WidgetType): String {
-    return when(widgetType) {
-        WidgetType.TEXT -> stringResource(id = R.string.widget_text)
-        WidgetType.BUTTON -> stringResource(id = R.string.widget_button)
-        WidgetType.SWITCH -> stringResource(id = R.string.widget_switch)
-        WidgetType.SLIDER -> stringResource(id = R.string.widget_slider)
-        WidgetType.GAUGE -> stringResource(id = R.string.widget_gauge)
-        WidgetType.PROGRESS_BAR -> stringResource(id = R.string.widget_progress_bar)
-        WidgetType.CHART -> stringResource(id = R.string.widget_chart)
-        WidgetType.TOGGLE_BUTTON -> stringResource(id = R.string.widget_toggle_button)
-        WidgetType.INPUT_FIELD -> stringResource(id = R.string.widget_input_field)
-        WidgetType.LED_INDICATOR -> stringResource(id = R.string.widget_led_indicator)
-        WidgetType.DROPDOWN -> stringResource(id = R.string.widget_dropdown)
-    }
+fun getWidgetTypeName(widgetType: WidgetType): String = when (widgetType) {
+    WidgetType.TEXT -> stringResource(id = R.string.widget_text)
+    WidgetType.BUTTON -> stringResource(id = R.string.widget_button)
+    WidgetType.SWITCH -> stringResource(id = R.string.widget_switch)
+    WidgetType.SLIDER -> stringResource(id = R.string.widget_slider)
+    WidgetType.GAUGE -> stringResource(id = R.string.widget_gauge)
+    WidgetType.PROGRESS_BAR -> stringResource(id = R.string.widget_progress_bar)
+    WidgetType.CHART -> stringResource(id = R.string.widget_chart)
+    WidgetType.TOGGLE_BUTTON -> stringResource(id = R.string.widget_toggle_button)
+    WidgetType.INPUT_FIELD -> stringResource(id = R.string.widget_input_field)
+    WidgetType.LED_INDICATOR -> stringResource(id = R.string.widget_led_indicator)
+    WidgetType.DROPDOWN -> stringResource(id = R.string.widget_dropdown)
 }
 
 @Preview(showBackground = true, showSystemUi = true)
@@ -115,7 +109,7 @@ private fun WidgetToolboxPreview() {
                 onAdd = {
                     listOf(WidgetType.TEXT, WidgetType.BUTTON, WidgetType.SWITCH)
                 },
-                onExpandedClick = {}
+                onExpandedClick = {},
             )
         }
     }

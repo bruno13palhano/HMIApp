@@ -16,7 +16,7 @@ import kotlinx.coroutines.flow.Flow
 class WidgetManager(
     private val widgetRepository: WidgetRepository,
     private val environmentRepository: EnvironmentRepository,
-    private val mqttClientRepository: MqttClientRepository
+    private val mqttClientRepository: MqttClientRepository,
 ) {
     suspend fun addWidget(
         environmentId: Long,
@@ -24,7 +24,7 @@ class WidgetManager(
         label: String,
         endpoint: String,
         limit: String?,
-        extras: List<String>?
+        extras: List<String>?,
     ) {
         val widget = Widget(
             type = type,
@@ -32,7 +32,7 @@ class WidgetManager(
             dataSource = DataSource.MQTT(topic = endpoint),
             environmentId = environmentId,
             limit = limit,
-            extras = extras
+            extras = extras,
         )
         widgetRepository.insert(widget = widget)
     }
@@ -53,13 +53,10 @@ class WidgetManager(
         widgetRepository.updatePosition(id = id, x = x, y = y)
     }
 
-    suspend fun loadWidgets(environmentId: Long): List<Widget> {
-        return widgetRepository.getWidgets(environmentId = environmentId)
-    }
+    suspend fun loadWidgets(environmentId: Long): List<Widget> =
+        widgetRepository.getWidgets(environmentId = environmentId)
 
-    fun observeMessages(): Flow<Pair<String, String>> {
-        return mqttClientRepository.incomingMessages()
-    }
+    fun observeMessages(): Flow<Pair<String, String>> = mqttClientRepository.incomingMessages()
 
     suspend fun subscribeToTopics(topics: List<String>) {
         topics.forEach { topic -> mqttClientRepository.subscribeToTopic(topic = topic) }
@@ -77,7 +74,7 @@ class WidgetManager(
             .map { it.toWidgetConfig() }
         return LayoutConfig(
             environment = environment.toEnvironmentConfig(),
-            widgets = widgets
+            widgets = widgets,
         )
     }
 

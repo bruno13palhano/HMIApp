@@ -14,12 +14,12 @@ import com.bruno13palhano.hmiapp.ui.components.extractEndpoint
 import com.bruno13palhano.hmiapp.ui.shared.Container
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import java.io.InputStream
+import java.io.OutputStream
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.serialization.json.Json
-import java.io.InputStream
-import java.io.OutputStream
 
 class DashboardViewModel @AssistedInject constructor(
     private val widgetRepository: WidgetRepository,
@@ -29,16 +29,16 @@ class DashboardViewModel @AssistedInject constructor(
 ) : ViewModel() {
     val container: Container<DashboardState, DashboardSideEffect> = Container(
         initialSTATE = initialState,
-        scope = viewModelScope
+        scope = viewModelScope,
     )
 
     private val widgetManager = WidgetManager(
         widgetRepository = widgetRepository,
         environmentRepository = environmentRepository,
-        mqttClientRepository = mqttClientRepository
+        mqttClientRepository = mqttClientRepository,
     )
     private val environmentManager = EnvironmentManager(
-        environmentRepository = environmentRepository
+        environmentRepository = environmentRepository,
     )
 
     private val widgetValues = mutableMapOf<String, String>()
@@ -51,13 +51,13 @@ class DashboardViewModel @AssistedInject constructor(
             is DashboardEvent.OnWidgetDragEnd -> onWidgetDragEnd(
                 id = event.id,
                 x = event.x,
-                y = event.y
+                y = event.y,
             )
             is DashboardEvent.OpenEditWidgetDialog -> openEditWidgetDialog(id = event.id)
             is DashboardEvent.OnUpdateCanvasState -> onUpdateCanvasState(
                 scale = event.scale,
                 offsetX = event.offsetX,
-                offsetY = event.offsetY
+                offsetY = event.offsetY,
             )
             is DashboardEvent.OnToggleWidgetPin -> onToggleWidgetPin(id = event.id)
             is DashboardEvent.OnWidgetEvent -> onWidgetEvent(widgetEvent = event.widgetEvent)
@@ -67,7 +67,9 @@ class DashboardViewModel @AssistedInject constructor(
             DashboardEvent.ToggleIsToolboxExpanded -> toggleIsToolboxExpanded()
             DashboardEvent.ToggleMenu -> toggleMenu()
             DashboardEvent.ToggleDashboardOptions -> toggleDashboardOptions()
-            is DashboardEvent.OpenEnvironmentInputDialog -> openEnvironmentInputDialog(isEdit = event.isEdit)
+            is DashboardEvent.OpenEnvironmentInputDialog -> openEnvironmentInputDialog(
+                isEdit = event.isEdit,
+            )
             DashboardEvent.CloseEnvironmentInputDialog -> closeEnvironmentInputDialog()
             DashboardEvent.HideWidgetConfig -> hideWidgetDialog()
             is DashboardEvent.ShowWidgetDialog -> showWidgetDialog(type = event.type)
@@ -96,20 +98,18 @@ class DashboardViewModel @AssistedInject constructor(
                 isWidgetInputDialogVisible = true,
                 type = type,
                 hasExtras = type == WidgetType.DROPDOWN,
-                isWidgetWithLimit = hasLimit(type = type)
+                isWidgetWithLimit = hasLimit(type = type),
             )
         }
     }
 
-    private fun hasLimit(type: WidgetType): Boolean {
-        return when(type) {
-            WidgetType.TEXT -> true
-            WidgetType.GAUGE -> true
-            WidgetType.PROGRESS_BAR -> true
-            WidgetType.CHART -> true
-            WidgetType.LED_INDICATOR -> true
-            else -> false
-        }
+    private fun hasLimit(type: WidgetType): Boolean = when (type) {
+        WidgetType.TEXT -> true
+        WidgetType.GAUGE -> true
+        WidgetType.PROGRESS_BAR -> true
+        WidgetType.CHART -> true
+        WidgetType.LED_INDICATOR -> true
+        else -> false
     }
 
     private fun hideWidgetDialog() = container.intent {
@@ -122,7 +122,7 @@ class DashboardViewModel @AssistedInject constructor(
                 endpoint = "",
                 extras = emptyList(),
                 hasExtras = false,
-                isWidgetWithLimit = false
+                isWidgetWithLimit = false,
             )
         }
     }
@@ -175,7 +175,7 @@ class DashboardViewModel @AssistedInject constructor(
             id = 0L,
             scale = 1f,
             offsetX = 0f,
-            offsetY = 0f
+            offsetY = 0f,
         )
         val newEnvironment = environmentManager.addEnvironment(environment = environment)
         if (newEnvironment == null) return@intent
@@ -218,7 +218,7 @@ class DashboardViewModel @AssistedInject constructor(
             label = state.value.label,
             endpoint = state.value.endpoint,
             limit = state.value.limit,
-            extras = state.value.extras
+            extras = state.value.extras,
         )
         val widgets = widgetManager.loadWidgets(environmentId = environmentId).map {
             it.copy(value = widgetValues[it.id] ?: "")
@@ -228,7 +228,7 @@ class DashboardViewModel @AssistedInject constructor(
         widgetManager.subscribeToTopics(
             widgets.mapNotNull {
                 (it.dataSource as? DataSource.MQTT)?.topic
-            }
+            },
         )
         refreshWidgets(environmentId = environmentId)
     }
@@ -244,7 +244,7 @@ class DashboardViewModel @AssistedInject constructor(
             type = state.value.type,
             label = state.value.label,
             dataSource = DataSource.MQTT(topic = state.value.endpoint),
-            extras = state.value.extras
+            extras = state.value.extras,
         )
 
         widgetManager.editWidget(widget = updated)
@@ -284,7 +284,7 @@ class DashboardViewModel @AssistedInject constructor(
                         is DataSource.HTTP -> extractEndpoint(url = dataSource.url)
                     },
                     extras = it.extras ?: emptyList(),
-                    limit = it.limit
+                    limit = it.limit,
                 )
             }
         }
@@ -304,28 +304,41 @@ class DashboardViewModel @AssistedInject constructor(
             widgetManager.onWidgetDragEnd(id = id, x = x, y = y)
         }
 
-    private fun onWidgetEvent(widgetEvent: WidgetEvent) = container.intent(dispatcher = Dispatchers.IO) {
-        when (widgetEvent) {
-            is WidgetEvent.ButtonClicked -> {
-                widgetManager.publish(widget = widgetEvent.widget, message = "1")
-            }
-            is WidgetEvent.DropdownSelected -> {
-                widgetManager.publish(widget = widgetEvent.widget, message = widgetEvent.selected)
-            }
-            is WidgetEvent.InputSubmitted -> {
-                widgetManager.publish(widget = widgetEvent.widget, message = widgetEvent.text)
-            }
-            is WidgetEvent.SliderChanged -> {
-                widgetManager.publish(widget = widgetEvent.widget, message = widgetEvent.value.toString())
-            }
-            is WidgetEvent.SwitchToggled -> {
-                widgetManager.publish(widget = widgetEvent.widget, message = widgetEvent.state.toString())
-            }
-            is WidgetEvent.ToggleButtonChanged -> {
-                widgetManager.publish(widget = widgetEvent.widget, message = widgetEvent.state.toString())
+    private fun onWidgetEvent(widgetEvent: WidgetEvent) =
+        container.intent(dispatcher = Dispatchers.IO) {
+            when (widgetEvent) {
+                is WidgetEvent.ButtonClicked -> {
+                    widgetManager.publish(widget = widgetEvent.widget, message = "1")
+                }
+                is WidgetEvent.DropdownSelected -> {
+                    widgetManager.publish(
+                        widget = widgetEvent.widget,
+                        message = widgetEvent.selected,
+                    )
+                }
+                is WidgetEvent.InputSubmitted -> {
+                    widgetManager.publish(widget = widgetEvent.widget, message = widgetEvent.text)
+                }
+                is WidgetEvent.SliderChanged -> {
+                    widgetManager.publish(
+                        widget = widgetEvent.widget,
+                        message = widgetEvent.value.toString(),
+                    )
+                }
+                is WidgetEvent.SwitchToggled -> {
+                    widgetManager.publish(
+                        widget = widgetEvent.widget,
+                        message = widgetEvent.state.toString(),
+                    )
+                }
+                is WidgetEvent.ToggleButtonChanged -> {
+                    widgetManager.publish(
+                        widget = widgetEvent.widget,
+                        message = widgetEvent.state.toString(),
+                    )
+                }
             }
         }
-    }
 
     private fun toggleIsToolboxExpanded() = container.intent {
         reduce {
@@ -346,7 +359,7 @@ class DashboardViewModel @AssistedInject constructor(
             copy(
                 isEnvironmentDialogVisible = true,
                 isDashboardOptionsExpanded = false,
-                isEditEnvironmentName = isEdit
+                isEditEnvironmentName = isEdit,
             )
         }
     }
@@ -380,7 +393,7 @@ class DashboardViewModel @AssistedInject constructor(
             mqttClientRepository.isConnected().collect { isConnected ->
                 if (!isConnected) {
                     postSideEffect(
-                        effect = DashboardSideEffect.ShowInfo(info = DashboardInfo.DISCONNECTED)
+                        effect = DashboardSideEffect.ShowInfo(info = DashboardInfo.DISCONNECTED),
                     )
                 }
             }
@@ -392,7 +405,7 @@ class DashboardViewModel @AssistedInject constructor(
             val currentEnvironment = state.value.environment.copy(
                 scale = scale,
                 offsetX = offsetX,
-                offsetY = offsetY
+                offsetY = offsetY,
             )
             environmentManager.updateEnvironmentState(environment = currentEnvironment)
         }
@@ -411,13 +424,15 @@ class DashboardViewModel @AssistedInject constructor(
                             effect = DashboardSideEffect.NotifyLimitExceeded(
                                 widgetLabel = widget.label,
                                 currentValue = current.toString(),
-                                limit = limit.toString()
-                            )
+                                limit = limit.toString(),
+                            ),
                         )
                     }
 
                     updated
-                } else widget
+                } else {
+                    widget
+                }
             }
             reduce { copy(widgets = updateWidgets) }
         }
@@ -434,23 +449,23 @@ class DashboardViewModel @AssistedInject constructor(
                 val environmentId = state.value.environment.id.takeIf { it != 0L }
                     ?: environmentRepository.getLastEnvironmentId()
                     ?: return@intent postSideEffect(
-                        effect = DashboardSideEffect.ShowInfo(info = DashboardInfo.EXPORT_FAILURE)
+                        effect = DashboardSideEffect.ShowInfo(info = DashboardInfo.EXPORT_FAILURE),
                     )
 
                 val layout = widgetManager.exportLayout(environmentId = environmentId)
                     ?: return@intent postSideEffect(
-                        effect = DashboardSideEffect.ShowInfo(info = DashboardInfo.EXPORT_FAILURE)
+                        effect = DashboardSideEffect.ShowInfo(info = DashboardInfo.EXPORT_FAILURE),
                     )
 
                 val json = Json.encodeToString(layout)
                 stream.bufferedWriter().use { it.write(json) }
 
                 postSideEffect(
-                    effect = DashboardSideEffect.ShowInfo(info = DashboardInfo.EXPORT_SUCCESS)
+                    effect = DashboardSideEffect.ShowInfo(info = DashboardInfo.EXPORT_SUCCESS),
                 )
             } catch (_: Exception) {
                 postSideEffect(
-                    effect = DashboardSideEffect.ShowInfo(info = DashboardInfo.EXPORT_FAILURE)
+                    effect = DashboardSideEffect.ShowInfo(info = DashboardInfo.EXPORT_FAILURE),
                 )
             }
         }
@@ -469,16 +484,16 @@ class DashboardViewModel @AssistedInject constructor(
                 }
                 reduce { copy(widgets = widgets) }
                 widgetManager.subscribeToTopics(
-                    topics = widgets.mapNotNull { (it.dataSource as? DataSource.MQTT)?.topic }
+                    topics = widgets.mapNotNull { (it.dataSource as? DataSource.MQTT)?.topic },
                 )
 
                 postSideEffect(
-                    effect = DashboardSideEffect.ShowInfo(info = DashboardInfo.IMPORT_SUCCESS)
+                    effect = DashboardSideEffect.ShowInfo(info = DashboardInfo.IMPORT_SUCCESS),
                 )
             }
         } catch (_: Exception) {
             postSideEffect(
-                effect = DashboardSideEffect.ShowInfo(info = DashboardInfo.IMPORT_FAILURE)
+                effect = DashboardSideEffect.ShowInfo(info = DashboardInfo.IMPORT_FAILURE),
             )
         }
     }

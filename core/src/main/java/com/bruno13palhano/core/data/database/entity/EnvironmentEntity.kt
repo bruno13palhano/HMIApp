@@ -11,7 +11,7 @@ data class EnvironmentEntity(
     val name: String,
     val scale: Float,
     val offsetX: Float,
-    val offsetY: Float
+    val offsetY: Float,
 )
 
 internal fun EnvironmentEntity.toDomain() = Environment(
@@ -19,7 +19,7 @@ internal fun EnvironmentEntity.toDomain() = Environment(
     name = name,
     scale = scale,
     offsetX = offsetX,
-    offsetY = offsetY
+    offsetY = offsetY,
 )
 
 internal fun Environment.toEntity() = EnvironmentEntity(
@@ -27,5 +27,5 @@ internal fun Environment.toEntity() = EnvironmentEntity(
     name = name,
     scale = scale,
     offsetX = offsetX,
-    offsetY = offsetY
+    offsetY = offsetY,
 )

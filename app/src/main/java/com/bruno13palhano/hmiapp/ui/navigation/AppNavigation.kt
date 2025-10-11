@@ -23,17 +23,17 @@ import kotlinx.serialization.Serializable
 @Composable
 fun AppNavigation(
     modifier: Modifier = Modifier,
-    navBackStack: NavBackStack = rememberNavBackStack(Dashboard)
+    navBackStack: NavBackStack = rememberNavBackStack(Dashboard),
 ) {
     NavDisplay(
         modifier = modifier,
         entryDecorators = listOf(
             rememberSceneSetupNavEntryDecorator(),
             rememberSavedStateNavEntryDecorator(),
-            rememberViewModelStoreNavEntryDecorator()
+            rememberViewModelStoreNavEntryDecorator(),
         ),
         backStack = navBackStack,
-        onBack = { navBackStack.removeLastOrNull() }
+        onBack = { navBackStack.removeLastOrNull() },
     ) { key ->
         when (key) {
             Dashboard -> NavEntry(key) { entry ->
@@ -42,7 +42,7 @@ fun AppNavigation(
                         if (key != destination) {
                             navBackStack.add(element = destination)
                         }
-                    }
+                    },
                 )
             }
 
@@ -59,7 +59,7 @@ fun AppNavigation(
                                 navBackStack.remove(element = Settings)
                             }
                         }
-                    }
+                    },
                 )
             }
             else -> {
@@ -73,22 +73,18 @@ fun AppNavigation(
 data object Dashboard : NavKey
 
 @Serializable
-data object Settings :  NavKey
+data object Settings : NavKey
 
-sealed class Screen(
-    val key: NavKey,
-    val icon: ImageVector,
-    @param:StringRes val resourceId: Int,
-) {
+sealed class Screen(val key: NavKey, val icon: ImageVector, @param:StringRes val resourceId: Int) {
     data object DashboardScreen : Screen(
         key = Dashboard,
         icon = Icons.Outlined.Dashboard,
-        resourceId = R.string.dashboard
+        resourceId = R.string.dashboard,
     )
 
-    data object SettingsScreen: Screen(
+    data object SettingsScreen : Screen(
         key = Settings,
         icon = Icons.Outlined.Settings,
-        resourceId = R.string.settings
+        resourceId = R.string.settings,
     )
 }

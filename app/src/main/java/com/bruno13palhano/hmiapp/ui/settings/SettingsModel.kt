@@ -24,7 +24,7 @@ data class SettingsState(
     val isPortInvalid: Boolean = false,
     val isLoading: Boolean = false,
     val isConnected: Boolean = false,
-    val isCredentialDialogOpen: Boolean = false
+    val isCredentialDialogOpen: Boolean = false,
 )
 
 @Immutable

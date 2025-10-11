@@ -52,7 +52,7 @@ fun WidgetBlock(
     onTogglePin: () -> Unit,
     onEdit: () -> Unit,
     onRemove: () -> Unit,
-    content: @Composable ColumnScope.() -> Unit
+    content: @Composable ColumnScope.() -> Unit,
 ) {
     var offsetX by remember { mutableFloatStateOf(widget.x) }
     var offsetY by remember { mutableFloatStateOf(widget.y) }
@@ -69,7 +69,7 @@ fun WidgetBlock(
     val items = mapOf(
         MenuOptions.PIN_UNPIN to pinUnpin,
         MenuOptions.EDIT to stringResource(id = R.string.edit),
-        MenuOptions.REMOVE to stringResource(id = R.string.remove)
+        MenuOptions.REMOVE to stringResource(id = R.string.remove),
     )
 
     Column(
@@ -83,7 +83,7 @@ fun WidgetBlock(
                         },
                         onDragCancel = {
                             onDragEnd(offsetX, offsetY)
-                        }
+                        },
                     ) { change, dragAmount ->
                         change.consume()
 
@@ -100,15 +100,15 @@ fun WidgetBlock(
             .size(widget.width.dp, widget.height.dp)
             .background(
                 color = MaterialTheme.colorScheme.background,
-                shape = RoundedCornerShape(8.dp)
+                shape = RoundedCornerShape(8.dp),
             )
             .border(1.dp, borderColor, RoundedCornerShape(8.dp)),
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Row (
+        Row(
             modifier = Modifier.width(widget.width.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center
+            horizontalArrangement = Arrangement.Center,
         ) {
             Text(
                 modifier = Modifier.padding(horizontal = 8.dp).weight(2f),
@@ -116,7 +116,7 @@ fun WidgetBlock(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 textAlign = TextAlign.Center,
-                style = MaterialTheme.typography.titleMedium
+                style = MaterialTheme.typography.titleMedium,
             )
             IconButton(
                 modifier = Modifier.weight(1f),
@@ -124,20 +124,20 @@ fun WidgetBlock(
             ) {
                 Icon(
                     imageVector = Icons.Outlined.MoreVert,
-                    contentDescription = null
+                    contentDescription = null,
                 )
 
                 VertMenu(
                     items = items,
                     expanded = expandMenu,
-                    onDismissRequest = { expandMenu = !expandMenu},
+                    onDismissRequest = { expandMenu = !expandMenu },
                     onItemClick = { item ->
                         when (item) {
                             MenuOptions.PIN_UNPIN -> onTogglePin()
                             MenuOptions.EDIT -> onEdit()
                             MenuOptions.REMOVE -> onRemove()
                         }
-                    }
+                    },
                 )
             }
         }
@@ -148,7 +148,7 @@ fun WidgetBlock(
                 .weight(1f),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally,
-            content = content
+            content = content,
         )
         Text(
             modifier = Modifier
@@ -161,7 +161,7 @@ fun WidgetBlock(
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             textAlign = TextAlign.Center,
-            fontStyle = FontStyle.Italic
+            fontStyle = FontStyle.Italic,
         )
     }
 }
@@ -170,8 +170,8 @@ fun extractEndpoint(url: String): String {
     try {
         val uri = URI(url)
         val path = uri.path ?: "/"
-        val query = uri.query?.let {"?$it" } ?: ""
-        val  fragment = uri.fragment?.let { "#it" } ?: ""
+        val query = uri.query?.let { "?$it" } ?: ""
+        val fragment = uri.fragment?.let { "#it" } ?: ""
         return "$path$query$fragment"
     } catch (e: Exception) {
         e.printStackTrace()
@@ -182,7 +182,7 @@ fun extractEndpoint(url: String): String {
 private enum class MenuOptions {
     PIN_UNPIN,
     EDIT,
-    REMOVE
+    REMOVE,
 }
 
 @Preview(showBackground = true, showSystemUi = true)
@@ -197,13 +197,13 @@ private fun WidgetBlockPreview() {
                     dataSource = DataSource.MQTT(topic = "test/topic"),
                     value = "ON",
                     environmentId = 1L,
-                    isPinned = true
+                    isPinned = true,
                 ),
                 onDragEnd = { _, _ -> },
                 onTogglePin = {},
                 onEdit = {},
                 onRemove = {},
-                content = {}
+                content = {},
             )
         }
     }

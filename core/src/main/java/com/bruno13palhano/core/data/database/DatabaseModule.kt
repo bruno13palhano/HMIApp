@@ -18,21 +18,20 @@ import javax.inject.Singleton
 internal object DatabaseModule {
     @Provides
     @Singleton
-    fun provideDatabase(@ApplicationContext context: Context): AppDatabase {
-        return Room.databaseBuilder(
-            context = context,
-            klass = AppDatabase::class.java,
-            name = "hmi_db"
-        )
-            .fallbackToDestructiveMigration(false)
-            .build()
-    }
+    fun provideDatabase(@ApplicationContext context: Context): AppDatabase = Room.databaseBuilder(
+        context = context,
+        klass = AppDatabase::class.java,
+        name = "hmi_db",
+    )
+        .fallbackToDestructiveMigration(false)
+        .build()
 
     @Provides
     fun provideWidgetDao(db: AppDatabase): WidgetDao = db.widgetDao()
 
     @Provides
-    fun provideMqttConnectionConfigDao(db: AppDatabase): MqttConnectionConfigDao = db.mqttConnectionConfigDao()
+    fun provideMqttConnectionConfigDao(db: AppDatabase): MqttConnectionConfigDao =
+        db.mqttConnectionConfigDao()
 
     @Provides
     fun provideEnvironmentDao(db: AppDatabase): EnvironmentDao = db.environmentDao()

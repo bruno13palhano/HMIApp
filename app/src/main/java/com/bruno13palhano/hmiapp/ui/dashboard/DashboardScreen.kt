@@ -70,8 +70,8 @@ fun DashboardScreen(
         entryPoint = ViewModelFactoryEntryPoint::class.java,
         factorySelector = { entryPoint, state ->
             entryPoint.dashboardViewModelFactory().create(state = state)
-        }
-    )
+        },
+    ),
 ) {
     val state by viewModel.container.state.collectAsStateWithLifecycle()
     val sideEffect = rememberFlowWithLifecycle(flow = viewModel.container.sideEffect)
@@ -84,7 +84,7 @@ fun DashboardScreen(
     val context = LocalContext.current
 
     val exportLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.CreateDocument("application/json")
+        contract = ActivityResultContracts.CreateDocument("application/json"),
     ) { uri: Uri? ->
         uri?.let {
             context.contentResolver.openOutputStream(it)?.let { stream ->
@@ -94,7 +94,7 @@ fun DashboardScreen(
     }
 
     val importLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.OpenDocument()
+        contract = ActivityResultContracts.OpenDocument(),
     ) { uri: Uri? ->
         uri?.let {
             context.contentResolver.openInputStream(it)?.let { stream ->
@@ -112,8 +112,11 @@ fun DashboardScreen(
             when (effect) {
                 DashboardSideEffect.ToggleMenu -> {
                     scope.launch {
-                        if (drawerState.isOpen) drawerState.close()
-                        else drawerState.open()
+                        if (drawerState.isOpen) {
+                            drawerState.close()
+                        } else {
+                            drawerState.open()
+                        }
                     }
                 }
 
@@ -123,7 +126,7 @@ fun DashboardScreen(
                     scope.launch {
                         snackbarHostState.showSnackbar(
                             message = currentInfo,
-                            withDismissAction = true
+                            withDismissAction = true,
                         )
                     }
                 }
@@ -142,8 +145,8 @@ fun DashboardScreen(
                     scope.launch {
                         snackbarHostState.showSnackbar(
                             message = "${effect.widgetLabel} $limitExceededMessage " +
-                                    "${effect.currentValue}/${effect.limit}",
-                            withDismissAction = true
+                                "${effect.currentValue}/${effect.limit}",
+                            withDismissAction = true,
                         )
                     }
                 }
@@ -155,7 +158,7 @@ fun DashboardScreen(
         drawerState = drawerState,
         snackbarHostState = snackbarHostState,
         state = state,
-        onEvent = viewModel::onEvent
+        onEvent = viewModel::onEvent,
     )
 }
 
@@ -165,24 +168,24 @@ fun DashboardContent(
     drawerState: DrawerState,
     snackbarHostState: SnackbarHostState,
     state: DashboardState,
-    onEvent: (event: DashboardEvent) -> Unit
+    onEvent: (event: DashboardEvent) -> Unit,
 ) {
     val items = mapOf(
         ConfigurationOptions.EXPORT to stringResource(id = R.string.export_config),
-        ConfigurationOptions.IMPORT to stringResource(id = R.string.import_config)
+        ConfigurationOptions.IMPORT to stringResource(id = R.string.import_config),
     )
 
     val dashboardOptions = mapOf(
         DashboardOptions.ADD_ENVIRONMENT to ExpandableFabButtons(
             icon = Icons.Outlined.Add,
             label = stringResource(id = R.string.environment),
-            contentDescription = stringResource(id = R.string.add_environment_button)
+            contentDescription = stringResource(id = R.string.add_environment_button),
         ),
         DashboardOptions.WIDGETS to ExpandableFabButtons(
             icon = Icons.Outlined.Add,
             label = stringResource(id = R.string.widgets),
-            contentDescription  = stringResource(id = R.string.widgets_options_button)
-        )
+            contentDescription = stringResource(id = R.string.widgets_options_button),
+        ),
     )
 
     Scaffold(
@@ -193,25 +196,27 @@ fun DashboardContent(
                     IconButton(onClick = { onEvent(DashboardEvent.ToggleMenu) }) {
                         Icon(
                             imageVector = Icons.Outlined.Menu,
-                            contentDescription = stringResource(id = R.string.menu_button)
+                            contentDescription = stringResource(id = R.string.menu_button),
                         )
                     }
                 },
                 actions = {
-                    IconButton(onClick = { onEvent(DashboardEvent.ToggleVertMenu)}) {
+                    IconButton(onClick = { onEvent(DashboardEvent.ToggleVertMenu) }) {
                         Icon(
                             imageVector = Icons.Outlined.MoreVert,
-                            contentDescription = null
+                            contentDescription = null,
                         )
 
                         VertMenu(
                             items = items,
                             expanded = state.isVertMenuVisible,
                             onDismissRequest = { onEvent(DashboardEvent.ToggleVertMenu) },
-                            onItemClick = { onEvent(DashboardEvent.OnVertMenuItemClick(item = it)) }
+                            onItemClick = {
+                                onEvent(DashboardEvent.OnVertMenuItemClick(item = it))
+                            },
                         )
                     }
-                }
+                },
             )
         },
         floatingActionButton = {
@@ -229,7 +234,7 @@ fun DashboardContent(
                                 onEvent(DashboardEvent.ToggleIsToolboxExpanded)
                             }
                         }
-                    }
+                    },
                 )
             }
         },
@@ -237,7 +242,7 @@ fun DashboardContent(
             if (state.environments.isNotEmpty()) {
                 BottomAppBar {
                     LazyRow(
-                        contentPadding = PaddingValues(horizontal = 4.dp)
+                        contentPadding = PaddingValues(horizontal = 4.dp),
                     ) {
                         items(items = state.environments, key = { env -> env.id }) { env ->
                             Button(
@@ -245,13 +250,15 @@ fun DashboardContent(
                                     .padding(horizontal = 4.dp)
                                     .width(112.dp),
                                 enabled = env.id != state.environment.id,
-                                onClick = { onEvent(DashboardEvent.ChangeEnvironment(id = env.id)) }
+                                onClick = {
+                                    onEvent(DashboardEvent.ChangeEnvironment(id = env.id))
+                                },
                             ) {
                                 Text(
                                     text = env.name,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis,
-                                    style = MaterialTheme.typography.titleMedium
+                                    style = MaterialTheme.typography.titleMedium,
                                 )
                             }
                         }
@@ -259,7 +266,7 @@ fun DashboardContent(
                 }
             }
         },
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
     ) {
         DrawerMenu(
             modifier = Modifier.padding(it),
@@ -271,13 +278,13 @@ fun DashboardContent(
             Box(
                 modifier = Modifier
                     .padding(it)
-                    .fillMaxSize()
+                    .fillMaxSize(),
             ) {
                 if (state.loading) {
                     CircularProgress(
                         modifier = Modifier
                             .padding(it)
-                            .fillMaxSize()
+                            .fillMaxSize(),
                     )
                 } else {
                     if (state.environment.id != 0L) {
@@ -286,19 +293,23 @@ fun DashboardContent(
                             initialScale = state.environment.scale,
                             initialOffset = Offset(
                                 x = state.environment.offsetX,
-                                y = state.environment.offsetY
+                                y = state.environment.offsetY,
                             ),
                             onDragEnd = { id, x, y ->
                                 onEvent(
                                     DashboardEvent.OnWidgetDragEnd(
                                         id = id,
                                         x = x,
-                                        y = y
-                                    )
+                                        y = y,
+                                    ),
                                 )
                             },
-                            onTogglePin = { id -> onEvent(DashboardEvent.OnToggleWidgetPin(id = id)) },
-                            onEdit = { id -> onEvent(DashboardEvent.OpenEditWidgetDialog(id = id)) },
+                            onTogglePin = { id ->
+                                onEvent(DashboardEvent.OnToggleWidgetPin(id = id))
+                            },
+                            onEdit = { id ->
+                                onEvent(DashboardEvent.OpenEditWidgetDialog(id = id))
+                            },
                             onRemove = { id -> onEvent(DashboardEvent.RemoveWidget(id = id)) },
                             onEvent = { widgetEvent ->
                                 onEvent(DashboardEvent.OnWidgetEvent(widgetEvent = widgetEvent))
@@ -308,19 +319,23 @@ fun DashboardContent(
                                     DashboardEvent.OnUpdateCanvasState(
                                         scale = scale,
                                         offsetX = offset.x,
-                                        offsetY = offset.y
-                                    )
+                                        offsetY = offset.y,
+                                    ),
                                 )
-                            }
+                            },
                         )
                     } else {
                         ExtendedFloatingActionButton(
                             modifier = Modifier.align(Alignment.Center),
-                            onClick = { onEvent(DashboardEvent.OpenEnvironmentInputDialog(isEdit = false)) }
+                            onClick = {
+                                onEvent(DashboardEvent.OpenEnvironmentInputDialog(isEdit = false))
+                            },
                         ) {
                             Icon(
                                 imageVector = Icons.Outlined.Add,
-                                contentDescription = stringResource(id = R.string.add_environment_button)
+                                contentDescription = stringResource(
+                                    id = R.string.add_environment_button,
+                                ),
                             )
                             Text(text = stringResource(id = R.string.environment))
                         }
@@ -328,12 +343,14 @@ fun DashboardContent(
 
                     Box(
                         modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.BottomEnd
+                        contentAlignment = Alignment.BottomEnd,
                     ) {
                         WidgetToolbox(
                             expanded = state.isToolboxExpanded,
                             onExpandedClick = { onEvent(DashboardEvent.ToggleIsToolboxExpanded) },
-                            onAdd = { type -> onEvent(DashboardEvent.ShowWidgetDialog(type = type)) }
+                            onAdd = { type ->
+                                onEvent(DashboardEvent.ShowWidgetDialog(type = type))
+                            },
                         )
                     }
 
@@ -359,7 +376,7 @@ fun DashboardContent(
                             },
                             onAddExtra = { onEvent(DashboardEvent.AddExtra) },
                             onConfirm = { onEvent(DashboardEvent.ConfirmWidget) },
-                            onDismissRequest = { onEvent(DashboardEvent.HideWidgetConfig) }
+                            onDismissRequest = { onEvent(DashboardEvent.HideWidgetConfig) },
                         )
                     }
 
@@ -376,7 +393,9 @@ fun DashboardContent(
                                     onEvent(DashboardEvent.AddEnvironment)
                                 }
                             },
-                            onDismissRequest = { onEvent(DashboardEvent.CloseEnvironmentInputDialog) }
+                            onDismissRequest = {
+                                onEvent(DashboardEvent.CloseEnvironmentInputDialog)
+                            },
                         )
                     }
                 }
@@ -386,19 +405,17 @@ fun DashboardContent(
 }
 
 @Composable
-private fun getDashboardInfo(): Map<DashboardInfo, String> {
-    return mapOf(
-        DashboardInfo.DISCONNECTED to stringResource(id = R.string.disconnect_info),
-        DashboardInfo.EXPORT_SUCCESS to stringResource(id = R.string.export_config_success),
-        DashboardInfo.EXPORT_FAILURE to stringResource(id = R.string.export_config_error),
-        DashboardInfo.IMPORT_SUCCESS to stringResource(id = R.string.import_config_success),
-        DashboardInfo.IMPORT_FAILURE to stringResource(id = R.string.import_config_error)
-    )
-}
+private fun getDashboardInfo(): Map<DashboardInfo, String> = mapOf(
+    DashboardInfo.DISCONNECTED to stringResource(id = R.string.disconnect_info),
+    DashboardInfo.EXPORT_SUCCESS to stringResource(id = R.string.export_config_success),
+    DashboardInfo.EXPORT_FAILURE to stringResource(id = R.string.export_config_error),
+    DashboardInfo.IMPORT_SUCCESS to stringResource(id = R.string.import_config_success),
+    DashboardInfo.IMPORT_FAILURE to stringResource(id = R.string.import_config_error),
+)
 
 private enum class DashboardOptions {
     ADD_ENVIRONMENT,
-    WIDGETS
+    WIDGETS,
 }
 
 @Preview(showBackground = true, showSystemUi = true)
@@ -409,7 +426,7 @@ private fun DashboardPreview() {
             drawerState = DrawerState(initialValue = DrawerValue.Open),
             snackbarHostState = SnackbarHostState(),
             state = DashboardState(),
-            onEvent = {}
+            onEvent = {},
         )
     }
 }
@@ -422,7 +439,7 @@ private fun DashboardClosedPreview() {
             drawerState = DrawerState(initialValue = DrawerValue.Closed),
             snackbarHostState = SnackbarHostState(),
             state = DashboardState(loading = false),
-            onEvent = {}
+            onEvent = {},
         )
     }
 }
@@ -435,7 +452,7 @@ private fun DashboardClosedLoadingPreview() {
             drawerState = DrawerState(initialValue = DrawerValue.Closed),
             snackbarHostState = SnackbarHostState(),
             state = DashboardState(),
-            onEvent = {}
+            onEvent = {},
         )
     }
 }
@@ -453,10 +470,10 @@ private fun DashboardBottomMenuPreview() {
                 environments = listOf(
                     Environment(1L, "Home", 0f, 0f, 0f),
                     Environment(2L, "Garden", 0f, 0f, 0f),
-                    Environment(3L, "Farm", 0f, 0f, 0f)
-                )
+                    Environment(3L, "Farm", 0f, 0f, 0f),
+                ),
             ),
-            onEvent = {}
+            onEvent = {},
         )
     }
 }

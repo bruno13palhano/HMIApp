@@ -37,30 +37,30 @@ import com.bruno13palhano.hmiapp.ui.theme.HMIAppTheme
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
-fun <T>ExpandableFab(
+fun <T> ExpandableFab(
     expanded: Boolean,
     items: Map<T, ExpandableFabButtons>,
     onClick: () -> Unit,
-    onOptionSelected: (T) -> Unit
+    onOptionSelected: (T) -> Unit,
 ) {
     val rotation by animateFloatAsState(
         targetValue = if (expanded) 90f else 0f,
-        label = "fabRotation"
+        label = "fabRotation",
     )
     Box(
         modifier = Modifier.padding(16.dp),
-        contentAlignment = Alignment.BottomEnd
+        contentAlignment = Alignment.BottomEnd,
     ) {
         Column(horizontalAlignment = Alignment.End) {
             AnimatedVisibility(
                 modifier = Modifier.padding(bottom = 12.dp),
                 visible = expanded,
                 enter = fadeIn() + scaleIn(),
-                exit = fadeOut() + scaleOut()
+                exit = fadeOut() + scaleOut(),
             ) {
                 Column(
                     verticalArrangement = Arrangement.spacedBy(12.dp),
-                    horizontalAlignment = Alignment.End
+                    horizontalAlignment = Alignment.End,
                 ) {
                     items.forEach { item ->
                         SmallFabButton(
@@ -69,7 +69,7 @@ fun <T>ExpandableFab(
                             contentDescription = item.value.contentDescription,
                             onClick = {
                                 onOptionSelected(item.key)
-                            }
+                            },
                         )
                     }
                 }
@@ -87,7 +87,7 @@ fun <T>ExpandableFab(
                 Icon(
                     modifier = Modifier.rotate(rotation),
                     imageVector = icon,
-                    contentDescription = description
+                    contentDescription = description,
                 )
             }
         }
@@ -99,23 +99,23 @@ private fun SmallFabButton(
     icon: ImageVector,
     label: String,
     contentDescription: String? = null,
-    onClick: () -> Unit
+    onClick: () -> Unit,
 ) {
     ExtendedFloatingActionButton(
         onClick = onClick,
         icon = { Icon(icon, contentDescription = contentDescription) },
-        text = { Text(text  = label) },
+        text = { Text(text = label) },
         modifier = Modifier.wrapContentWidth()
             .height(40.dp),
         containerColor = MaterialTheme.colorScheme.secondaryContainer,
-        contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+        contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
     )
 }
 
 data class ExpandableFabButtons(
     val icon: ImageVector,
     val label: String,
-    val contentDescription: String? = null
+    val contentDescription: String? = null,
 )
 
 @Preview(showBackground = true, showSystemUi = true)
@@ -128,19 +128,20 @@ private fun ExpandableFabPreview() {
                     expanded = false,
                     items = mapOf(
                         "Widgets" to ExpandableFabButtons(
-                            icon = Icons.Outlined.Widgets, label  = "Widgets"
+                            icon = Icons.Outlined.Widgets,
+                            label = "Widgets",
                         ),
                         "Environment" to ExpandableFabButtons(
-                            icon = Icons.Outlined.Add, label  = "Environment"
-                        )
+                            icon = Icons.Outlined.Add,
+                            label = "Environment",
+                        ),
                     ),
                     onClick = {},
-                    onOptionSelected = {}
+                    onOptionSelected = {},
                 )
-            }
+            },
         ) {
             Column(modifier = Modifier.padding(it)) {
-
             }
         }
     }

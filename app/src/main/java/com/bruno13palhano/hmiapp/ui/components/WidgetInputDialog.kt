@@ -40,13 +40,13 @@ fun WidgetInputDialog(
     onLimitChange: (limit: String) -> Unit,
     onAddExtra: () -> Unit,
     onConfirm: () -> Unit,
-    onDismissRequest: () -> Unit
+    onDismissRequest: () -> Unit,
 ) {
     BasicAlertDialog(onDismissRequest = onDismissRequest) {
         Surface(
             modifier = Modifier.wrapContentWidth().wrapContentHeight(),
             shape = MaterialTheme.shapes.large,
-            tonalElevation = AlertDialogDefaults.TonalElevation
+            tonalElevation = AlertDialogDefaults.TonalElevation,
         ) {
             Column(
                 modifier = Modifier
@@ -65,7 +65,7 @@ fun WidgetInputDialog(
                     value = label,
                     onValueChange = onLabelChange,
                     label = stringResource(id = R.string.label),
-                    placeholder = stringResource(id = R.string.enter_label)
+                    placeholder = stringResource(id = R.string.enter_label),
                 )
                 CustomTextField(
                     modifier = Modifier
@@ -74,7 +74,7 @@ fun WidgetInputDialog(
                     value = endpoint,
                     onValueChange = onEndpointChange,
                     label = stringResource(id = R.string.endpoint),
-                    placeholder = stringResource(id = R.string.enter_endpoint)
+                    placeholder = stringResource(id = R.string.enter_endpoint),
                 )
                 if (hasLimit) {
                     CustomTextField(
@@ -84,14 +84,14 @@ fun WidgetInputDialog(
                         value = limit ?: "",
                         onValueChange = onLimitChange,
                         label = stringResource(id = R.string.limit),
-                        placeholder = stringResource(id = R.string.limit_placeholder)
+                        placeholder = stringResource(id = R.string.limit_placeholder),
                     )
                 }
                 if (hasExtras) {
                     Text(
                         text = stringResource(id = R.string.extras),
                         style = MaterialTheme.typography.titleMedium,
-                        modifier = Modifier.padding(top = 16.dp, start = 8.dp)
+                        modifier = Modifier.padding(top = 16.dp, start = 8.dp),
                     )
 
                     extras.forEachIndexed { index, value ->
@@ -104,7 +104,7 @@ fun WidgetInputDialog(
                                 onExtraChange(index, newValue)
                             },
                             label = stringResource(id = R.string.extra_tag, index + 1),
-                            placeholder = stringResource(id = R.string.extra_placeholder)
+                            placeholder = stringResource(id = R.string.extra_placeholder),
                         )
                     }
 
@@ -114,7 +114,7 @@ fun WidgetInputDialog(
                         modifier = Modifier
                             .padding(horizontal = 8.dp)
                             .align(Alignment.End),
-                        onClick = onAddExtra
+                        onClick = onAddExtra,
                     ) {
                         Text(text = stringResource(id = R.string.add_extra))
                     }
@@ -123,17 +123,17 @@ fun WidgetInputDialog(
                     modifier = Modifier
                         .padding(top = 16.dp, end = 8.dp)
                         .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
+                    horizontalArrangement = Arrangement.End,
                 ) {
                     Button(
                         onClick = onDismissRequest,
-                        modifier = Modifier.padding(end = 4.dp)
+                        modifier = Modifier.padding(end = 4.dp),
                     ) {
                         Text(text = stringResource(id = R.string.cancel))
                     }
                     Button(
                         onClick = onConfirm,
-                        modifier = Modifier.padding(start = 4.dp)
+                        modifier = Modifier.padding(start = 4.dp),
                     ) {
                         Text(text = stringResource(id = R.string.ok))
                     }
@@ -149,13 +149,13 @@ fun EnvironmentInputDialog(
     name: String,
     onNameChange: (name: String) -> Unit,
     onConfirm: () -> Unit,
-    onDismissRequest: () -> Unit
+    onDismissRequest: () -> Unit,
 ) {
     BasicAlertDialog(onDismissRequest = onDismissRequest) {
         Surface(
             modifier = Modifier.wrapContentWidth().wrapContentHeight(),
             shape = MaterialTheme.shapes.large,
-            tonalElevation = AlertDialogDefaults.TonalElevation
+            tonalElevation = AlertDialogDefaults.TonalElevation,
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
@@ -170,24 +170,24 @@ fun EnvironmentInputDialog(
                     value = name,
                     onValueChange = onNameChange,
                     label = stringResource(id = R.string.name),
-                    placeholder = stringResource(id = R.string.name_placeholder)
+                    placeholder = stringResource(id = R.string.name_placeholder),
                 )
 
                 Row(
                     modifier = Modifier
                         .padding(top = 16.dp, end = 8.dp)
                         .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
+                    horizontalArrangement = Arrangement.End,
                 ) {
                     Button(
                         onClick = onDismissRequest,
-                        modifier = Modifier.padding(end = 4.dp)
+                        modifier = Modifier.padding(end = 4.dp),
                     ) {
                         Text(text = stringResource(id = R.string.cancel))
                     }
                     Button(
                         onClick = onConfirm,
-                        modifier = Modifier.padding(start = 4.dp)
+                        modifier = Modifier.padding(start = 4.dp),
                     ) {
                         Text(text = stringResource(id = R.string.ok))
                     }

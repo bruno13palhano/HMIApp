@@ -5,5 +5,5 @@ data class Environment(
     val name: String,
     val scale: Float,
     val offsetX: Float,
-    val offsetY: Float
+    val offsetY: Float,
 )

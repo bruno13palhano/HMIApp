@@ -12,11 +12,11 @@ import kotlinx.coroutines.Dispatchers
 
 class SettingsViewModel @AssistedInject constructor(
     private val mqttClientRepository: MqttClientRepository,
-    @Assisted private val initialState: SettingsState
+    @Assisted private val initialState: SettingsState,
 ) : ViewModel() {
     val container: Container<SettingsState, SettingsSideEffect> = Container(
         initialSTATE = initialState,
-        scope = viewModelScope
+        scope = viewModelScope,
     )
 
     fun onEvent(event: SettingsEvent) {
@@ -123,23 +123,23 @@ class SettingsViewModel @AssistedInject constructor(
                 password = state.password.trim(),
                 caBytes = state.caCert,
                 clientP12Bytes = state.clientP12,
-                p12Password = state.p12Password.trim()
-            )
+                p12Password = state.p12Password.trim(),
+            ),
         )
             .onSuccess {
                 reduce { copy(isLoading = false) }
                 postSideEffect(
                     effect = SettingsSideEffect.ShowSettingsInfo(
-                        info = SettingsInfo.CONNECT_SUCCESS
-                    )
+                        info = SettingsInfo.CONNECT_SUCCESS,
+                    ),
                 )
             }
             .onFailure {
                 reduce { copy(isLoading = false) }
                 postSideEffect(
                     effect = SettingsSideEffect.ShowSettingsInfo(
-                        info = SettingsInfo.CONNECT_FAILURE
-                    )
+                        info = SettingsInfo.CONNECT_FAILURE,
+                    ),
                 )
             }
     }
@@ -149,20 +149,19 @@ class SettingsViewModel @AssistedInject constructor(
             .onSuccess {
                 postSideEffect(
                     effect = SettingsSideEffect.ShowSettingsInfo(
-                        info = SettingsInfo.DISCONNECT_SUCCESS
-                    )
+                        info = SettingsInfo.DISCONNECT_SUCCESS,
+                    ),
                 )
             }
             .onFailure {
                 postSideEffect(
                     effect = SettingsSideEffect.ShowSettingsInfo(
-                        info = SettingsInfo.DISCONNECT_FAILURE
-                    )
+                        info = SettingsInfo.DISCONNECT_FAILURE,
+                    ),
                 )
             }
     }
 
-    private fun isMqttPropertiesEmpty(state: SettingsState): Boolean {
-        return state.clientId.isBlank() || state.host.isBlank() || state.port.isBlank()
-    }
+    private fun isMqttPropertiesEmpty(state: SettingsState): Boolean =
+        state.clientId.isBlank() || state.host.isBlank() || state.port.isBlank()
 }

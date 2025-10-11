@@ -27,7 +27,7 @@ android {
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
         }
     }
@@ -45,7 +45,7 @@ android {
         resources {
             merges += listOf(
                 "META-INF/io.netty.versions.properties",
-                "META-INF/INDEX.LIST"
+                "META-INF/INDEX.LIST",
             )
         }
     }

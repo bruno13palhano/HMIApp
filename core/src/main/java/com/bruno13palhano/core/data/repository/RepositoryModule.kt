@@ -12,8 +12,12 @@ internal abstract class RepositoryModule {
     abstract fun bindWidgetRepository(repository: WidgetRepositoryImpl): WidgetRepository
 
     @Binds
-    abstract fun bindMqttClientRepository(repository: MqttClientRepositoryImpl): MqttClientRepository
+    abstract fun bindMqttClientRepository(
+        repository: MqttClientRepositoryImpl,
+    ): MqttClientRepository
 
     @Binds
-    abstract fun bindEnvironmentRepository(repository: EnvironmentRepositoryImpl): EnvironmentRepository
+    abstract fun bindEnvironmentRepository(
+        repository: EnvironmentRepositoryImpl,
+    ): EnvironmentRepository
 }

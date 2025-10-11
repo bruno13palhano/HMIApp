@@ -20,9 +20,9 @@ import kotlinx.coroutines.withContext
 class Container<STATE, EFFECT>(
     initialSTATE: STATE,
     private val scope: CoroutineScope = CoroutineScope(
-        SupervisorJob() + Dispatchers.Main.immediate
+        SupervisorJob() + Dispatchers.Main.immediate,
     ),
-    private val onError: (Throwable) -> Unit = { it.printStackTrace() }
+    private val onError: (Throwable) -> Unit = { it.printStackTrace() },
 ) {
     private val _state: MutableStateFlow<STATE> = MutableStateFlow(initialSTATE)
     val state: StateFlow<STATE> = _state.asStateFlow()
@@ -32,13 +32,13 @@ class Container<STATE, EFFECT>(
     private val _sideEffect = MutableSharedFlow<EFFECT>(
         replay = 0,
         extraBufferCapacity = 1,
-        onBufferOverflow = BufferOverflow.DROP_OLDEST
+        onBufferOverflow = BufferOverflow.DROP_OLDEST,
     )
     val sideEffect: Flow<EFFECT> = _sideEffect.asSharedFlow()
 
     fun intent(
         dispatcher: CoroutineDispatcher = Dispatchers.Main.immediate,
-        transform: suspend Container<STATE, EFFECT>.() -> Unit
+        transform: suspend Container<STATE, EFFECT>.() -> Unit,
     ) {
         scope.launch(dispatcher) {
             try {
