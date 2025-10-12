@@ -19,7 +19,7 @@ import com.bruno13palhano.core.data.database.entity.WidgetEntity
         EnvironmentEntity::class,
         PreferencesEntity::class,
     ],
-    version = 2,
+    version = 1,
     exportSchema = false,
 )
 @TypeConverters(value = [SecureConverters::class, ExtrasConverters::class])
