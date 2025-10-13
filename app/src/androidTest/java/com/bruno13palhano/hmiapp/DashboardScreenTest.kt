@@ -8,9 +8,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.printToLog
 import com.bruno13palhano.core.model.Environment
 import com.bruno13palhano.hmiapp.ui.dashboard.DashboardContent
 import com.bruno13palhano.hmiapp.ui.dashboard.DashboardState
@@ -45,7 +43,7 @@ class DashboardScreenTest {
                     drawerState = DrawerState(DrawerValue.Closed),
                     snackbarHostState = snackbarHostState,
                     state = DashboardState(),
-                    onEvent = {}
+                    onEvent = {},
                 )
             }
         }
@@ -69,7 +67,7 @@ class DashboardScreenTest {
                     drawerState = drawerState,
                     snackbarHostState = SnackbarHostState(),
                     state = DashboardState(),
-                    onEvent = {}
+                    onEvent = {},
                 )
             }
         }
@@ -97,12 +95,57 @@ class DashboardScreenTest {
                     drawerState = DrawerState(DrawerValue.Closed),
                     snackbarHostState = SnackbarHostState(),
                     state = state,
-                    onEvent = {}
+                    onEvent = {},
                 )
             }
         }
 
         composeTestRule.onNodeWithContentDescription("Add environment button").assertIsDisplayed()
         composeTestRule.onNodeWithContentDescription("Widgets options button").assertIsDisplayed()
+    }
+
+    @Test
+    fun bottomAppBar_shows_environments() {
+        val environments = listOf(
+            Environment(1L, "Home", 0f, 0f, 0f),
+            Environment(2L, "Garden", 0f, 0f, 0f),
+        )
+        val state = DashboardState(
+            loading = false,
+            environment = environments.first(),
+            environments = environments,
+        )
+
+        composeTestRule.setContent {
+            HMIAppTheme {
+                DashboardContent(
+                    drawerState = DrawerState(DrawerValue.Closed),
+                    snackbarHostState = SnackbarHostState(),
+                    state = state,
+                    onEvent = {},
+                )
+            }
+        }
+
+        composeTestRule.onNodeWithText("Home").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Garden").assertIsDisplayed()
+    }
+
+    @Test
+    fun widgetDialog_shows_when_visible() {
+        val state = DashboardState(isWidgetInputDialogVisible = true, loading = false)
+
+        composeTestRule.setContent {
+            HMIAppTheme {
+                DashboardContent(
+                    drawerState = DrawerState(DrawerValue.Closed),
+                    snackbarHostState = SnackbarHostState(),
+                    state = state,
+                    onEvent = {},
+                )
+            }
+        }
+
+        composeTestRule.onNodeWithText("Widget Configuration").assertIsDisplayed()
     }
 }
