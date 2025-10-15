@@ -38,6 +38,7 @@ import com.bruno13palhano.hmiapp.ui.theme.HMIAppTheme
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun <T> ExpandableFab(
+    modifier: Modifier = Modifier,
     expanded: Boolean,
     items: Map<T, ExpandableFabButtons>,
     onClick: () -> Unit,
@@ -48,7 +49,7 @@ fun <T> ExpandableFab(
         label = "fabRotation",
     )
     Box(
-        modifier = Modifier.padding(16.dp),
+        modifier = modifier.padding(16.dp),
         contentAlignment = Alignment.BottomEnd,
     ) {
         Column(horizontalAlignment = Alignment.End) {

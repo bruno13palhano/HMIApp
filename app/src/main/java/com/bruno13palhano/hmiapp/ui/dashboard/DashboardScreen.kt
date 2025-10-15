@@ -39,6 +39,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -189,6 +190,7 @@ fun DashboardContent(
     )
 
     Scaffold(
+        modifier = Modifier.testTag("DashboardScreen"),
         topBar = {
             TopAppBar(
                 title = { Text(text = stringResource(id = R.string.dashboard)) },
@@ -222,6 +224,7 @@ fun DashboardContent(
         floatingActionButton = {
             if (state.environment.id != 0L && !state.loading) {
                 ExpandableFab(
+                    modifier = Modifier.testTag("DashboardFab"),
                     expanded = state.isDashboardOptionsExpanded,
                     items = dashboardOptions,
                     onClick = { onEvent(DashboardEvent.ToggleDashboardOptions) },
@@ -240,7 +243,7 @@ fun DashboardContent(
         },
         bottomBar = {
             if (state.environments.isNotEmpty()) {
-                BottomAppBar {
+                BottomAppBar(modifier = Modifier.testTag("BottomBar")) {
                     LazyRow(
                         contentPadding = PaddingValues(horizontal = 4.dp),
                     ) {
@@ -266,10 +269,17 @@ fun DashboardContent(
                 }
             }
         },
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+        snackbarHost = {
+            SnackbarHost(
+                modifier = Modifier.testTag("SnackbarHost"),
+                hostState = snackbarHostState,
+            )
+        },
     ) {
         DrawerMenu(
-            modifier = Modifier.padding(it),
+            modifier = Modifier
+                .padding(it)
+                .testTag("DrawerMenu"),
             currentKey = state.currentDestination,
             drawerState = drawerState,
             navigateTo = { key -> onEvent(DashboardEvent.NavigateTo(destination = key)) },
@@ -284,11 +294,13 @@ fun DashboardContent(
                     CircularProgress(
                         modifier = Modifier
                             .padding(it)
-                            .fillMaxSize(),
+                            .fillMaxSize()
+                            .testTag("CircularProgress"),
                     )
                 } else {
                     if (state.environment.id != 0L) {
                         WidgetCanvas(
+                            modifier = Modifier.testTag("WidgetCanvas"),
                             widgets = state.widgets,
                             initialScale = state.environment.scale,
                             initialOffset = Offset(
@@ -326,7 +338,9 @@ fun DashboardContent(
                         )
                     } else {
                         ExtendedFloatingActionButton(
-                            modifier = Modifier.align(Alignment.Center),
+                            modifier = Modifier
+                                .align(Alignment.Center)
+                                .testTag("AddEnvironmentFab"),
                             onClick = {
                                 onEvent(DashboardEvent.OpenEnvironmentInputDialog(isEdit = false))
                             },
@@ -342,7 +356,9 @@ fun DashboardContent(
                     }
 
                     Box(
-                        modifier = Modifier.fillMaxSize(),
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .testTag("WidgetToolbox"),
                         contentAlignment = Alignment.BottomEnd,
                     ) {
                         WidgetToolbox(
@@ -356,6 +372,7 @@ fun DashboardContent(
 
                     AnimatedVisibility(visible = state.isWidgetInputDialogVisible) {
                         WidgetInputDialog(
+                            modifier = Modifier.testTag("WidgetInputDialog"),
                             label = state.label,
                             endpoint = state.endpoint,
                             hasExtras = state.hasExtras,
@@ -382,6 +399,7 @@ fun DashboardContent(
 
                     AnimatedVisibility(visible = state.isEnvironmentDialogVisible) {
                         EnvironmentInputDialog(
+                            modifier = Modifier.testTag("EnvironmentInputDialog"),
                             name = state.environment.name,
                             onNameChange = { name ->
                                 onEvent(DashboardEvent.UpdateEnvironmentName(name = name))

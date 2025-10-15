@@ -28,6 +28,7 @@ import com.bruno13palhano.hmiapp.R
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WidgetInputDialog(
+    modifier: Modifier = Modifier,
     label: String,
     endpoint: String,
     hasExtras: Boolean,
@@ -44,7 +45,7 @@ fun WidgetInputDialog(
 ) {
     BasicAlertDialog(onDismissRequest = onDismissRequest) {
         Surface(
-            modifier = Modifier.wrapContentWidth().wrapContentHeight(),
+            modifier = modifier.wrapContentWidth().wrapContentHeight(),
             shape = MaterialTheme.shapes.large,
             tonalElevation = AlertDialogDefaults.TonalElevation,
         ) {
@@ -146,6 +147,7 @@ fun WidgetInputDialog(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EnvironmentInputDialog(
+    modifier: Modifier = Modifier,
     name: String,
     onNameChange: (name: String) -> Unit,
     onConfirm: () -> Unit,
@@ -153,7 +155,7 @@ fun EnvironmentInputDialog(
 ) {
     BasicAlertDialog(onDismissRequest = onDismissRequest) {
         Surface(
-            modifier = Modifier.wrapContentWidth().wrapContentHeight(),
+            modifier = modifier.wrapContentWidth().wrapContentHeight(),
             shape = MaterialTheme.shapes.large,
             tonalElevation = AlertDialogDefaults.TonalElevation,
         ) {

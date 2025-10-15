@@ -36,6 +36,7 @@ const val CANVAS_SIZE = 5000f
 @OptIn(FlowPreview::class)
 @Composable
 fun WidgetCanvas(
+    modifier: Modifier = Modifier,
     widgets: List<Widget>,
     initialScale: Float = 1f,
     initialOffset: Offset = Offset.Zero,
@@ -64,7 +65,7 @@ fun WidgetCanvas(
     }
 
     Box(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.onSecondaryContainer)
             .pointerInput(Unit) {
