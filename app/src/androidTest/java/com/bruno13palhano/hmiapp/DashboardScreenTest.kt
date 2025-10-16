@@ -7,6 +7,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import com.bruno13palhano.core.model.Environment
@@ -31,6 +32,39 @@ class DashboardScreenTest {
     @After
     fun tearDown() {
         testScope.cancel()
+    }
+
+    @Test
+    fun dashboardScreen_showScaffold() {
+        composeTestRule.setContent {
+            HMIAppTheme {
+                DashboardContent(
+                    drawerState = DrawerState(initialValue = DrawerValue.Closed),
+                    snackbarHostState = SnackbarHostState(),
+                    state = DashboardState(),
+                    onEvent = {}
+                )
+            }
+        }
+
+        composeTestRule.onNodeWithTag("DashboardScreen").assertIsDisplayed()
+    }
+
+    @Test
+    fun whenLoading_showCircularProgress() {
+        composeTestRule.setContent {
+            HMIAppTheme {
+                DashboardContent(
+                    drawerState = DrawerState(DrawerValue.Closed),
+                    snackbarHostState = SnackbarHostState(),
+                    state = DashboardState(loading = true),
+                    onEvent = {},
+                )
+            }
+        }
+
+        composeTestRule.onNodeWithTag("CircularProgress").assertIsDisplayed()
+        composeTestRule.onNodeWithTag("WidgetCanvas").assertDoesNotExist()
     }
 
     @Test
