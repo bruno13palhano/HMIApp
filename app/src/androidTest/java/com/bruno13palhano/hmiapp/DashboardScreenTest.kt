@@ -68,6 +68,44 @@ class DashboardScreenTest {
     }
 
     @Test
+    fun whenEnvironmentExists_showsWidgetCanvas() {
+        composeTestRule.setContent {
+            HMIAppTheme {
+                DashboardContent(
+                    drawerState = DrawerState(initialValue = DrawerValue.Closed),
+                    snackbarHostState = SnackbarHostState(),
+                    state = DashboardState(
+                        environment = Environment(1L, "Home", 1f, 0f, 0f)
+                    ),
+                    onEvent = {}
+                )
+            }
+        }
+
+        composeTestRule.onNodeWithText("WidgetCanvas")
+        composeTestRule.onNodeWithTag("CircularProgress")
+    }
+
+    @Test
+    fun whenNoEnvironment_showsAddEnvironmentFab() {
+        composeTestRule.setContent {
+            HMIAppTheme {
+                DashboardContent(
+                    drawerState = DrawerState(initialValue = DrawerValue.Closed),
+                    snackbarHostState = SnackbarHostState(),
+                    state = DashboardState(
+                        loading = false,
+                        environment = Environment(0L,"",0f, 0f, 0f)
+                    ),
+                    onEvent = {}
+                )
+            }
+        }
+
+        composeTestRule.onNodeWithTag("AddEnvironmentFab").assertIsDisplayed()
+    }
+
+    @Test
     fun snackbar_shows_on_message() {
         val snackbarHostState = SnackbarHostState()
 
@@ -134,8 +172,7 @@ class DashboardScreenTest {
             }
         }
 
-        composeTestRule.onNodeWithContentDescription("Add environment button").assertIsDisplayed()
-        composeTestRule.onNodeWithContentDescription("Widgets options button").assertIsDisplayed()
+        composeTestRule.onNodeWithTag("DashboardFab").assertIsDisplayed()
     }
 
     @Test
@@ -166,6 +203,24 @@ class DashboardScreenTest {
     }
 
     @Test
+    fun environmentDialogVisible_showsDialog() {
+        val state = DashboardState(isEnvironmentDialogVisible = true, loading = false)
+
+        composeTestRule.setContent {
+            HMIAppTheme {
+                DashboardContent(
+                    drawerState = DrawerState(initialValue = DrawerValue.Closed),
+                    snackbarHostState = SnackbarHostState(),
+                    state = state,
+                    onEvent = {}
+                )
+            }
+        }
+
+        composeTestRule.onNodeWithTag("EnvironmentInputDialog").assertIsDisplayed()
+    }
+
+    @Test
     fun widgetDialog_shows_when_visible() {
         val state = DashboardState(isWidgetInputDialogVisible = true, loading = false)
 
@@ -180,6 +235,6 @@ class DashboardScreenTest {
             }
         }
 
-        composeTestRule.onNodeWithText("Widget Configuration").assertIsDisplayed()
+        composeTestRule.onNodeWithTag("WidgetInputDialog").assertIsDisplayed()
     }
 }
