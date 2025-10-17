@@ -11,6 +11,9 @@
       <SelectionState runConfigName="DashboardScreenTest">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
+      <SelectionState runConfigName="whenNoEnvironment_showsAddEnvironmentFab()">
+        <option name="selectionMode" value="DROPDOWN" />
+      </SelectionState>
     </selectionStates>
   </component>
 </project>
