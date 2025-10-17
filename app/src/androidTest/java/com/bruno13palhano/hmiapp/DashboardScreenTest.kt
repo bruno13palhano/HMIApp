@@ -42,7 +42,7 @@ class DashboardScreenTest {
                     drawerState = DrawerState(initialValue = DrawerValue.Closed),
                     snackbarHostState = SnackbarHostState(),
                     state = DashboardState(),
-                    onEvent = {}
+                    onEvent = {},
                 )
             }
         }
@@ -75,9 +75,9 @@ class DashboardScreenTest {
                     drawerState = DrawerState(initialValue = DrawerValue.Closed),
                     snackbarHostState = SnackbarHostState(),
                     state = DashboardState(
-                        environment = Environment(1L, "Home", 1f, 0f, 0f)
+                        environment = Environment(1L, "Home", 1f, 0f, 0f),
                     ),
-                    onEvent = {}
+                    onEvent = {},
                 )
             }
         }
@@ -95,9 +95,9 @@ class DashboardScreenTest {
                     snackbarHostState = SnackbarHostState(),
                     state = DashboardState(
                         loading = false,
-                        environment = Environment(0L,"",0f, 0f, 0f)
+                        environment = Environment(0L, "", 0f, 0f, 0f),
                     ),
-                    onEvent = {}
+                    onEvent = {},
                 )
             }
         }
@@ -212,7 +212,7 @@ class DashboardScreenTest {
                     drawerState = DrawerState(initialValue = DrawerValue.Closed),
                     snackbarHostState = SnackbarHostState(),
                     state = state,
-                    onEvent = {}
+                    onEvent = {},
                 )
             }
         }
