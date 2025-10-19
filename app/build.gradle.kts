@@ -47,6 +47,15 @@ android {
                 "META-INF/io.netty.versions.properties",
                 "META-INF/INDEX.LIST",
             )
+            excludes += setOf(
+                "META-INF/LICENSE.md",
+                "META-INF/LICENSE-notice.md",
+                "META-INF/NOTICE.md",
+                "META-INF/NOTICE",
+                "META-INF/LICENSE",
+                "META-INF/LICENSE.txt",
+                "META-INF/NOTICE.txt"
+            )
         }
     }
 }
@@ -67,7 +76,8 @@ dependencies {
     testImplementation(libs.mockk)
     testImplementation(libs.turbine)
     androidTestImplementation(libs.truth)
-    androidTestImplementation(libs.mockk)
+    androidTestImplementation(libs.mockk.android)
+//    androidTestImplementation(libs.mockk)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
