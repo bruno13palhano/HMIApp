@@ -2,7 +2,6 @@ package com.bruno13palhano.hmiapp
 
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
-import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -80,5 +79,22 @@ class DashboardScreenIntegrationTest {
             .performClick()
 
         composeRule.onNodeWithText("Name").assertIsDisplayed()
+    }
+
+    @Test
+    fun whenEnvironmentExists_showsEnvironmentSwitchingButtons() {
+        val viewModel = createViewModel()
+
+        composeRule.setContent {
+            HMIAppTheme {
+                DashboardScreen(
+                    navigateTo = {},
+                    viewModel = viewModel
+                )
+            }
+        }
+
+        composeRule.onNodeWithText("Home").assertIsDisplayed()
+        composeRule.onNodeWithText("Farm").assertIsDisplayed()
     }
 }
