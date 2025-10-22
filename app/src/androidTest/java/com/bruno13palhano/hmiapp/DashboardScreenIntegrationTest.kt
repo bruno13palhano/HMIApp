@@ -97,4 +97,22 @@ class DashboardScreenIntegrationTest {
         composeRule.onNodeWithText("Home").assertIsDisplayed()
         composeRule.onNodeWithText("Farm").assertIsDisplayed()
     }
+
+    @Test
+    fun toggleToolbox_showWidgetToolbox() {
+        val viewModel = createViewModel()
+
+        composeRule.setContent {
+            HMIAppTheme {
+                DashboardScreen(
+                    navigateTo = {},
+                    viewModel = viewModel
+                )
+            }
+        }
+
+        composeRule.onNodeWithTag("DashboardFab").performClick()
+        composeRule.onNodeWithText("Widgets").performClick()
+        composeRule.onNodeWithTag("WidgetToolbox").assertIsDisplayed()
+    }
 }
