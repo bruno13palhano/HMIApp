@@ -37,6 +37,14 @@ class DashboardScreenIntegrationTest {
         environmentRepository = mockk(relaxed = true)
 
         every { mqttRepository.isConnected() } returns flowOf(true)
+        coEvery { environmentRepository.getLastEnvironmentId() } returns 1L
+        coEvery { environmentRepository.getById(any()) } returns Environment(
+            id = 1L,
+            name = "Home",
+            scale = 1f,
+            offsetX = 0f,
+            offsetY = 0f
+        )
         coEvery { environmentRepository.getLast() } returns Environment(
             id = 1L,
             name = "Home",
@@ -64,6 +72,8 @@ class DashboardScreenIntegrationTest {
     @Test
     fun whenNoEnvironment_showsAddEnvironmentFab_andAfter_showsWidgetCanvas() {
         val viewModel = createViewModel()
+
+        coEvery { environmentRepository.getById(any()) } returns null
 
         composeRule.setContent {
             HMIAppTheme {
@@ -112,7 +122,7 @@ class DashboardScreenIntegrationTest {
         }
 
         composeRule.onNodeWithTag("DashboardFab").performClick()
-        composeRule.onNodeWithText("Widgets").performClick()
+        composeRule.onNodeWithText("Widgets", useUnmergedTree = true).performClick()
         composeRule.onNodeWithTag("WidgetToolbox").assertIsDisplayed()
     }
 }
