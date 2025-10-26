@@ -43,31 +43,29 @@ class DashboardScreenIntegrationTest {
             name = "Home",
             scale = 1f,
             offsetX = 0f,
-            offsetY = 0f
+            offsetY = 0f,
         )
         coEvery { environmentRepository.getLast() } returns Environment(
             id = 1L,
             name = "Home",
             scale = 1f,
             offsetX = 0f,
-            offsetY = 0f
+            offsetY = 0f,
         )
         every { environmentRepository.getAll() } returns flowOf(
             listOf(
                 Environment(1L, "Home", 1f, 0f, 0f),
-                Environment(2L, "Farm", 1f, 0f, 0f)
-            )
+                Environment(2L, "Farm", 1f, 0f, 0f),
+            ),
         )
     }
 
-    private fun createViewModel(): DashboardViewModel {
-        return DashboardViewModel(
-            widgetRepository = widgetRepository,
-            mqttClientRepository = mqttRepository,
-            environmentRepository = environmentRepository,
-            initialState = DashboardState()
-        )
-    }
+    private fun createViewModel(): DashboardViewModel = DashboardViewModel(
+        widgetRepository = widgetRepository,
+        mqttClientRepository = mqttRepository,
+        environmentRepository = environmentRepository,
+        initialState = DashboardState(),
+    )
 
     @Test
     fun whenNoEnvironment_showsAddEnvironmentFab_andAfter_showsWidgetCanvas() {
@@ -79,7 +77,7 @@ class DashboardScreenIntegrationTest {
             HMIAppTheme {
                 DashboardScreen(
                     navigateTo = {},
-                    viewModel = viewModel
+                    viewModel = viewModel,
                 )
             }
         }
@@ -99,7 +97,7 @@ class DashboardScreenIntegrationTest {
             HMIAppTheme {
                 DashboardScreen(
                     navigateTo = {},
-                    viewModel = viewModel
+                    viewModel = viewModel,
                 )
             }
         }
@@ -116,7 +114,7 @@ class DashboardScreenIntegrationTest {
             HMIAppTheme {
                 DashboardScreen(
                     navigateTo = {},
-                    viewModel = viewModel
+                    viewModel = viewModel,
                 )
             }
         }
