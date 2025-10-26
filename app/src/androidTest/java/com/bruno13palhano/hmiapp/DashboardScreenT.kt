@@ -3,9 +3,7 @@ package com.bruno13palhano.hmiapp
 import androidx.activity.compose.setContent
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
-import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onAllNodesWithText
-import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onLast
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
@@ -61,13 +59,13 @@ class DashboardScreenT {
             widgetRepository = fakeWidgetRepository,
             mqttClientRepository = fakeMqttClientRepository,
             environmentRepository = fakeEnvironmentRepository,
-            initialState = DashboardState(loading = false)
+            initialState = DashboardState(loading = false),
         )
 
         composeRule.activity.setContent {
             DashboardScreen(
                 navigateTo = {},
-                viewModel = viewModel
+                viewModel = viewModel,
             )
         }
     }
@@ -106,7 +104,7 @@ class DashboardScreenT {
 
         composeRule.onNodeWithContentDescription(
             composeRule.activity.getString(R.string.add_environment_button),
-            useUnmergedTree = true
+            useUnmergedTree = true,
         ).performClick()
 
         composeRule.onNodeWithText(composeRule.activity.getString(R.string.name))
@@ -123,7 +121,7 @@ class DashboardScreenT {
         composeRule.onNodeWithText("Text").performClick()
 
         composeRule.onNodeWithText(
-            composeRule.activity.getString(R.string.widget_configuration)
+            composeRule.activity.getString(R.string.widget_configuration),
         ).assertExists()
     }
 
@@ -137,20 +135,16 @@ class DashboardScreenT {
                 type = WidgetType.TEXT,
                 label = "Temp",
                 dataSource = DataSource.MQTT(topic = "test/topic"),
-                environmentId = 1L
-            )
+                environmentId = 1L,
+            ),
         )
 
         composeRule.onNodeWithTag("WidgetMoreVert").performClick()
 
         composeRule.onNodeWithText("Edit").performClick()
 
-//        composeRule.onAllNodesWithContentDescription(
-//            composeRule.activity.getString(R.string.widgets_options_button)
-//        ).onFirst().performClick()
-
         composeRule.onNodeWithText(
-            composeRule.activity.getString(R.string.widget_configuration)
+            composeRule.activity.getString(R.string.widget_configuration),
         ).assertExists()
     }
 }
@@ -158,8 +152,8 @@ class DashboardScreenT {
 class FakeEnvironmentRepository : EnvironmentRepository {
     val environments = mutableListOf(
         Environment(1L, "Home", 1f, 0f, 0f),
-        Environment(2L, "Garden", 1f, 0f,0f),
-        Environment(3L, "Farm", 1f, 0f,0f),
+        Environment(2L, "Garden", 1f, 0f, 0f),
+        Environment(3L, "Farm", 1f, 0f, 0f),
     )
 
     override suspend fun insert(environment: Environment) {}
@@ -201,24 +195,17 @@ class FakeMqttClientRepository : MqttClientRepository {
     private val messages = MutableSharedFlow<Pair<String, String>>(replay = 1)
     override suspend fun connectIfSessionExists() {}
 
-    override suspend fun connectMqtt(mqttConnectionConfig: MqttConnectionConfig): Result<Unit> {
-        return Result.success(Unit)
-    }
+    override suspend fun connectMqtt(mqttConnectionConfig: MqttConnectionConfig): Result<Unit> =
+        Result.success(Unit)
 
     override suspend fun subscribeToTopic(topic: String): Result<Unit> = Result.success(Unit)
 
-    override suspend fun publish(
-        topic: String,
-        message: String,
-    ): Result<Unit> = Result.success(Unit)
+    override suspend fun publish(topic: String, message: String): Result<Unit> =
+        Result.success(Unit)
 
-    override fun isConnected(): Flow<Boolean> {
-        return flowOf(true)
-    }
+    override fun isConnected(): Flow<Boolean> = flowOf(true)
 
-    override suspend fun disconnect(): Result<Unit> {
-        return Result.success(Unit)
-    }
+    override suspend fun disconnect(): Result<Unit> = Result.success(Unit)
 
     override fun incomingMessages(): SharedFlow<Pair<String, String>> = messages
 }
