@@ -19,12 +19,17 @@ import com.bruno13palhano.core.model.Environment
 import com.bruno13palhano.core.model.Widget
 import com.bruno13palhano.core.model.WidgetType
 import com.bruno13palhano.hmiapp.ui.dashboard.DashboardScreen
+import com.bruno13palhano.hmiapp.ui.dashboard.DashboardSideEffect
 import com.bruno13palhano.hmiapp.ui.dashboard.DashboardState
 import com.bruno13palhano.hmiapp.ui.dashboard.DashboardViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
@@ -41,11 +46,14 @@ class DashboardScreenT {
     private lateinit var fakeEnvironmentRepository: FakeEnvironmentRepository
     private lateinit var fakeMqttClientRepository: FakeMqttClientRepository
 
+    private val testScope = CoroutineScope(Dispatchers.Main)
+
     @Before
     fun setup() {
         fakeWidgetRepository = FakeWidgetRepository()
         fakeEnvironmentRepository = FakeEnvironmentRepository()
         fakeMqttClientRepository = FakeMqttClientRepository()
+        testScope.cancel()
     }
 
     @After
@@ -146,6 +154,46 @@ class DashboardScreenT {
         composeRule.onNodeWithText(
             composeRule.activity.getString(R.string.widget_configuration),
         ).assertExists()
+    }
+
+    @Test
+    fun shows_snackbar_on_limit_exceeded_side_effect() {
+        val viewModel = DashboardViewModel(
+            widgetRepository = fakeWidgetRepository,
+            mqttClientRepository = fakeMqttClientRepository,
+            environmentRepository = fakeEnvironmentRepository,
+            initialState = DashboardState(
+                loading = false,
+                environment = Environment(1L, "Home", 1f, 0f, 0f),
+            ),
+        )
+
+        composeRule.activity.setContent {
+            DashboardScreen(
+                navigateTo = {},
+                viewModel = viewModel,
+            )
+        }
+
+        val widgetLabel = "Sensor 1"
+        val currentValue = "85.0"
+        val limit = "70.0"
+        val limitExceededMessage = composeRule.activity.getString(R.string.limit_exceeded_message)
+        composeRule.runOnIdle {
+            runBlocking {
+                viewModel.container.postSideEffect(
+                    effect = DashboardSideEffect.NotifyLimitExceeded(
+                        widgetLabel = widgetLabel,
+                        currentValue = currentValue,
+                        limit = limit,
+                    ),
+                )
+            }
+        }
+
+        composeRule.onNodeWithText(
+            "$widgetLabel $limitExceededMessage $currentValue/$limit",
+        ).assertIsDisplayed()
     }
 }
 
