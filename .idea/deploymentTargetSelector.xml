@@ -11,12 +11,6 @@
       <SelectionState runConfigName="open_environment_input_dialog()">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
-      <SelectionState runConfigName="shows_snackbar_on_limit_exceeded_side_effect()">
-        <option name="selectionMode" value="DROPDOWN" />
-      </SelectionState>
-      <SelectionState runConfigName="import_layout_triggers_success_side_effect()">
-        <option name="selectionMode" value="DROPDOWN" />
-      </SelectionState>
       <SelectionState runConfigName="open_add_widget_input_dialog()">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
