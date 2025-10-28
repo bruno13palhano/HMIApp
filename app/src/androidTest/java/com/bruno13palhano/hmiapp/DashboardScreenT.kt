@@ -59,20 +59,22 @@ class DashboardScreenT {
         fakeWidgetRepository.fakeWidgets.clear()
     }
 
-    private fun launchDashboardScreen() {
+    private fun launchDashboardScreen(
+        widgetRepository: FakeWidgetRepository = fakeWidgetRepository,
+        mqttClientRepository: FakeMqttClientRepository = fakeMqttClientRepository,
+        environmentRepository: FakeEnvironmentRepository = fakeEnvironmentRepository,
+        initialState: DashboardState = DashboardState(loading = false),
+    ): DashboardViewModel {
         val viewModel = DashboardViewModel(
-            widgetRepository = fakeWidgetRepository,
-            mqttClientRepository = fakeMqttClientRepository,
-            environmentRepository = fakeEnvironmentRepository,
-            initialState = DashboardState(loading = false),
+            widgetRepository = widgetRepository,
+            mqttClientRepository = mqttClientRepository,
+            environmentRepository = environmentRepository,
+            initialState = initialState,
         )
 
-        composeRule.activity.setContent {
-            DashboardScreen(
-                navigateTo = {},
-                viewModel = viewModel,
-            )
-        }
+        composeRule.activity.setContent { DashboardScreen(navigateTo = {}, viewModel = viewModel) }
+
+        return viewModel
     }
 
     @Test
@@ -103,19 +105,12 @@ class DashboardScreenT {
 
     @Test
     fun open_environment_input_dialog() {
-        val viewModel = DashboardViewModel(
+        launchDashboardScreen(
             widgetRepository = FakeWidgetRepository(),
             mqttClientRepository = FakeMqttClientRepository(),
             environmentRepository = FakeEnvironmentRepository(environments = mutableListOf()),
             initialState = DashboardState(loading = false),
         )
-
-        composeRule.activity.setContent {
-            DashboardScreen(
-                navigateTo = {},
-                viewModel = viewModel,
-            )
-        }
 
         composeRule.waitUntil {
             composeRule.onAllNodesWithContentDescription(
@@ -172,22 +167,12 @@ class DashboardScreenT {
 
     @Test
     fun shows_snackbar_on_limit_exceeded_side_effect() {
-        val viewModel = DashboardViewModel(
-            widgetRepository = fakeWidgetRepository,
-            mqttClientRepository = fakeMqttClientRepository,
-            environmentRepository = fakeEnvironmentRepository,
+        val viewModel = launchDashboardScreen(
             initialState = DashboardState(
                 loading = false,
                 environment = Environment(1L, "Home", 1f, 0f, 0f),
             ),
         )
-
-        composeRule.activity.setContent {
-            DashboardScreen(
-                navigateTo = {},
-                viewModel = viewModel,
-            )
-        }
 
         val widgetLabel = "Sensor 1"
         val currentValue = "85.0"
@@ -212,17 +197,12 @@ class DashboardScreenT {
 
     @Test
     fun export_layout_triggers_success_side_effect() {
-        val viewModel = DashboardViewModel(
-            widgetRepository = fakeWidgetRepository,
-            mqttClientRepository = fakeMqttClientRepository,
-            environmentRepository = fakeEnvironmentRepository,
+        val viewModel = launchDashboardScreen(
             initialState = DashboardState(
                 loading = false,
                 environment = Environment(1L, "Home", 1f, 0f, 0f),
             ),
         )
-
-        composeRule.activity.setContent { DashboardScreen(navigateTo = {}, viewModel = viewModel) }
 
         val outputStream = ByteArrayOutputStream()
 
@@ -241,17 +221,12 @@ class DashboardScreenT {
 
     @Test
     fun import_layout_triggers_success_side_effect() {
-        val viewModel = DashboardViewModel(
-            widgetRepository = fakeWidgetRepository,
-            mqttClientRepository = fakeMqttClientRepository,
-            environmentRepository = fakeEnvironmentRepository,
+        val viewModel = launchDashboardScreen(
             initialState = DashboardState(
                 loading = false,
                 environment = Environment(1L, "Home", 1f, 0f, 0f),
             ),
         )
-
-        composeRule.activity.setContent { DashboardScreen(navigateTo = {}, viewModel = viewModel) }
 
         val inputStream = java.io.ByteArrayInputStream(
             """{"environment":{"id":1,"name":"Home","scale":1.0,"offsetX":0.0,"offsetY":0.0},"widgets":[]}"""
