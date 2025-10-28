@@ -3,6 +3,7 @@ package com.bruno13palhano.hmiapp
 import androidx.activity.compose.setContent
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onLast
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -18,13 +19,12 @@ import com.bruno13palhano.core.model.DataSource
 import com.bruno13palhano.core.model.Environment
 import com.bruno13palhano.core.model.Widget
 import com.bruno13palhano.core.model.WidgetType
+import com.bruno13palhano.hmiapp.ui.dashboard.DashboardEvent
 import com.bruno13palhano.hmiapp.ui.dashboard.DashboardScreen
 import com.bruno13palhano.hmiapp.ui.dashboard.DashboardSideEffect
 import com.bruno13palhano.hmiapp.ui.dashboard.DashboardState
 import com.bruno13palhano.hmiapp.ui.dashboard.DashboardViewModel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.cancel
+import java.io.ByteArrayOutputStream
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -46,14 +46,11 @@ class DashboardScreenT {
     private lateinit var fakeEnvironmentRepository: FakeEnvironmentRepository
     private lateinit var fakeMqttClientRepository: FakeMqttClientRepository
 
-    private val testScope = CoroutineScope(Dispatchers.Main)
-
     @Before
     fun setup() {
         fakeWidgetRepository = FakeWidgetRepository()
         fakeEnvironmentRepository = FakeEnvironmentRepository()
         fakeMqttClientRepository = FakeMqttClientRepository()
-        testScope.cancel()
     }
 
     @After
@@ -106,9 +103,26 @@ class DashboardScreenT {
 
     @Test
     fun open_environment_input_dialog() {
-        fakeEnvironmentRepository.environments.clear()
-        fakeWidgetRepository.fakeWidgets.clear()
-        launchDashboardScreen()
+        val viewModel = DashboardViewModel(
+            widgetRepository = FakeWidgetRepository(),
+            mqttClientRepository = FakeMqttClientRepository(),
+            environmentRepository = FakeEnvironmentRepository(environments = mutableListOf()),
+            initialState = DashboardState(loading = false),
+        )
+
+        composeRule.activity.setContent {
+            DashboardScreen(
+                navigateTo = {},
+                viewModel = viewModel,
+            )
+        }
+
+        composeRule.waitUntil {
+            composeRule.onAllNodesWithContentDescription(
+                composeRule.activity.getString(R.string.add_environment_button),
+                useUnmergedTree = true,
+            ).fetchSemanticsNodes().isNotEmpty()
+        }
 
         composeRule.onNodeWithContentDescription(
             composeRule.activity.getString(R.string.add_environment_button),
@@ -125,8 +139,8 @@ class DashboardScreenT {
 
         composeRule.onNodeWithTag("DashboardFab").performClick()
 
-        composeRule.onNodeWithText("Widget").performClick()
-        composeRule.onNodeWithText("Text").performClick()
+        composeRule.onNodeWithText("Widgets", useUnmergedTree = true).performClick()
+        composeRule.onNodeWithText("+ Text").performClick()
 
         composeRule.onNodeWithText(
             composeRule.activity.getString(R.string.widget_configuration),
@@ -195,14 +209,76 @@ class DashboardScreenT {
             "$widgetLabel $limitExceededMessage $currentValue/$limit",
         ).assertIsDisplayed()
     }
+
+    @Test
+    fun export_layout_triggers_success_side_effect() {
+        val viewModel = DashboardViewModel(
+            widgetRepository = fakeWidgetRepository,
+            mqttClientRepository = fakeMqttClientRepository,
+            environmentRepository = fakeEnvironmentRepository,
+            initialState = DashboardState(
+                loading = false,
+                environment = Environment(1L, "Home", 1f, 0f, 0f),
+            ),
+        )
+
+        composeRule.activity.setContent { DashboardScreen(navigateTo = {}, viewModel = viewModel) }
+
+        val outputStream = ByteArrayOutputStream()
+
+        composeRule.runOnIdle {
+            runBlocking {
+                viewModel.onEvent(DashboardEvent.ExportWidgetsConfig(stream = outputStream))
+            }
+        }
+
+        composeRule.waitUntil {
+            composeRule.onAllNodesWithText(
+                composeRule.activity.getString(R.string.export_config_success),
+            ).fetchSemanticsNodes().isNotEmpty()
+        }
+    }
+
+    @Test
+    fun import_layout_triggers_success_side_effect() {
+        val viewModel = DashboardViewModel(
+            widgetRepository = fakeWidgetRepository,
+            mqttClientRepository = fakeMqttClientRepository,
+            environmentRepository = fakeEnvironmentRepository,
+            initialState = DashboardState(
+                loading = false,
+                environment = Environment(1L, "Home", 1f, 0f, 0f),
+            ),
+        )
+
+        composeRule.activity.setContent { DashboardScreen(navigateTo = {}, viewModel = viewModel) }
+
+        val inputStream = java.io.ByteArrayInputStream(
+            """{"environment":{"id":1,"name":"Home","scale":1.0,"offsetX":0.0,"offsetY":0.0},"widgets":[]}"""
+                .toByteArray(),
+        )
+
+        composeRule.runOnIdle {
+            runBlocking {
+                viewModel.onEvent(DashboardEvent.ImportWidgetsConfig(stream = inputStream))
+            }
+        }
+
+        composeRule.waitUntil {
+            composeRule.onAllNodesWithText(
+                composeRule.activity.getString(R.string.import_config_success),
+            ).fetchSemanticsNodes().isNotEmpty()
+        }
+    }
 }
 
-class FakeEnvironmentRepository : EnvironmentRepository {
-    val environments = mutableListOf(
+class FakeEnvironmentRepository(
+    var environments: MutableList<Environment> = mutableListOf(
         Environment(1L, "Home", 1f, 0f, 0f),
         Environment(2L, "Garden", 1f, 0f, 0f),
         Environment(3L, "Farm", 1f, 0f, 0f),
-    )
+    ),
+) : EnvironmentRepository {
 
     override suspend fun insert(environment: Environment) {}
 

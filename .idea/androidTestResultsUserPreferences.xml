@@ -68,6 +68,19 @@
             </AndroidTestResultsTableState>
           </value>
         </entry>
+        <entry key="70619731">
+          <value>
+            <AndroidTestResultsTableState>
+              <option name="preferredColumnWidths">
+                <map>
+                  <entry key="Duration" value="90" />
+                  <entry key="Tests" value="360" />
+                  <entry key="asus ASUS_A001D" value="120" />
+                </map>
+              </option>
+            </AndroidTestResultsTableState>
+          </value>
+        </entry>
         <entry key="405757613">
           <value>
             <AndroidTestResultsTableState>
@@ -82,6 +95,19 @@
           </value>
         </entry>
         <entry key="450654261">
+          <value>
+            <AndroidTestResultsTableState>
+              <option name="preferredColumnWidths">
+                <map>
+                  <entry key="Duration" value="90" />
+                  <entry key="Tests" value="360" />
+                  <entry key="asus ASUS_A001D" value="120" />
+                </map>
+              </option>
+            </AndroidTestResultsTableState>
+          </value>
+        </entry>
+        <entry key="475299135">
           <value>
             <AndroidTestResultsTableState>
               <option name="preferredColumnWidths">
@@ -121,6 +147,19 @@
           </value>
         </entry>
         <entry key="979409268">
+          <value>
+            <AndroidTestResultsTableState>
+              <option name="preferredColumnWidths">
+                <map>
+                  <entry key="Duration" value="90" />
+                  <entry key="Tests" value="360" />
+                  <entry key="asus ASUS_A001D" value="120" />
+                </map>
+              </option>
+            </AndroidTestResultsTableState>
+          </value>
+        </entry>
+        <entry key="1840172430">
           <value>
             <AndroidTestResultsTableState>
               <option name="preferredColumnWidths">
